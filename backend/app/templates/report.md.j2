@@ -30,6 +30,12 @@
 - Erklärung: {{ report.checks.rpki.explanation if report.checks and report.checks.rpki else '-' }}
 - Risiko: {{ report.checks.rpki.risk if report.checks and report.checks.rpki else '-' }}
 
+### Registry/IRR
+- Status: **{{ report.checks.registry.status if report.checks and report.checks.registry else '-' }}**
+- Summary: {{ report.checks.registry.summary if report.checks and report.checks.registry else '-' }}
+- Erklärung: {{ report.checks.registry.explanation if report.checks and report.checks.registry else '-' }}
+- Risiko: {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}
+
 ## Technische Details
 ```json
 {{ report.details | tojson(indent=2) }}
@@ -37,7 +43,7 @@
 
 ## Rohdaten
 ```json
-{{ report.checks.rpki.raw | tojson(indent=2) if report.checks and report.checks.rpki else '{}' }}
+{{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }}\n\nRegistry/IRR:\n{{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}
 ```
 
 

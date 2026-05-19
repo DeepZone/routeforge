@@ -7,7 +7,8 @@ const order = { CRITICAL: 0, WARNING: 1, UNKNOWN: 2, OK: 3 }
 export function ReportView({ report }: { report: CheckResponse }) {
   const recs = report.recommendations ?? []
   const rpki = report.checks?.rpki
-  const hasRpkiCheck = Boolean(rpki)
+  const registry = report.checks?.registry
+  const hasAnyChecks = Boolean(rpki || registry)
   const rpkiExplanation = report.details?.rpki_explanation
   const extractedPrefixes = Array.isArray(report.details?.extracted_prefixes) ? report.details.extracted_prefixes : []
   const rpkiSummary = report.details?.rpki_summary
@@ -30,7 +31,8 @@ export function ReportView({ report }: { report: CheckResponse }) {
     {recs.length > 0 ? <ul className='list-disc pl-5'>{recs.map((r, i) => <li key={`${r}-${i}`}>{r}</li>)}</ul> : <p>Keine Empfehlungen verfügbar.</p>}
 
     <h4 className='font-semibold mt-4'>Einzelprüfungen</h4>
-    {hasRpkiCheck ? <div className='border rounded p-3 mt-2'>
+    {hasAnyChecks ? <div className='mt-2 space-y-3'>
+    {rpki && <div className='border rounded p-3'>
       <div className='flex items-center gap-2'><span className='font-semibold'>RPKI</span><StatusBadge status={rpki?.status || 'UNKNOWN'} /></div>
       <p className='mt-2'><strong>Summary:</strong> {rpki?.summary || '-'}</p>
       <p className='mt-1'><strong>Erklärung:</strong> {rpki?.explanation || '-'}</p>
@@ -39,6 +41,17 @@ export function ReportView({ report }: { report: CheckResponse }) {
         <summary>RPKI Rohdaten</summary>
         <pre className='mt-2 text-xs overflow-auto'>{JSON.stringify(rpki?.raw ?? {}, null, 2)}</pre>
       </details>
+        </div>}
+    {registry && <div className='border rounded p-3'>
+      <div className='flex items-center gap-2'><span className='font-semibold'>Registry/IRR</span><StatusBadge status={registry?.status || 'UNKNOWN'} /></div>
+      <p className='mt-2'><strong>Summary:</strong> {registry?.summary || '-'}</p>
+      <p className='mt-1'><strong>Erklärung:</strong> {registry?.explanation || '-'}</p>
+      <p className='mt-1'><strong>Risiko:</strong> {registry?.risk || '-'}</p>
+      <details className='mt-2'>
+        <summary>Registry/IRR Rohdaten</summary>
+        <pre className='mt-2 text-xs overflow-auto'>{JSON.stringify(registry?.raw ?? {}, null, 2)}</pre>
+      </details>
+    </div>}
     </div> : <p className='mt-2'>Für diesen Check-Typ sind keine Einzelprüfungen verfügbar.</p>}
 
     {rpkiSummary && <div className='mt-4 border rounded p-3'><h4 className='font-semibold'>ASN-RPKI Summary</h4>

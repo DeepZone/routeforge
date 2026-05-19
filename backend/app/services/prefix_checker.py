@@ -2,6 +2,7 @@ from app.core.normalize import format_asn, normalize_asn, validate_prefix
 from app.core.recommendations import evaluate_rpki_status
 from app.core.status import CheckStatus
 from app.config import settings
+from app.services.registry_checker import RegistryChecker
 from app.services.ripe_db_client import RipeDbClient
 from app.services.ripe_stat_client import RipeStatClient
 from app.services.rpki_checker import RpkiChecker
@@ -12,6 +13,7 @@ class PrefixChecker:
         self.client = client
         self.ripe_db = RipeDbClient(client)
         self.rpki = RpkiChecker(client)
+        self.registry = RegistryChecker()
 
     def check(self, prefix: str, origin_as: str | None) -> dict:
         normalized_prefix = validate_prefix(prefix)
@@ -20,8 +22,8 @@ class PrefixChecker:
         whois = self.ripe_db.whois(normalized_prefix)
         routing_status = self.client.get("routing-status", {"resource": normalized_prefix})
         rpki_check = self.rpki.check(normalized_prefix, normalized_origin)
+        registry_check = self.registry.check(normalized_prefix, normalized_origin, whois)
 
-        status = CheckStatus(rpki_check["status"])
         warnings: list[str] = []
         if whois.get("error") or routing_status.get("error"):
             warnings.append("Mindestens eine zusätzliche Datenquelle war nicht erreichbar.")
@@ -47,7 +49,15 @@ class PrefixChecker:
                     "risk": rpki_check["risk"],
                     "recommendations": rpki_check["recommendations"],
                     "raw": rpki_check.get("raw", {}),
-                }
+                },
+                "registry": {
+                    "status": registry_check["status"],
+                    "summary": registry_check["summary"],
+                    "explanation": registry_check["explanation"],
+                    "risk": registry_check["risk"],
+                    "recommendations": registry_check["recommendations"],
+                    "raw": registry_check.get("raw", {}),
+                },
             },
             "details": {
                 "whois": whois,
@@ -56,6 +66,7 @@ class PrefixChecker:
                     "whois": whois.get("error"),
                     "routing_status": routing_status.get("error"),
                     "rpki": rpki_check.get("raw", {}).get("error") if isinstance(rpki_check.get("raw"), dict) else None,
+                    "registry": registry_check.get("raw", {}).get("error") if isinstance(registry_check.get("raw"), dict) else None,
                 },
                 "warnings": warnings,
                 "demo_mode": settings.demo_mode,

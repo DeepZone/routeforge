@@ -27,12 +27,21 @@
   <li><strong>Risiko:</strong> {{ report.checks.rpki.risk if report.checks and report.checks.rpki else '-' }}</li>
 </ul>
 
+<h3>Registry/IRR</h3>
+<ul>
+  <li><strong>Status:</strong> {{ report.checks.registry.status if report.checks and report.checks.registry else '-' }}</li>
+  <li><strong>Summary:</strong> {{ report.checks.registry.summary if report.checks and report.checks.registry else '-' }}</li>
+  <li><strong>Erklärung:</strong> {{ report.checks.registry.explanation if report.checks and report.checks.registry else '-' }}</li>
+  <li><strong>Risiko:</strong> {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}</li>
+</ul>
+
 <h2>Technische Details</h2><pre>{{ report.details | tojson(indent=2) }}</pre>
 
 <h2>Rohdaten</h2>
 <details>
-  <summary>RPKI API Rohdaten anzeigen</summary>
-  <pre>{{ report.checks.rpki.raw | tojson(indent=2) if report.checks and report.checks.rpki else '{}' }}</pre>
+  <summary>RPKI/Registry API Rohdaten anzeigen</summary>
+  <pre>{"rpki": {{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }},
+"registry": {{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}}</pre>
 </details>
 </body></html>
 
