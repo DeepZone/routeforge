@@ -1,6 +1,6 @@
 import type { CheckResponse } from './types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
 export class ApiError extends Error {
   status?: number
@@ -47,8 +47,16 @@ async function requestJson<T>(url: string, options: RequestInit): Promise<T> {
   return parsedBody as T
 }
 
+function apiUrl(path: string): string {
+  if (!API_BASE_URL) {
+    return path
+  }
+
+  return `${API_BASE_URL}${path}`
+}
+
 export async function checkAsn(asn: string): Promise<CheckResponse> {
-  return requestJson<CheckResponse>(`${API_BASE_URL}/api/check/asn`, {
+  return requestJson<CheckResponse>(apiUrl('/api/check/asn'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ asn }),
@@ -56,7 +64,7 @@ export async function checkAsn(asn: string): Promise<CheckResponse> {
 }
 
 export async function checkPrefix(prefix: string, origin_as?: string): Promise<CheckResponse> {
-  return requestJson<CheckResponse>(`${API_BASE_URL}/api/check/prefix`, {
+  return requestJson<CheckResponse>(apiUrl('/api/check/prefix'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prefix, origin_as: origin_as || null }),
