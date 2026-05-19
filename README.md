@@ -1,4 +1,4 @@
-# RouteForge v0.1.0-alpha
+# RouteForge v0.1.1-alpha
 
 RouteForge ist ein selfhosted, read-only Preflight- und Explainability-Tool für BGP/RPKI/RIPE-Daten.
 
@@ -137,4 +137,4 @@ routeforge report 1 --format markdown
 - RIPEstat Dokumentation: https://www.ripe.net/publications/documentation/ripestat-documentation/
 
 ## Security Hinweis
-RouteForge v0.1.0-alpha ist vollständig read-only.
+RouteForge v0.1.1-alpha ist vollständig read-only.
