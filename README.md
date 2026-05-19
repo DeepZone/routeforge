@@ -28,9 +28,9 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
 ## API Beispiele
 ```bash
-curl http://localhost:8000/health
-curl -X POST http://localhost:8000/api/check/asn -H 'content-type: application/json' -d '{"asn":"AS3320"}'
-curl -X POST http://localhost:8000/api/check/prefix -H 'content-type: application/json' -d '{"prefix":"193.0.22.0/23","origin_as":"AS3333"}'
+curl http://192.168.58.167:8000/health
+curl -X POST http://192.168.58.167:8000/api/check/asn -H 'content-type: application/json' -d '{"asn":"AS3320"}'
+curl -X POST http://192.168.58.167:8000/api/check/prefix -H 'content-type: application/json' -d '{"prefix":"193.0.22.0/23","origin_as":"AS3333"}'
 ```
 
 ## CLI Beispiele
@@ -46,13 +46,13 @@ routeforge report 1 --format markdown
 docker compose logs -f backend
 docker compose logs -f frontend
 
-curl http://localhost:8000/health
+curl http://192.168.58.167:8000/health
 
-curl -X POST http://localhost:8000/api/check/asn \
+curl -X POST http://192.168.58.167:8000/api/check/asn \
   -H "Content-Type: application/json" \
   -d '{"asn":"AS3320"}'
 
-curl -X POST http://localhost:8000/api/check/prefix \
+curl -X POST http://192.168.58.167:8000/api/check/prefix \
   -H "Content-Type: application/json" \
   -d '{"prefix":"193.0.6.0/24","origin_as":"AS3333"}'
 ```
