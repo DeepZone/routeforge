@@ -1,4 +1,5 @@
 from app.core.normalize import format_asn, normalize_asn, validate_prefix
+from app.core.recommendations import evaluate_rpki_status
 from app.core.status import CheckStatus
 from app.services.ripe_db_client import RipeDbClient
 from app.services.ripe_stat_client import RipeStatClient
@@ -13,47 +14,49 @@ class PrefixChecker:
 
     def check(self, prefix: str, origin_as: str | None) -> dict:
         normalized_prefix = validate_prefix(prefix)
+        normalized_origin = format_asn(normalize_asn(origin_as)) if origin_as else None
+
         whois = self.ripe_db.whois(normalized_prefix)
         routing_status = self.client.get("routing-status", {"resource": normalized_prefix})
+        rpki_check = self.rpki.check(normalized_prefix, normalized_origin)
 
-        errors = []
-        if "error" in whois or "error" in routing_status:
-            errors.append("Mindestens eine Datenquelle war nicht erreichbar")
+        status = CheckStatus(rpki_check["status"])
+        warnings: list[str] = []
+        if whois.get("error") or routing_status.get("error"):
+            warnings.append("Mindestens eine zusätzliche Datenquelle war nicht erreichbar.")
+        if rpki_check.get("status") == CheckStatus.UNKNOWN.value and rpki_check.get("raw", {}).get("error"):
+            warnings.append("RPKI-Quelle nicht erreichbar oder unvollständig.")
 
-        if origin_as:
-            oasn = normalize_asn(origin_as)
-            rpki = self.rpki.check(normalized_prefix, oasn)
-            status = CheckStatus(rpki["status"])
-            recommendations = rpki["recommendations"]
-            summary = f"Prefix {normalized_prefix} geprüft."
-        else:
-            rpki = {
-                "status": CheckStatus.UNKNOWN.value,
-                "explanation": "Für eine vollständige RPKI-Prüfung wird ein Origin-AS benötigt.",
-                "raw_response": {},
-            }
-            status = CheckStatus.UNKNOWN
-            summary = "Für eine vollständige RPKI-Prüfung wird ein Origin-AS benötigt."
-            recommendations = ["Bitte Origin-AS ergänzen, zum Beispiel AS3333."]
-
-        if errors and status == CheckStatus.OK:
-            status = CheckStatus.UNKNOWN
+        overall = evaluate_rpki_status(rpki_check.get("raw_status"), normalized_prefix, normalized_origin)
+        if rpki_check.get("status") == CheckStatus.UNKNOWN.value and rpki_check.get("explanation"):
+            overall["explanation"] = rpki_check["explanation"]
 
         return {
-            "status": status.value,
-            "summary": summary,
-            "recommendations": recommendations,
+            "status": overall["status"],
+            "summary": overall["summary"],
+            "explanation": overall["explanation"],
+            "risk": overall["risk"],
+            "recommendations": overall["recommendations"],
+            "input": {"prefix": normalized_prefix, "origin_as": normalized_origin},
+            "checks": {
+                "rpki": {
+                    "status": rpki_check["status"],
+                    "summary": rpki_check["summary"],
+                    "explanation": rpki_check["explanation"],
+                    "risk": rpki_check["risk"],
+                    "recommendations": rpki_check["recommendations"],
+                    "raw": rpki_check.get("raw", {}),
+                }
+            },
             "details": {
-                "prefix": normalized_prefix,
-                "origin_as": format_asn(normalize_asn(origin_as)) if origin_as else None,
-                "rpki": rpki,
-                "whois": whois.get("data", {}),
-                "routing_status": routing_status.get("data", {}),
-                "warnings": errors,
+                "whois": whois,
+                "routing_status": routing_status,
                 "source_errors": {
                     "whois": whois.get("error"),
                     "routing_status": routing_status.get("error"),
+                    "rpki": rpki_check.get("raw", {}).get("error") if isinstance(rpki_check.get("raw"), dict) else None,
                 },
+                "warnings": warnings,
             },
             "sources": ["RIPEstat rpki-validation", "RIPEstat routing-status", "RIPEstat whois"],
         }

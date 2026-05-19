@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 
 from app.core.normalize import normalize_asn, validate_prefix
 
@@ -38,7 +38,11 @@ class CheckResponse(BaseModel):
     report_id: int
     status: str
     summary: str
+    explanation: str | None = None
+    risk: str | None = None
     recommendations: list[str]
+    input: dict[str, Any] | None = None
+    checks: dict[str, Any] | None = None
     details: dict[str, Any]
     markdown: str
     html: str

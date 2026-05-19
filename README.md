@@ -33,6 +33,23 @@ curl -X POST http://192.168.58.167:8000/api/check/asn -H 'content-type: applicat
 curl -X POST http://192.168.58.167:8000/api/check/prefix -H 'content-type: application/json' -d '{"prefix":"193.0.22.0/23","origin_as":"AS3333"}'
 ```
 
+
+### Prefix mit RPKI
+```bash
+curl -X POST http://localhost:8000/api/check/prefix \
+  -H "Content-Type: application/json" \
+  -d '{"prefix":"193.0.6.0/24","origin_as":"AS3333"}'
+```
+
+### Prefix ohne Origin-AS
+```bash
+curl -X POST http://localhost:8000/api/check/prefix \
+  -H "Content-Type: application/json" \
+  -d '{"prefix":"193.0.6.0/24"}'
+```
+
+RouteForge bleibt strikt read-only und verändert weder ROAs noch RIPE-Objekte.
+
 ## CLI Beispiele
 ```bash
 cd backend
