@@ -50,6 +50,41 @@ curl -X POST http://localhost:8000/api/check/prefix \
 
 RouteForge bleibt strikt read-only und verändert weder ROAs noch RIPE-Objekte.
 
+## Tests ausführen
+
+Backend:
+```bash
+cd backend
+pytest -q
+```
+
+Frontend:
+```bash
+cd frontend
+npm run build
+```
+
+## Demo-Modus
+
+RouteForge unterstützt einen Demo-Modus mit festen Beispieldaten für Präsentationen, Tests und Offline-Demos.
+Der Demo-Modus darf nicht für echte Routing-Bewertungen verwendet werden.
+
+Start per Umgebungsvariable:
+```bash
+ROUTEFORGE_DEMO_MODE=true docker compose up --build
+```
+
+Alternativ über `.env`:
+```env
+ROUTEFORGE_DEMO_MODE=true
+```
+
+Beispiele:
+```bash
+curl -X POST http://localhost:8000/api/check/asn -H "Content-Type: application/json" -d '{"asn":"AS3320"}'
+curl -X POST http://localhost:8000/api/check/asn-rpki -H "Content-Type: application/json" -d '{"asn":"AS3320","limit":4}'
+```
+
 ## CLI Beispiele
 ```bash
 cd backend

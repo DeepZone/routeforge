@@ -2,7 +2,7 @@ import type { CheckResponse, RpkiBatchResult } from '../types'
 import { RawDataPanel } from './RawDataPanel'
 import { StatusBadge } from './StatusBadge'
 
-const order = { CRITICAL: 0, WARNING: 1, OK: 2, UNKNOWN: 3 }
+const order = { CRITICAL: 0, WARNING: 1, UNKNOWN: 2, OK: 3 }
 
 export function ReportView({ report }: { report: CheckResponse }) {
   const recs = report.recommendations ?? []
@@ -12,6 +12,9 @@ export function ReportView({ report }: { report: CheckResponse }) {
   const extractedPrefixes = Array.isArray(report.details?.extracted_prefixes) ? report.details.extracted_prefixes : []
   const rpkiSummary = report.details?.rpki_summary
   const results = (Array.isArray(report.details?.results) ? report.details.results : []) as RpkiBatchResult[]
+  const checkedPrefixes = Number(report.details?.checked_prefixes ?? 0)
+  const totalPrefixesSeen = Number(report.details?.total_prefixes_seen ?? 0)
+  const limited = Boolean(report.details?.limited)
   const sortedResults = [...results].sort((a, b) => (order[a.status as keyof typeof order] ?? 99) - (order[b.status as keyof typeof order] ?? 99))
 
   return <div className='mt-6 p-4 border rounded bg-white'>
@@ -21,6 +24,7 @@ export function ReportView({ report }: { report: CheckResponse }) {
     <p className='mt-2'><strong>Risiko:</strong> {report.risk || 'Keine Risikobewertung verfügbar.'}</p>
     {rpkiExplanation && <p className='mt-2 p-2 rounded bg-amber-50 border border-amber-200'><strong>RPKI-Hinweis:</strong> {String(rpkiExplanation)}</p>}
     {extractedPrefixes.length > 0 && <p className='mt-2 text-sm'><strong>Sichtbare Prefixe:</strong> {extractedPrefixes.length}</p>}
+    {report.details?.demo_mode && <p className='mt-2 text-sm p-2 rounded border border-blue-200 bg-blue-50'><strong>Demo-Modus:</strong> Es werden feste Beispieldaten verwendet.</p>}
 
     <h4 className='font-semibold mt-4'>Empfehlungen</h4>
     {recs.length > 0 ? <ul className='list-disc pl-5'>{recs.map((r, i) => <li key={`${r}-${i}`}>{r}</li>)}</ul> : <p>Keine Empfehlungen verfügbar.</p>}
@@ -38,6 +42,8 @@ export function ReportView({ report }: { report: CheckResponse }) {
     </div> : <p className='mt-2'>Für diesen Check-Typ sind keine Einzelprüfungen verfügbar.</p>}
 
     {rpkiSummary && <div className='mt-4 border rounded p-3'><h4 className='font-semibold'>ASN-RPKI Summary</h4>
+      <p className='text-sm mt-1'>geprüft: {checkedPrefixes} / gesehen: {totalPrefixesSeen}</p>
+      {limited && <p className='text-sm text-amber-700'>Hinweis: Ergebnis wurde durch das gesetzte Limit begrenzt.</p>}
       <ul className='list-disc pl-5 text-sm'>
         <li>valid: {Number((rpkiSummary as Record<string, unknown>).valid ?? 0)}</li>
         <li>invalid_asn: {Number((rpkiSummary as Record<string, unknown>).invalid_asn ?? 0)}</li>
