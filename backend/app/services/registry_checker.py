@@ -1,4 +1,5 @@
 from app.core.status import CheckStatus
+import re
 
 
 class RegistryChecker:
@@ -84,23 +85,94 @@ class RegistryChecker:
         }
 
     def _extract_route_origins(self, payload: dict) -> set[str]:
-        objects = payload.get("data", {}).get("irr_records") or payload.get("data", {}).get("records") or []
         origins: set[str] = set()
+        data = payload.get("data", {}) if isinstance(payload, dict) else {}
 
-        for obj in objects:
-            route_seen = False
-            current_origin: str | None = None
-
-            for field in obj if isinstance(obj, list) else []:
-                key = str(field.get("key", "")).lower()
-                value = str(field.get("value", "")).strip().upper()
-
-                if key in {"route", "route6"} and value:
-                    route_seen = True
-                if key == "origin" and value.startswith("AS"):
-                    current_origin = value
-
-            if route_seen and current_origin:
-                origins.add(current_origin)
+        for record in self._walk_records(data):
+            route_seen, normalized_origin = self._extract_fields_from_record(record)
+            if route_seen and normalized_origin:
+                origins.add(normalized_origin)
 
         return origins
+
+    def _walk_records(self, data: dict):
+        sources = []
+        if isinstance(data, dict):
+            sources.extend([data.get("irr_records"), data.get("records")])
+            if "fields" in data:
+                sources.append(data.get("fields"))
+        for source in sources:
+            yield from self._walk_node(source)
+
+    def _walk_node(self, node):
+        if isinstance(node, dict):
+            if isinstance(node.get("fields"), list):
+                yield node
+            else:
+                for value in node.values():
+                    yield from self._walk_node(value)
+            return
+
+        if isinstance(node, list):
+            if self._looks_like_field_list(node):
+                yield node
+            else:
+                for item in node:
+                    yield from self._walk_node(item)
+
+    def _looks_like_field_list(self, node: list) -> bool:
+        return bool(node) and all(isinstance(item, dict) and "key" in item for item in node)
+
+    def _extract_fields_from_record(self, record) -> tuple[bool, str | None]:
+        route_seen = False
+        current_origin: str | None = None
+        text_blobs: list[str] = []
+
+        fields = []
+        if isinstance(record, dict):
+            maybe_fields = record.get("fields")
+            if isinstance(maybe_fields, list):
+                fields = maybe_fields
+            else:
+                fields = [record]
+        elif isinstance(record, list):
+            fields = record
+
+        for field in fields:
+            if isinstance(field, dict):
+                key = str(field.get("key", "")).strip().lower()
+                value = str(field.get("value", "")).strip()
+                if key in {"route", "route6"} and value:
+                    route_seen = True
+                elif key == "origin":
+                    normalized = self._normalize_origin(value)
+                    if normalized:
+                        current_origin = normalized
+                text_blobs.extend([key, value])
+            elif isinstance(field, str):
+                text_blobs.append(field)
+
+        if route_seen and current_origin:
+            return True, current_origin
+
+        combined_text = " ".join(part for part in text_blobs if part)
+        if not route_seen and re.search(r"\broute6?\b\s*:", combined_text, re.IGNORECASE):
+            route_seen = True
+        if not route_seen and re.search(r"\broute6?\b\s+\S+", combined_text, re.IGNORECASE):
+            route_seen = True
+
+        if route_seen and not current_origin:
+            origin_match = re.search(r"\borigin\b\s*:?\s*(AS)?\s*(\d+)\b", combined_text, re.IGNORECASE)
+            if origin_match:
+                current_origin = self._normalize_origin(origin_match.group(0))
+
+        return route_seen, current_origin
+
+    def _normalize_origin(self, value: str) -> str | None:
+        if not value:
+            return None
+        cleaned = str(value).strip().upper()
+        match = re.search(r"\b(AS)?\s*(\d+)\b", cleaned)
+        if not match:
+            return None
+        return f"AS{match.group(2)}"
