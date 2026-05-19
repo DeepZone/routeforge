@@ -30,6 +30,9 @@ export function ReportView({ report }: { report: CheckResponse }) {
     <h4 className='font-semibold mt-4'>Empfehlungen</h4>
     {recs.length > 0 ? <ul className='list-disc pl-5'>{recs.map((r, i) => <li key={`${r}-${i}`}>{r}</li>)}</ul> : <p>Keine Empfehlungen verfügbar.</p>}
 
+    {hasAnyChecks && <h4 className='font-semibold mt-4'>Gesamtbewertung</h4>}
+    {hasAnyChecks && <p className='mt-1 text-sm text-gray-700'>Oben siehst du den kombinierten Status aus RPKI und Registry/IRR.</p>}
+
     <h4 className='font-semibold mt-4'>Einzelprüfungen</h4>
     {hasAnyChecks ? <div className='mt-2 space-y-3'>
     {rpki && <div className='border rounded p-3'>

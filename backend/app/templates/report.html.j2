@@ -9,12 +9,13 @@
   <li><strong>Origin-AS:</strong> {{ report.input.origin_as if report.input and report.input.origin_as else '-' }}</li>
 </ul>
 
-<h2>Gesamtstatus</h2>
-<p><strong>{{ report.status }}</strong></p>
-
-<h2>Kurzfassung</h2><p>{{ report.summary }}</p>
-<h2>Erklärung</h2><p>{{ report.explanation or '-' }}</p>
-<h2>Risiko</h2><p>{{ report.risk or '-' }}</p>
+<h2>Gesamtbewertung</h2>
+<ul>
+  <li><strong>Status:</strong> {{ report.status }}</li>
+  <li><strong>Kurzfassung:</strong> {{ report.summary }}</li>
+  <li><strong>Erklärung:</strong> {{ report.explanation or '-' }}</li>
+  <li><strong>Risiko:</strong> {{ report.risk or '-' }}</li>
+</ul>
 
 <h2>Empfehlungen</h2><ul>{% for item in report.recommendations %}<li>{{ item }}</li>{% endfor %}</ul>
 
@@ -35,15 +36,14 @@
   <li><strong>Risiko:</strong> {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}</li>
 </ul>
 
-<h2>Technische Details</h2><pre>{{ report.details | tojson(indent=2) }}</pre>
-
 <h2>Rohdaten</h2>
-<details>
-  <summary>RPKI/Registry API Rohdaten anzeigen</summary>
-  <pre>{"rpki": {{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }},
-"registry": {{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}}</pre>
-</details>
-</body></html>
+<h3>RPKI Rohdaten</h3>
+<pre>{{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }}</pre>
+<h3>Registry/IRR Rohdaten</h3>
+<pre>{{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}</pre>
+
+<h2>Technische Details</h2><pre>{{ report.details | tojson(indent=2) }}</pre>
 
 {% if report.details and report.details.rpki_summary %}<h2>RPKI Batch Summary</h2><pre>{{ report.details.rpki_summary | tojson(indent=2) }}</pre>{% endif %}
 {% if report.details and report.details.results %}<h2>RPKI Batch Ergebnisse</h2><pre>{{ report.details.results | tojson(indent=2) }}</pre>{% endif %}
+</body></html>

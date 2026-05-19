@@ -7,17 +7,11 @@
 - Prefix: {{ report.input.prefix if report.input else '-' }}
 - Origin-AS: {{ report.input.origin_as if report.input and report.input.origin_as else '-' }}
 
-## Gesamtstatus
-**{{ report.status }}**
-
-## Kurzfassung
-{{ report.summary }}
-
-## Erklärung
-{{ report.explanation or '-' }}
-
-## Risiko
-{{ report.risk or '-' }}
+## Gesamtbewertung
+- Status: **{{ report.status }}**
+- Kurzfassung: {{ report.summary }}
+- Erklärung: {{ report.explanation or '-' }}
+- Risiko: {{ report.risk or '-' }}
 
 ## Empfehlungen
 {% for item in report.recommendations %}- {{ item }}
@@ -36,16 +30,21 @@
 - Erklärung: {{ report.checks.registry.explanation if report.checks and report.checks.registry else '-' }}
 - Risiko: {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}
 
+## Rohdaten
+### RPKI Rohdaten
+```json
+{{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }}
+```
+
+### Registry/IRR Rohdaten
+```json
+{{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}
+```
+
 ## Technische Details
 ```json
 {{ report.details | tojson(indent=2) }}
 ```
-
-## Rohdaten
-```json
-{{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }}\n\nRegistry/IRR:\n{{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}
-```
-
 
 {% if report.details and report.details.rpki_summary %}
 ## RPKI Batch Summary

@@ -64,6 +64,12 @@ Der Prefix Check enthält zusätzlich einen read-only Registry/IRR-Plausibilitä
 Der Check bewertet Hinweise auf route/route6-Objekte und eine mögliche Origin-AS-Plausibilität, liefert bei unklarer Datenlage bewusst `UNKNOWN` oder `WARNING` und zeigt Rohdaten zur Nachvollziehbarkeit an.
 Er ersetzt keine manuelle Registry-Prüfung.
 
+
+## Kombinierte Prefix-Bewertung
+
+RouteForge bewertet Prefix-Checks nicht nur anhand einer einzelnen Quelle. RPKI und Registry/IRR werden getrennt angezeigt, aber zusätzlich zu einer Gesamtbewertung zusammengeführt.
+Ein `CRITICAL` aus einer Einzelprüfung bleibt `CRITICAL` in der Gesamtbewertung. `WARNING` weist auf unvollständige oder unsichere Datenlage hin.
+
 ## Demo-Modus
 
 `ROUTEFORGE_DEMO_MODE=true` nutzt feste Beispieldaten und ist für Präsentationen, Tests und Offline-Demos gedacht.  
