@@ -6,12 +6,12 @@ services:
       - routeforge_data:/app/data
     environment:
       - DATABASE_URL=sqlite:////app/data/routeforge.db
-      - CORS_ORIGINS=http://localhost:3000
+      - CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
   frontend:
     build: ./frontend
     ports: ["3000:3000"]
     environment:
-      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:8000
     depends_on: [backend]
 volumes:
   routeforge_data:

@@ -29,6 +29,10 @@ class AsnChecker:
                 "as_overview": overview.get("data", {}),
                 "announced_prefixes": prefixes.get("data", {}),
                 "warnings": errors,
+                "source_errors": {
+                    "as_overview": overview.get("error"),
+                    "announced_prefixes": prefixes.get("error"),
+                },
             },
             "sources": ["RIPEstat as-overview", "RIPEstat announced-prefixes"],
         }

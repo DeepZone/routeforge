@@ -16,28 +16,32 @@ class PrefixChecker:
         whois = self.ripe_db.whois(normalized_prefix)
         routing_status = self.client.get("routing-status", {"resource": normalized_prefix})
 
-        rpki = None
-        status = CheckStatus.WARNING
-        recommendations = ["Whois- und Routing-Daten validieren."]
+        errors = []
+        if "error" in whois or "error" in routing_status:
+            errors.append("Mindestens eine Datenquelle war nicht erreichbar")
+
         if origin_as:
             oasn = normalize_asn(origin_as)
             rpki = self.rpki.check(normalized_prefix, oasn)
             status = CheckStatus(rpki["status"])
             recommendations = rpki["recommendations"]
+            summary = f"Prefix {normalized_prefix} geprüft."
         else:
             rpki = {
-                "status": CheckStatus.WARNING.value,
-                "explanation": "RPKI kann nur sinnvoll mit konkretem Origin-AS bewertet werden.",
+                "status": CheckStatus.UNKNOWN.value,
+                "explanation": "Für eine vollständige RPKI-Prüfung wird ein Origin-AS benötigt.",
                 "raw_response": {},
             }
-        errors = []
-        if "error" in whois or "error" in routing_status:
-            errors.append("Mindestens eine Datenquelle war nicht erreichbar")
-            if status == CheckStatus.OK:
-                status = CheckStatus.UNKNOWN
+            status = CheckStatus.UNKNOWN
+            summary = "Für eine vollständige RPKI-Prüfung wird ein Origin-AS benötigt."
+            recommendations = ["Bitte Origin-AS ergänzen, zum Beispiel AS3333."]
+
+        if errors and status == CheckStatus.OK:
+            status = CheckStatus.UNKNOWN
+
         return {
             "status": status.value,
-            "summary": f"Prefix {normalized_prefix} geprüft.",
+            "summary": summary,
             "recommendations": recommendations,
             "details": {
                 "prefix": normalized_prefix,
@@ -46,6 +50,10 @@ class PrefixChecker:
                 "whois": whois.get("data", {}),
                 "routing_status": routing_status.get("data", {}),
                 "warnings": errors,
+                "source_errors": {
+                    "whois": whois.get("error"),
+                    "routing_status": routing_status.get("error"),
+                },
             },
             "sources": ["RIPEstat rpki-validation", "RIPEstat routing-status", "RIPEstat whois"],
         }

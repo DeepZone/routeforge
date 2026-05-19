@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -14,14 +14,24 @@ router = APIRouter(prefix="/api/check", tags=["checks"])
 
 @router.post('/asn', response_model=CheckResponse)
 def check_asn(payload: AsnCheckRequest, db: Session = Depends(get_db)) -> CheckResponse:
-    result = AsnChecker(RipeStatClient(db)).check(payload.asn)
-    return _store_and_respond(db, "asn", payload.asn, None, result)
+    try:
+        result = AsnChecker(RipeStatClient(db)).check(payload.asn)
+        return _store_and_respond(db, "asn", payload.asn, None, result)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"ASN-Prüfung fehlgeschlagen: {exc}") from exc
 
 
 @router.post('/prefix', response_model=CheckResponse)
 def check_prefix(payload: PrefixCheckRequest, db: Session = Depends(get_db)) -> CheckResponse:
-    result = PrefixChecker(RipeStatClient(db)).check(payload.prefix, payload.origin_as)
-    return _store_and_respond(db, "prefix", payload.prefix, payload.origin_as, result)
+    try:
+        result = PrefixChecker(RipeStatClient(db)).check(payload.prefix, payload.origin_as)
+        return _store_and_respond(db, "prefix", payload.prefix, payload.origin_as, result)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Prefix-Prüfung fehlgeschlagen: {exc}") from exc
 
 
 def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | None, result: dict) -> CheckResponse:

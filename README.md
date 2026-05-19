@@ -41,6 +41,22 @@ routeforge check-prefix 193.0.22.0/23 --origin-as AS3333
 routeforge report 1 --format markdown
 ```
 
+## Debugging
+```bash
+docker compose logs -f backend
+docker compose logs -f frontend
+
+curl http://localhost:8000/health
+
+curl -X POST http://localhost:8000/api/check/asn \
+  -H "Content-Type: application/json" \
+  -d '{"asn":"AS3320"}'
+
+curl -X POST http://localhost:8000/api/check/prefix \
+  -H "Content-Type: application/json" \
+  -d '{"prefix":"193.0.6.0/24","origin_as":"AS3333"}'
+```
+
 ## Datenquellen
 - RIPEstat Data API: https://stat.ripe.net/docs/02.data-api
 - RPKI Validation Endpoint: https://stat.ripe.net/docs/data-api/api-endpoints/rpki-validation
