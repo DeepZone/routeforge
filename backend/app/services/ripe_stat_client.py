@@ -52,7 +52,8 @@ class RipeStatClient:
             }
         if endpoint == "rpki-validation":
             prefix = str(params.get("resource", "")).lower()
-            origin = f"AS{str(params.get('prefix', '')).strip()}"
+            origin_param = params.get('prefix') or params.get('origin_asn') or params.get('origin')
+            origin = str(origin_param or '').strip().upper()
             statuses = {
                 ("192.0.2.0/24", "AS3320"): "valid",
                 ("198.51.100.0/24", "AS3320"): "invalid_asn",
