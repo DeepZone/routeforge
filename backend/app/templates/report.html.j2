@@ -1,0 +1,8 @@
+<!doctype html><html><body>
+<h1>RouteForge Report</h1>
+<p><strong>Zeit:</strong> {{ report.generated_at }}</p>
+<p><strong>Status:</strong> {{ report.status }}</p>
+<h2>Summary</h2><p>{{ report.summary }}</p>
+<h2>Empfehlungen</h2><ul>{% for item in report.recommendations %}<li>{{ item }}</li>{% endfor %}</ul>
+<h2>Details</h2><pre>{{ report.details | tojson(indent=2) }}</pre>
+</body></html>

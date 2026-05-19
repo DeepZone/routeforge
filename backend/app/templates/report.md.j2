@@ -1,0 +1,17 @@
+# RouteForge Report
+
+- Zeit: {{ report.generated_at }}
+- Check-ID: {{ report.check_id }}
+- Status: **{{ report.status }}**
+
+## Summary
+{{ report.summary }}
+
+## Empfehlungen
+{% for item in report.recommendations %}- {{ item }}
+{% endfor %}
+
+## Details
+```json
+{{ report.details | tojson(indent=2) }}
+```
