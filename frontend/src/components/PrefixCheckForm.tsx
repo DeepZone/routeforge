@@ -9,17 +9,9 @@ export function PrefixCheckForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<ApiError | null>(null)
   const [result, setResult] = useState<CheckResponse | null>(null)
-
   const onSubmit = async () => { setLoading(true); setError(null); try { setResult(await checkPrefix(prefix, originAs || undefined)) } catch (e) { setError(e as ApiError) } finally { setLoading(false) } }
-
-  return <section className='bg-white border rounded-lg p-4'>
-    <h2 className='text-xl font-semibold'>Prefix Check</h2>
-    <p className='text-sm text-slate-600'>Origin-AS empfohlen für vollständige RPKI- und Registry/IRR-Bewertung.</p>
-    <input className='border p-2 w-full rounded mt-3' placeholder='193.0.22.0/23' value={prefix} onChange={e => setPrefix(e.target.value)} />
-    <input className='border p-2 w-full rounded mt-2' placeholder='AS3333 (optional)' value={originAs} onChange={e => setOriginAs(e.target.value)} />
-    <button onClick={onSubmit} disabled={loading} className='mt-2 px-3 py-2 bg-blue-700 text-white rounded-md'>Prefix prüfen</button>
-    {loading && <p className='text-sm mt-2'>Prüfung läuft ...</p>}
-    {error && <p className='text-sm mt-2 text-rose-700'>{error.message}</p>}
-    {result && <div className='mt-4'><ReportView report={result} /></div>}
+  return <section className='space-y-4'>
+    <article className='rf-card p-5 space-y-3'><h3 className='text-lg font-semibold'>Prefix Check</h3><p className='rf-alert border-blue-200 bg-blue-50 text-blue-700'>Origin-AS empfohlen für vollständige Bewertung.</p><div><label className='mb-1 block text-sm font-medium'>Prefix</label><input className='rf-input' placeholder='193.0.22.0/23' value={prefix} onChange={e => setPrefix(e.target.value)} /></div><div><label className='mb-1 block text-sm font-medium'>Origin-AS (optional)</label><input className='rf-input' placeholder='AS3333' value={originAs} onChange={e => setOriginAs(e.target.value)} /></div><button onClick={onSubmit} disabled={loading} className='rf-btn-primary'>Prefix prüfen</button>{loading && <p className='text-sm text-blue-700'>Prüfung läuft…</p>}{error && <p className='rf-alert border-rose-200 bg-rose-50 text-rose-700'>{error.message}</p>}</article>
+    {result && <ReportView report={result} />}
   </section>
 }
