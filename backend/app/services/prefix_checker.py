@@ -1,5 +1,5 @@
 from app.core.normalize import format_asn, normalize_asn, validate_prefix
-from app.core.recommendations import evaluate_rpki_status
+from app.core.prefix_evaluation import evaluate_prefix_overall
 from app.core.status import CheckStatus
 from app.config import settings
 from app.services.registry_checker import RegistryChecker
@@ -30,9 +30,7 @@ class PrefixChecker:
         if rpki_check.get("status") == CheckStatus.UNKNOWN.value and rpki_check.get("raw", {}).get("error"):
             warnings.append("RPKI-Quelle nicht erreichbar oder unvollständig.")
 
-        overall = evaluate_rpki_status(rpki_check.get("raw_status"), normalized_prefix, normalized_origin)
-        if rpki_check.get("status") == CheckStatus.UNKNOWN.value and rpki_check.get("explanation"):
-            overall["explanation"] = rpki_check["explanation"]
+        overall = evaluate_prefix_overall(rpki_check, registry_check, normalized_prefix, normalized_origin)
 
         return {
             "status": overall["status"],
