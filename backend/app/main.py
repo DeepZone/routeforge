@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes_checks import router as checks_router
 from app.api.routes_health import router as health_router
 from app.api.routes_reports import router as reports_router
+from app.api.routes_system import router as system_router
 from app.config import settings
 from app.database import Base, engine
 
@@ -26,3 +27,5 @@ def startup() -> None:
 app.include_router(health_router)
 app.include_router(checks_router)
 app.include_router(reports_router)
+
+app.include_router(system_router)

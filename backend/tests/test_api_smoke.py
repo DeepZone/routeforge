@@ -56,3 +56,20 @@ def test_asn_rpki_batch() -> None:
     assert isinstance(details.get('rpki_summary'), dict)
     assert isinstance(details.get('results'), list)
     assert int(details.get('checked_prefixes', 0)) <= 3
+
+
+def test_system_info() -> None:
+    client = _client()
+    response = client.get('/api/system/info')
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload.get('name') == 'RouteForge'
+    assert payload.get('read_only') is True
+
+
+def test_reports_list_empty_or_present() -> None:
+    client = _client()
+    response = client.get('/api/reports')
+    assert response.status_code == 200
+    payload = response.json()
+    assert isinstance(payload, list)

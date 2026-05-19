@@ -4,81 +4,37 @@ import { StatusBadge } from './StatusBadge'
 
 const order = { CRITICAL: 0, WARNING: 1, UNKNOWN: 2, OK: 3 }
 
+const RecommendationList = ({ items }: { items: string[] }) => items.length ? <ul className='list-disc pl-5 text-sm space-y-1'>{items.map((r, i) => <li key={`${r}-${i}`}>{r}</li>)}</ul> : <p className='text-sm text-slate-600'>Keine Empfehlungen verfügbar.</p>
+const RawSection = ({ title, raw }: { title: string; raw: unknown }) => <details className='mt-2'><summary className='cursor-pointer text-sm font-medium'>{title}</summary><pre className='mt-2 text-xs overflow-auto bg-slate-950 text-slate-100 p-3 rounded'>{JSON.stringify(raw ?? {}, null, 2)}</pre></details>
+
 export function ReportView({ report }: { report: CheckResponse }) {
-  const recs = report.recommendations ?? []
   const rpki = report.checks?.rpki
   const registry = report.checks?.registry
-  const hasAnyChecks = Boolean(rpki || registry)
-  const rpkiExplanation = report.details?.rpki_explanation
-  const extractedPrefixes = Array.isArray(report.details?.extracted_prefixes) ? report.details.extracted_prefixes : []
-  const rpkiSummary = report.details?.rpki_summary
-  const results = (Array.isArray(report.details?.results) ? report.details.results : []) as RpkiBatchResult[]
-  const checkedPrefixes = Number(report.details?.checked_prefixes ?? 0)
-  const totalPrefixesSeen = Number(report.details?.total_prefixes_seen ?? 0)
-  const limited = Boolean(report.details?.limited)
-  const sortedResults = [...results].sort((a, b) => (order[a.status as keyof typeof order] ?? 99) - (order[b.status as keyof typeof order] ?? 99))
+  const recs = report.recommendations ?? []
+  const details = report.details ?? {}
+  const rpkiSummary = details.rpki_summary as Record<string, number> | undefined
+  const sortedResults = ([...(Array.isArray(details.results) ? details.results : [])] as RpkiBatchResult[]).sort((a, b) => (order[a.status as keyof typeof order] ?? 99) - (order[b.status as keyof typeof order] ?? 99))
 
-  return <div className='mt-6 p-4 border rounded bg-white'>
-    <div className='flex gap-2 items-center'><h3 className='text-lg font-bold'>Ergebnis</h3><StatusBadge status={report.status} /></div>
-    <p className='mt-3 font-semibold'>{report.summary || 'Keine Kurzfassung verfügbar.'}</p>
-    <p className='mt-2'><strong>Erklärung:</strong> {report.explanation || 'Keine Erklärung verfügbar.'}</p>
-    <p className='mt-2'><strong>Risiko:</strong> {report.risk || 'Keine Risikobewertung verfügbar.'}</p>
-    {rpkiExplanation && <p className='mt-2 p-2 rounded bg-amber-50 border border-amber-200'><strong>RPKI-Hinweis:</strong> {String(rpkiExplanation)}</p>}
-    {extractedPrefixes.length > 0 && <p className='mt-2 text-sm'><strong>Sichtbare Prefixe:</strong> {extractedPrefixes.length}</p>}
-    {report.details?.demo_mode && <p className='mt-2 text-sm p-3 rounded border border-blue-300 bg-blue-50 text-blue-900'><strong>Demo-Modus aktiv.</strong> Es werden feste Beispieldaten verwendet. Diese Ausgabe ist nicht für echte Routing-Bewertungen geeignet.</p>}
+  return <div className='space-y-4'>
+    {details.demo_mode && <div className='p-3 rounded-md border border-amber-300 bg-amber-50 text-amber-900 text-sm'><strong>Demo-Modus aktiv.</strong> Es werden feste Beispieldaten verwendet. Diese Ausgabe ist nicht für echte Routing-Bewertungen geeignet.</div>}
+    <section className='bg-white border rounded-lg p-4'>
+      <div className='flex items-center gap-2 mb-2'><h3 className='font-semibold text-lg'>Gesamtbewertung</h3><StatusBadge status={report.status} /></div>
+      <p className='font-medium'>{report.summary}</p><p className='text-sm mt-2'><strong>Erklärung:</strong> {report.explanation || '-'}</p><p className='text-sm mt-1'><strong>Risiko:</strong> {report.risk || '-'}</p>
+      <h4 className='font-semibold mt-3'>Empfehlungen</h4><RecommendationList items={recs} />
+    </section>
 
-    <h4 className='font-semibold mt-4'>Empfehlungen</h4>
-    {recs.length > 0 ? <ul className='list-disc pl-5'>{recs.map((r, i) => <li key={`${r}-${i}`}>{r}</li>)}</ul> : <p>Keine Empfehlungen verfügbar.</p>}
+    {(rpki || registry) && <section className='grid md:grid-cols-2 gap-4'>
+      {rpki && <article className='bg-white border rounded-lg p-4'><div className='flex items-center gap-2'><h4 className='font-semibold'>RPKI</h4><StatusBadge status={rpki.status || 'UNKNOWN'} /></div><p className='text-sm mt-2'><strong>Kurzfassung:</strong> {rpki.summary || '-'}</p><p className='text-sm mt-1'><strong>Erklärung:</strong> {rpki.explanation || '-'}</p><p className='text-sm mt-1'><strong>Risiko:</strong> {rpki.risk || '-'}</p><RecommendationList items={rpki.recommendations || []} /><RawSection title='RPKI Rohdaten' raw={rpki.raw} /></article>}
+      {registry && <article className='bg-white border rounded-lg p-4'><div className='flex items-center gap-2'><h4 className='font-semibold'>Registry/IRR</h4><StatusBadge status={registry.status || 'UNKNOWN'} /></div><p className='text-sm mt-2'><strong>Kurzfassung:</strong> {registry.summary || '-'}</p><p className='text-sm mt-1'><strong>Erklärung:</strong> {registry.explanation || '-'}</p><p className='text-sm mt-1'><strong>Risiko:</strong> {registry.risk || '-'}</p><RecommendationList items={registry.recommendations || []} /><RawSection title='Registry/IRR Rohdaten' raw={registry.raw} /></article>}
+    </section>}
 
-    {hasAnyChecks && <h4 className='font-semibold mt-4'>Gesamtbewertung</h4>}
-    {hasAnyChecks && <p className='mt-1 text-sm text-gray-700'>Der kombinierte Status fasst RPKI und Registry/IRR nachvollziehbar zusammen.</p>}
+    <section className='bg-white border rounded-lg p-4 text-sm'><h4 className='font-semibold mb-2'>Technische Details</h4><p><strong>input:</strong> {JSON.stringify(report.input ?? {})}</p><p><strong>warnings:</strong> {JSON.stringify(details.warnings ?? [])}</p><p><strong>source_errors:</strong> {JSON.stringify(details.source_errors ?? [])}</p><p><strong>demo_mode:</strong> {String(Boolean(details.demo_mode))}</p></section>
 
-    <h4 className='font-semibold mt-4'>Einzelprüfungen</h4>
-    {hasAnyChecks ? <div className='mt-2 space-y-3'>
-    {rpki && <div className='border rounded p-3'>
-      <div className='flex items-center gap-2'><span className='font-semibold'>RPKI</span><StatusBadge status={rpki?.status || 'UNKNOWN'} /></div>
-      <p className='mt-2'><strong>Kurzfassung:</strong> {rpki?.summary || '-'}</p>
-      <p className='mt-1'><strong>Erklärung:</strong> {rpki?.explanation || '-'}</p>
-      <p className='mt-1'><strong>Risiko:</strong> {rpki?.risk || '-'}</p>
-      <details className='mt-2'>
-        <summary>RPKI Rohdaten</summary>
-        <pre className='mt-2 text-xs overflow-auto'>{JSON.stringify(rpki?.raw ?? {}, null, 2)}</pre>
-      </details>
-        </div>}
-    {registry && <div className='border rounded p-3'>
-      <div className='flex items-center gap-2'><span className='font-semibold'>Registry/IRR</span><StatusBadge status={registry?.status || 'UNKNOWN'} /></div>
-      <p className='mt-2'><strong>Kurzfassung:</strong> {registry?.summary || '-'}</p>
-      <p className='mt-1'><strong>Erklärung:</strong> {registry?.explanation || '-'}</p>
-      <p className='mt-1'><strong>Risiko:</strong> {registry?.risk || '-'}</p>
-      <details className='mt-2'>
-        <summary>Registry/IRR Rohdaten</summary>
-        <pre className='mt-2 text-xs overflow-auto'>{JSON.stringify(registry?.raw ?? {}, null, 2)}</pre>
-      </details>
-    </div>}
-    </div> : <p className='mt-2'>Für diesen Check-Typ sind keine Einzelprüfungen verfügbar.</p>}
+    {rpkiSummary && <section className='bg-white border rounded-lg p-4 text-sm'><h4 className='font-semibold mb-2'>ASN-RPKI Batch Summary</h4><div className='grid grid-cols-2 md:grid-cols-4 gap-2'>{['checked_prefixes','total_prefixes_seen','limited','valid','invalid_asn','invalid_length','unknown','errors'].map((k) => <div key={k} className='p-2 rounded bg-slate-50 border'><div className='text-xs text-slate-500'>{k}</div><div className='font-semibold'>{String((details as Record<string, unknown>)[k] ?? rpkiSummary[k] ?? 0)}</div></div>)}</div></section>}
 
-    {rpkiSummary && <div className='mt-4 border rounded p-3'><h4 className='font-semibold'>ASN-RPKI Zusammenfassung</h4>
-      <p className='text-sm mt-1'>geprüft: {checkedPrefixes} / gesehen: {totalPrefixesSeen}</p>
-      {limited && <p className='text-sm text-amber-700'>Hinweis: Ergebnis wurde durch das gesetzte Limit begrenzt.</p>}
-      <ul className='list-disc pl-5 text-sm'>
-        <li>valid: {Number((rpkiSummary as Record<string, unknown>).valid ?? 0)}</li>
-        <li>invalid_asn: {Number((rpkiSummary as Record<string, unknown>).invalid_asn ?? 0)}</li>
-        <li>invalid_length: {Number((rpkiSummary as Record<string, unknown>).invalid_length ?? 0)}</li>
-        <li>unknown: {Number((rpkiSummary as Record<string, unknown>).unknown ?? 0)}</li>
-        <li>errors: {Number((rpkiSummary as Record<string, unknown>).errors ?? 0)}</li>
-      </ul>
-    </div>}
+    {sortedResults.length > 0 && <section className='bg-white border rounded-lg p-4'><h4 className='font-semibold mb-2'>ASN-RPKI Ergebnisse</h4><div className='space-y-2'>{sortedResults.map((item, idx) => <div key={`${item.prefix}-${idx}`} className='p-2 border rounded'><div className='flex items-center gap-2'><StatusBadge status={item.status || 'UNKNOWN'} /><span className='font-mono text-xs'>{item.prefix}</span></div><p className='text-sm mt-1'>{item.summary || '-'}</p></div>)}</div></section>}
 
-    {sortedResults.length > 0 && <div className='mt-4'><h4 className='font-semibold'>ASN-RPKI Ergebnisse</h4>
-      <ul className='mt-2 space-y-2'>
-        {sortedResults.map((item, idx) => <li key={`${item.prefix}-${idx}`} className='border rounded p-2'>
-          <div className='flex items-center gap-2'><StatusBadge status={item.status || 'UNKNOWN'} /><span className='font-mono text-sm'>{item.prefix}</span></div>
-          <p className='text-sm mt-1'>{item.summary || '-'}</p>
-        </li>)}
-      </ul>
-    </div>}
-
-    <button className='mt-4 px-3 py-2 border rounded' onClick={() => navigator.clipboard.writeText(report.markdown)}>Markdown-Report kopieren</button>
+    <button className='px-3 py-2 border rounded-md text-sm hover:bg-slate-50' onClick={() => navigator.clipboard.writeText(report.markdown)}>Markdown-Report kopieren</button>
     <RawDataPanel data={report.details} />
   </div>
 }

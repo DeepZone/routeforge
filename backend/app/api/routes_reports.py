@@ -2,10 +2,34 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Report
+from app.models import Check, Report
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
+
+
+@router.get('')
+def list_reports(db: Session = Depends(get_db)):
+    rows = (
+        db.query(Report, Check)
+        .join(Check, Report.check_id == Check.id)
+        .order_by(Report.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    return [
+        {
+            'report_id': report.id,
+            'check_id': check.id,
+            'check_type': check.check_type,
+            'input_resource': check.input_resource,
+            'origin_as': check.origin_as,
+            'status': check.status,
+            'summary': check.summary,
+            'created_at': report.created_at.isoformat(),
+        }
+        for report, check in rows
+    ]
 
 def _report_or_404(db: Session, report_id: int) -> Report:
     report = db.query(Report).filter(Report.id == report_id).first()
