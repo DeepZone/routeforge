@@ -1,17 +1,41 @@
 # RouteForge Report
 
-- Zeit: {{ report.generated_at }}
+- Zeitpunkt: {{ report.generated_at }}
 - Check-ID: {{ report.check_id }}
-- Status: **{{ report.status }}**
 
-## Summary
+## Eingabe
+- Prefix: {{ report.input.prefix if report.input else '-' }}
+- Origin-AS: {{ report.input.origin_as if report.input and report.input.origin_as else '-' }}
+
+## Gesamtstatus
+**{{ report.status }}**
+
+## Kurzfassung
 {{ report.summary }}
+
+## Erklärung
+{{ report.explanation or '-' }}
+
+## Risiko
+{{ report.risk or '-' }}
 
 ## Empfehlungen
 {% for item in report.recommendations %}- {{ item }}
 {% endfor %}
 
-## Details
+## Einzelprüfungen
+### RPKI
+- Status: **{{ report.checks.rpki.status if report.checks and report.checks.rpki else '-' }}**
+- Summary: {{ report.checks.rpki.summary if report.checks and report.checks.rpki else '-' }}
+- Erklärung: {{ report.checks.rpki.explanation if report.checks and report.checks.rpki else '-' }}
+- Risiko: {{ report.checks.rpki.risk if report.checks and report.checks.rpki else '-' }}
+
+## Technische Details
 ```json
 {{ report.details | tojson(indent=2) }}
+```
+
+## Rohdaten
+```json
+{{ report.checks.rpki.raw | tojson(indent=2) if report.checks and report.checks.rpki else '{}' }}
 ```

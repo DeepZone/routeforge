@@ -44,4 +44,4 @@ def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | 
     db.add(report)
     db.commit()
     db.refresh(report)
-    return CheckResponse(report_id=report.id, status=result["status"], summary=result["summary"], recommendations=result["recommendations"], details=result["details"], markdown=md, html=html)
+    return CheckResponse(report_id=report.id, status=result["status"], summary=result["summary"], explanation=result.get("explanation"), risk=result.get("risk"), recommendations=result["recommendations"], input=result.get("input"), checks=result.get("checks"), details=result["details"], markdown=md, html=html)

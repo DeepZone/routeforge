@@ -1,8 +1,37 @@
 <!doctype html><html><body>
 <h1>RouteForge Report</h1>
-<p><strong>Zeit:</strong> {{ report.generated_at }}</p>
-<p><strong>Status:</strong> {{ report.status }}</p>
-<h2>Summary</h2><p>{{ report.summary }}</p>
+<p><strong>Zeitpunkt:</strong> {{ report.generated_at }}</p>
+<p><strong>Check-ID:</strong> {{ report.check_id }}</p>
+
+<h2>Eingabe</h2>
+<ul>
+  <li><strong>Prefix:</strong> {{ report.input.prefix if report.input else '-' }}</li>
+  <li><strong>Origin-AS:</strong> {{ report.input.origin_as if report.input and report.input.origin_as else '-' }}</li>
+</ul>
+
+<h2>Gesamtstatus</h2>
+<p><strong>{{ report.status }}</strong></p>
+
+<h2>Kurzfassung</h2><p>{{ report.summary }}</p>
+<h2>Erklärung</h2><p>{{ report.explanation or '-' }}</p>
+<h2>Risiko</h2><p>{{ report.risk or '-' }}</p>
+
 <h2>Empfehlungen</h2><ul>{% for item in report.recommendations %}<li>{{ item }}</li>{% endfor %}</ul>
-<h2>Details</h2><pre>{{ report.details | tojson(indent=2) }}</pre>
+
+<h2>Einzelprüfungen</h2>
+<h3>RPKI</h3>
+<ul>
+  <li><strong>Status:</strong> {{ report.checks.rpki.status if report.checks and report.checks.rpki else '-' }}</li>
+  <li><strong>Summary:</strong> {{ report.checks.rpki.summary if report.checks and report.checks.rpki else '-' }}</li>
+  <li><strong>Erklärung:</strong> {{ report.checks.rpki.explanation if report.checks and report.checks.rpki else '-' }}</li>
+  <li><strong>Risiko:</strong> {{ report.checks.rpki.risk if report.checks and report.checks.rpki else '-' }}</li>
+</ul>
+
+<h2>Technische Details</h2><pre>{{ report.details | tojson(indent=2) }}</pre>
+
+<h2>Rohdaten</h2>
+<details>
+  <summary>RPKI API Rohdaten anzeigen</summary>
+  <pre>{{ report.checks.rpki.raw | tojson(indent=2) if report.checks and report.checks.rpki else '{}' }}</pre>
+</details>
 </body></html>
