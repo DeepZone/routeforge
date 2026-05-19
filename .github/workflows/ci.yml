@@ -32,7 +32,11 @@ jobs:
       - name: Install frontend deps
         run: |
           cd frontend
-          npm ci
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
       - name: Build frontend
         run: |
           cd frontend

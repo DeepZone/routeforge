@@ -24,7 +24,7 @@ export function ReportView({ report }: { report: CheckResponse }) {
     <p className='mt-2'><strong>Risiko:</strong> {report.risk || 'Keine Risikobewertung verfügbar.'}</p>
     {rpkiExplanation && <p className='mt-2 p-2 rounded bg-amber-50 border border-amber-200'><strong>RPKI-Hinweis:</strong> {String(rpkiExplanation)}</p>}
     {extractedPrefixes.length > 0 && <p className='mt-2 text-sm'><strong>Sichtbare Prefixe:</strong> {extractedPrefixes.length}</p>}
-    {report.details?.demo_mode && <p className='mt-2 text-sm p-2 rounded border border-blue-200 bg-blue-50'><strong>Demo-Modus:</strong> Es werden feste Beispieldaten verwendet.</p>}
+    {report.details?.demo_mode && <p className='mt-2 text-sm p-3 rounded border border-blue-300 bg-blue-50 text-blue-900'><strong>Demo-Modus aktiv.</strong> Es werden feste Beispieldaten verwendet. Diese Ausgabe ist nicht für echte Routing-Bewertungen geeignet.</p>}
 
     <h4 className='font-semibold mt-4'>Empfehlungen</h4>
     {recs.length > 0 ? <ul className='list-disc pl-5'>{recs.map((r, i) => <li key={`${r}-${i}`}>{r}</li>)}</ul> : <p>Keine Empfehlungen verfügbar.</p>}
