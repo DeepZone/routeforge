@@ -57,6 +57,13 @@ curl -X POST http://localhost:8000/api/check/asn-rpki \
 - **CRITICAL:** Es wurde ein kritisches RPKI-Problem gefunden, zum Beispiel `invalid_asn` oder `invalid_length`.
 - **UNKNOWN:** Die Bewertung konnte nicht zuverlässig durchgeführt werden, zum Beispiel wegen fehlender Daten oder API-Fehlern.
 
+
+## Registry/IRR Check
+
+Der Prefix Check enthält zusätzlich einen read-only Registry/IRR-Plausibilitätscheck auf Basis verfügbarer RIPEstat-/Whois-/Registry-Daten.
+Der Check bewertet Hinweise auf route/route6-Objekte und eine mögliche Origin-AS-Plausibilität, liefert bei unklarer Datenlage bewusst `UNKNOWN` oder `WARNING` und zeigt Rohdaten zur Nachvollziehbarkeit an.
+Er ersetzt keine manuelle Registry-Prüfung.
+
 ## Demo-Modus
 
 `ROUTEFORGE_DEMO_MODE=true` nutzt feste Beispieldaten und ist für Präsentationen, Tests und Offline-Demos gedacht.  
