@@ -1,4 +1,4 @@
-import type { CheckResponse } from './types'
+import type { CheckResponse, ReportListItem, SystemInfo } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
@@ -15,67 +15,25 @@ export class ApiError extends Error {
 }
 
 async function requestJson<T>(url: string, options: RequestInit): Promise<T> {
-  let response: Response
-
-  try {
-    response = await fetch(url, options)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unbekannter Netzwerkfehler'
-    throw new ApiError(`Netzwerkfehler beim Aufruf von ${url}: ${message}`)
-  }
-
+  const response = await fetch(url, options)
   const rawText = await response.text()
   let parsedBody: unknown = rawText
-
   if (rawText) {
-    try {
-      parsedBody = JSON.parse(rawText)
-    } catch {
-      parsedBody = rawText
-    }
+    try { parsedBody = JSON.parse(rawText) } catch { parsedBody = rawText }
   }
-
   if (!response.ok) {
-    const detail =
-      typeof parsedBody === 'object' && parsedBody !== null && 'detail' in parsedBody
-        ? String((parsedBody as { detail: unknown }).detail)
-        : response.statusText || 'Unbekannter API-Fehler'
-
+    const detail = typeof parsedBody === 'object' && parsedBody !== null && 'detail' in parsedBody
+      ? String((parsedBody as { detail: unknown }).detail)
+      : response.statusText || 'Unbekannter API-Fehler'
     throw new ApiError(`HTTP ${response.status}: ${detail}`, response.status, parsedBody)
   }
-
   return parsedBody as T
 }
 
-function apiUrl(path: string): string {
-  if (!API_BASE_URL) {
-    return path
-  }
+const apiUrl = (path: string) => (API_BASE_URL ? `${API_BASE_URL}${path}` : path)
 
-  return `${API_BASE_URL}${path}`
-}
-
-export async function checkAsn(asn: string): Promise<CheckResponse> {
-  return requestJson<CheckResponse>(apiUrl('/api/check/asn'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ asn }),
-  })
-}
-
-export async function checkPrefix(prefix: string, origin_as?: string): Promise<CheckResponse> {
-  return requestJson<CheckResponse>(apiUrl('/api/check/prefix'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prefix, origin_as: origin_as || null }),
-  })
-}
-
-
-export async function checkAsnRpki(asn: string, limit = 25): Promise<CheckResponse> {
-  return requestJson<CheckResponse>(apiUrl('/api/check/asn-rpki'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ asn, limit }),
-  })
-}
+export const checkAsn = (asn: string) => requestJson<CheckResponse>(apiUrl('/api/check/asn'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asn }) })
+export const checkPrefix = (prefix: string, origin_as?: string) => requestJson<CheckResponse>(apiUrl('/api/check/prefix'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, origin_as: origin_as || null }) })
+export const checkAsnRpki = (asn: string, limit = 25) => requestJson<CheckResponse>(apiUrl('/api/check/asn-rpki'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asn, limit }) })
+export const getReports = () => requestJson<ReportListItem[]>(apiUrl('/api/reports'), { method: 'GET' })
+export const getSystemInfo = () => requestJson<SystemInfo>(apiUrl('/api/system/info'), { method: 'GET' })

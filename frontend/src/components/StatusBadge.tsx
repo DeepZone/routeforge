@@ -1,12 +1,12 @@
 const STYLES: Record<string, string> = {
-  OK: 'bg-green-100 text-green-800',
-  WARNING: 'bg-yellow-100 text-yellow-800',
-  CRITICAL: 'bg-red-100 text-red-800',
-  UNKNOWN: 'bg-gray-100 text-gray-800',
+  OK: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  WARNING: 'bg-amber-100 text-amber-800 border-amber-200',
+  CRITICAL: 'bg-rose-100 text-rose-800 border-rose-200',
+  UNKNOWN: 'bg-slate-100 text-slate-800 border-slate-200',
 }
 
 export function StatusBadge({ status }: { status: string }) {
   const normalized = (status || 'UNKNOWN').toUpperCase()
   const safeStatus = STYLES[normalized] ? normalized : 'UNKNOWN'
-  return <span className={`px-2 py-1 rounded font-semibold ${STYLES[safeStatus]}`}>{safeStatus}</span>
+  return <span className={`inline-flex px-2 py-1 rounded-md border text-xs font-semibold tracking-wide ${STYLES[safeStatus]}`}>{safeStatus}</span>
 }

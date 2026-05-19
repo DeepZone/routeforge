@@ -1,3 +1,5 @@
+export type StatusValue = 'OK' | 'WARNING' | 'CRITICAL' | 'UNKNOWN'
+
 export type CheckSection = {
   status?: string
   summary?: string
@@ -34,8 +36,29 @@ export type CheckResponse = {
     total_prefixes_seen?: number
     limited?: boolean
     demo_mode?: boolean
+    source_errors?: unknown
+    warnings?: unknown
     [key: string]: unknown
   }
   markdown: string
   html: string
+}
+
+export type ReportListItem = {
+  report_id: number
+  check_id: number
+  check_type: string
+  input_resource: string
+  origin_as?: string | null
+  status: string
+  summary: string
+  created_at: string
+}
+
+export type SystemInfo = {
+  name: string
+  version: string
+  demo_mode: boolean
+  read_only: boolean
+  data_sources: string[]
 }
