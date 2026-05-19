@@ -85,6 +85,25 @@ Alternativ über `.env`:
 ROUTEFORGE_DEMO_MODE=true
 ```
 
+## Alpha Demo Flow
+
+1. Demo-Modus starten (`ROUTEFORGE_DEMO_MODE=true`).
+2. ASN Check ausführen.
+3. ASN-RPKI-Batchprüfung starten.
+4. Prefix + Origin-AS prüfen.
+5. Gesamtbewertung und Einzelprüfungen lesen.
+6. Markdown Report kopieren.
+
+## Bekannte Einschränkungen
+
+- RIPEstat-/Whois-Strukturen können je nach Antwort variieren.
+- Der Registry/IRR Check ist eine Plausibilitätsprüfung und keine autoritative Entscheidung.
+- Der Demo-Modus nutzt feste Beispieldaten.
+- RouteForge arbeitet vollständig read-only (keine Schreibzugriffe).
+- Es gibt noch keinen lokalen RPKI Validator.
+- RIPE Atlas Messungen sind noch nicht integriert.
+- Eine historische Trendanalyse ist noch nicht enthalten.
+
 ## Tests ausführen
 
 Backend:

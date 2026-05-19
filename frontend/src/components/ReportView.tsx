@@ -31,13 +31,13 @@ export function ReportView({ report }: { report: CheckResponse }) {
     {recs.length > 0 ? <ul className='list-disc pl-5'>{recs.map((r, i) => <li key={`${r}-${i}`}>{r}</li>)}</ul> : <p>Keine Empfehlungen verfügbar.</p>}
 
     {hasAnyChecks && <h4 className='font-semibold mt-4'>Gesamtbewertung</h4>}
-    {hasAnyChecks && <p className='mt-1 text-sm text-gray-700'>Oben siehst du den kombinierten Status aus RPKI und Registry/IRR.</p>}
+    {hasAnyChecks && <p className='mt-1 text-sm text-gray-700'>Der kombinierte Status fasst RPKI und Registry/IRR nachvollziehbar zusammen.</p>}
 
     <h4 className='font-semibold mt-4'>Einzelprüfungen</h4>
     {hasAnyChecks ? <div className='mt-2 space-y-3'>
     {rpki && <div className='border rounded p-3'>
       <div className='flex items-center gap-2'><span className='font-semibold'>RPKI</span><StatusBadge status={rpki?.status || 'UNKNOWN'} /></div>
-      <p className='mt-2'><strong>Summary:</strong> {rpki?.summary || '-'}</p>
+      <p className='mt-2'><strong>Kurzfassung:</strong> {rpki?.summary || '-'}</p>
       <p className='mt-1'><strong>Erklärung:</strong> {rpki?.explanation || '-'}</p>
       <p className='mt-1'><strong>Risiko:</strong> {rpki?.risk || '-'}</p>
       <details className='mt-2'>
@@ -47,7 +47,7 @@ export function ReportView({ report }: { report: CheckResponse }) {
         </div>}
     {registry && <div className='border rounded p-3'>
       <div className='flex items-center gap-2'><span className='font-semibold'>Registry/IRR</span><StatusBadge status={registry?.status || 'UNKNOWN'} /></div>
-      <p className='mt-2'><strong>Summary:</strong> {registry?.summary || '-'}</p>
+      <p className='mt-2'><strong>Kurzfassung:</strong> {registry?.summary || '-'}</p>
       <p className='mt-1'><strong>Erklärung:</strong> {registry?.explanation || '-'}</p>
       <p className='mt-1'><strong>Risiko:</strong> {registry?.risk || '-'}</p>
       <details className='mt-2'>
@@ -57,7 +57,7 @@ export function ReportView({ report }: { report: CheckResponse }) {
     </div>}
     </div> : <p className='mt-2'>Für diesen Check-Typ sind keine Einzelprüfungen verfügbar.</p>}
 
-    {rpkiSummary && <div className='mt-4 border rounded p-3'><h4 className='font-semibold'>ASN-RPKI Summary</h4>
+    {rpkiSummary && <div className='mt-4 border rounded p-3'><h4 className='font-semibold'>ASN-RPKI Zusammenfassung</h4>
       <p className='text-sm mt-1'>geprüft: {checkedPrefixes} / gesehen: {totalPrefixesSeen}</p>
       {limited && <p className='text-sm text-amber-700'>Hinweis: Ergebnis wurde durch das gesetzte Limit begrenzt.</p>}
       <ul className='list-disc pl-5 text-sm'>
@@ -78,7 +78,7 @@ export function ReportView({ report }: { report: CheckResponse }) {
       </ul>
     </div>}
 
-    <button className='mt-4 px-3 py-2 border rounded' onClick={() => navigator.clipboard.writeText(report.markdown)}>Markdown kopieren</button>
+    <button className='mt-4 px-3 py-2 border rounded' onClick={() => navigator.clipboard.writeText(report.markdown)}>Markdown-Report kopieren</button>
     <RawDataPanel data={report.details} />
   </div>
 }
