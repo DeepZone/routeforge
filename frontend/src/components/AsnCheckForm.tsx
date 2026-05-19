@@ -45,6 +45,8 @@ export function AsnCheckForm() {
       <input className='border p-2 w-full' placeholder='AS3320' value={asn} onChange={e => setAsn(e.target.value)} />
       <button disabled={loading} className='mt-2 px-3 py-2 bg-blue-600 text-white rounded' onClick={onSubmit}>Prüfen</button>
       {loading && <p className='mt-3 text-sm text-slate-700'>Prüfung läuft ...</p>}
+      {result && <p className='mt-2 text-sm text-slate-700'>ASN wurde geprüft. Für ASN allein ist RPKI nicht direkt anwendbar.</p>}
+      {result && <p className='mt-1 text-sm text-slate-700'>Extrahierte Prefixe: {extractedPrefixes.length}</p>}
       {result && extractedPrefixes.length > 0 && (
         <button disabled={batchLoading} className='mt-2 ml-2 px-3 py-2 bg-indigo-600 text-white rounded' onClick={onBatchRpki}>RPKI für sichtbare Prefixe prüfen</button>
       )}
