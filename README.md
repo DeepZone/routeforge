@@ -87,3 +87,13 @@ RouteForge v0.1 ist vollständig read-only.
 - v0.2: bessere RIPE DB/IRR Konsistenzchecks, mehr Routing-Sichtbarkeit, Report-Historie
 - v0.3: RIPE Atlas Integration, aktive Messungen
 - v0.4: optionaler FRR/BIRD Config Parser, weiterhin read-only
+
+## Warum liefert der ASN-Check nicht direkt RPKI?
+RPKI bewertet keine ASN allein. RPKI bewertet immer konkrete Prefix-Origin-Paare.
+Der ASN-Check zeigt deshalb zuerst ASN- und Routingdaten. Danach kann eine RPKI-Batchprüfung die sichtbaren Prefixe gegen die ASN als Origin prüfen.
+
+```bash
+curl -X POST http://localhost:8000/api/check/asn-rpki \
+  -H "Content-Type: application/json" \
+  -d '{"asn":"AS3320","limit":25}'
+```

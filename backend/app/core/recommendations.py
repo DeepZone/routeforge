@@ -46,16 +46,39 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
                 "Erstelle oder korrigiere den ROA nur, wenn du zur Verwaltung dieser Ressourcen berechtigt bist.",
             ],
         }
-    if normalized in {"not_found", "unknown_roa", "notfound"}:
+    if normalized == "invalid_asn":
+        return {
+            "status": CheckStatus.CRITICAL.value,
+            "summary": "RPKI invalid: unauthorized origin AS",
+            "explanation": "Für das Prefix existiert ein ROA, aber nicht für dieses Origin-AS.",
+            "risk": "Validierende Netze können diese Route verwerfen, weil das Origin-AS nicht autorisiert ist.",
+            "recommendations": [
+                "Origin-AS prüfen.",
+                "ROA prüfen.",
+                "Nur korrigieren, wenn man zur Verwaltung der Ressource berechtigt ist.",
+            ],
+        }
+    if normalized == "invalid_length":
+        return {
+            "status": CheckStatus.CRITICAL.value,
+            "summary": "RPKI invalid: announced prefix too specific",
+            "explanation": "Für das Prefix existiert ein ROA, aber die angekündigte Prefix-Länge ist länger als die erlaubte maxLength.",
+            "risk": "Validierende Netze können diese Route verwerfen, obwohl das AS grundsätzlich passen kann.",
+            "recommendations": [
+                "Angekündigte Prefix-Länge prüfen.",
+                "ROA maxLength prüfen.",
+                "Keine zu breite maxLength setzen, wenn sie nicht notwendig ist.",
+            ],
+        }
+    if normalized in {"unknown", "not_found", "unknown_roa", "notfound"}:
         return {
             "status": CheckStatus.WARNING.value,
             "summary": "No matching ROA found",
             "explanation": "Für dieses Prefix-Origin-Paar wurde kein passender ROA gefunden.",
             "risk": "Das ist nicht automatisch ein Ausfall, schwächt aber die Routing-Sicherheit.",
             "recommendations": [
-                "Prüfe, ob für dieses Prefix ein ROA angelegt werden sollte.",
-                "Lege einen ROA nur an, wenn du zur Verwaltung der Ressource berechtigt bist.",
-                "Achte auf eine passende maxLength, damit keine unbeabsichtigten Subprefixe autorisiert werden.",
+                "Prüfen, ob ein ROA angelegt werden sollte.",
+                "Nur anlegen, wenn man zur Verwaltung berechtigt ist.",
             ],
         }
 

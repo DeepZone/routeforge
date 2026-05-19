@@ -1,6 +1,6 @@
+from app.core.normalize import normalize_asn
 from app.core.recommendations import evaluate_rpki_status
 from app.core.status import CheckStatus
-from app.core.normalize import format_asn
 from app.services.ripe_stat_client import RipeStatClient
 
 
@@ -13,7 +13,8 @@ class RpkiChecker:
             evaluation = evaluate_rpki_status(None, prefix, None)
             return {**evaluation, "raw_status": None, "raw": {}}
 
-        payload = self.client.get("rpki-validation", {"resource": prefix, "prefix": prefix, "origin": origin_as})
+        asn_number = normalize_asn(origin_as)
+        payload = self.client.get("rpki-validation", {"resource": str(asn_number), "prefix": prefix})
         status_raw = payload.get("data", {}).get("status") if isinstance(payload, dict) else None
         evaluation = evaluate_rpki_status(status_raw, prefix, origin_as)
 

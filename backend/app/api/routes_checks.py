@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Check, Report
-from app.schemas import AsnCheckRequest, CheckResponse, PrefixCheckRequest
+from app.schemas import AsnCheckRequest, AsnRpkiBatchRequest, CheckResponse, PrefixCheckRequest
 from app.services.asn_checker import AsnChecker
 from app.services.prefix_checker import PrefixChecker
 from app.services.report_renderer import render_report
@@ -21,6 +21,19 @@ def check_asn(payload: AsnCheckRequest, db: Session = Depends(get_db)) -> CheckR
         raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"ASN-Prüfung fehlgeschlagen: {exc}") from exc
+
+
+
+
+@router.post('/asn-rpki', response_model=CheckResponse)
+def check_asn_rpki(payload: AsnRpkiBatchRequest, db: Session = Depends(get_db)) -> CheckResponse:
+    try:
+        result = AsnChecker(RipeStatClient(db)).check_rpki_batch(payload.asn, payload.limit)
+        return _store_and_respond(db, "asn-rpki", payload.asn, None, result)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"ASN-RPKI-Batchprüfung fehlgeschlagen: {exc}") from exc
 
 
 @router.post('/prefix', response_model=CheckResponse)

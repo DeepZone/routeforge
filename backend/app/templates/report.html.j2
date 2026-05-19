@@ -35,3 +35,6 @@
   <pre>{{ report.checks.rpki.raw | tojson(indent=2) if report.checks and report.checks.rpki else '{}' }}</pre>
 </details>
 </body></html>
+
+{% if report.details and report.details.rpki_summary %}<h2>RPKI Batch Summary</h2><pre>{{ report.details.rpki_summary | tojson(indent=2) }}</pre>{% endif %}
+{% if report.details and report.details.results %}<h2>RPKI Batch Ergebnisse</h2><pre>{{ report.details.results | tojson(indent=2) }}</pre>{% endif %}
