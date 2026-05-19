@@ -25,11 +25,15 @@ export type CheckResponse = {
   recommendations: string[]
   input?: { prefix?: string; origin_as?: string | null; asn?: string; limit?: number }
   checks?: { rpki?: CheckSection } | null
-  details: {
+  details?: {
     rpki_explanation?: string
     extracted_prefixes?: string[]
     rpki_summary?: Record<string, number>
     results?: RpkiBatchResult[]
+    checked_prefixes?: number
+    total_prefixes_seen?: number
+    limited?: boolean
+    demo_mode?: boolean
     [key: string]: unknown
   }
   markdown: string

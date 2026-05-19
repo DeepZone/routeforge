@@ -1,6 +1,7 @@
 from app.core.normalize import format_asn, normalize_asn, validate_prefix
 from app.core.recommendations import evaluate_rpki_status
 from app.core.status import CheckStatus
+from app.config import settings
 from app.services.ripe_db_client import RipeDbClient
 from app.services.ripe_stat_client import RipeStatClient
 from app.services.rpki_checker import RpkiChecker
@@ -57,6 +58,7 @@ class PrefixChecker:
                     "rpki": rpki_check.get("raw", {}).get("error") if isinstance(rpki_check.get("raw"), dict) else None,
                 },
                 "warnings": warnings,
+                "demo_mode": settings.demo_mode,
             },
             "sources": ["RIPEstat rpki-validation", "RIPEstat routing-status", "RIPEstat whois"],
         }

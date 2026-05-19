@@ -22,9 +22,6 @@ def check_asn(payload: AsnCheckRequest, db: Session = Depends(get_db)) -> CheckR
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"ASN-Prüfung fehlgeschlagen: {exc}") from exc
 
-
-
-
 @router.post('/asn-rpki', response_model=CheckResponse)
 def check_asn_rpki(payload: AsnRpkiBatchRequest, db: Session = Depends(get_db)) -> CheckResponse:
     try:

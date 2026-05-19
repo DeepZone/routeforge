@@ -10,10 +10,12 @@ export function AsnCheckForm() {
   const [batchLoading, setBatchLoading] = useState(false)
   const [error, setError] = useState<ApiError | null>(null)
   const [result, setResult] = useState<CheckResponse | null>(null)
+  const [batchResult, setBatchResult] = useState<CheckResponse | null>(null)
 
   const onSubmit = async () => {
     setError(null)
     setResult(null)
+    setBatchResult(null)
     setLoading(true)
     try {
       const response = await checkAsn(asn)
@@ -29,7 +31,7 @@ export function AsnCheckForm() {
     setBatchLoading(true)
     try {
       const response = await checkAsnRpki(sourceAsn, 25)
-      setResult(response)
+      setBatchResult(response)
     } catch (err) {
       setError(err instanceof ApiError ? err : new ApiError('Unbekannter Fehler bei der ASN-RPKI-Prüfung.'))
     } finally { setBatchLoading(false) }
@@ -49,6 +51,10 @@ export function AsnCheckForm() {
       {batchLoading && <p className='mt-2 text-sm text-slate-700'>ASN-RPKI-Batchprüfung läuft ...</p>}
       {error && <div className='mt-3 p-3 rounded border border-red-300 bg-red-50 text-red-800'><p className='font-semibold'>Die Prüfung konnte nicht ausgeführt werden.</p><p className='text-sm mt-1'>{error.message}</p></div>}
       {result && <div className='mt-4'><ReportView report={result} /></div>}
+      {batchResult && <div className='mt-4'>
+        <h3 className='text-md font-bold mb-2'>Batchprüfungsergebnis</h3>
+        <ReportView report={batchResult} />
+      </div>}
     </div>
   )
 }

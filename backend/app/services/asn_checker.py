@@ -2,6 +2,7 @@ from collections.abc import Iterable
 
 from app.core.normalize import format_asn, normalize_asn
 from app.core.status import CheckStatus
+from app.config import settings
 from app.services.rpki_checker import RpkiChecker
 from app.services.ripe_stat_client import RipeStatClient
 
@@ -69,6 +70,7 @@ class AsnChecker:
                     "as_overview": overview.get("error") if isinstance(overview, dict) else None,
                     "announced_prefixes": prefixes.get("error") if isinstance(prefixes, dict) else None,
                 },
+                "demo_mode": settings.demo_mode,
             },
             "sources": ["RIPEstat as-overview", "RIPEstat announced-prefixes"],
         }
@@ -137,5 +139,6 @@ class AsnChecker:
                 "rpki_summary": summary,
                 "results": results,
                 "announced_prefixes": announced_data if isinstance(announced_data, dict) else {},
+                "demo_mode": settings.demo_mode,
             },
         }
