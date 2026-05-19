@@ -1,0 +1,1 @@
+export function RawDataPanel({data}:{data:unknown}){ return <details className='mt-4'><summary>API-Rohdaten</summary><pre className='bg-slate-100 p-3 overflow-auto text-xs'>{JSON.stringify(data,null,2)}</pre></details> }
