@@ -1,13 +1,26 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from app.core.normalize import normalize_asn, validate_prefix
 
 
 class AsnCheckRequest(BaseModel):
     asn: str
+
+    @field_validator("asn")
+    @classmethod
+    def valid_asn(cls, v: str) -> str:
+        normalize_asn(v)
+        return v
+
+
+
+
+class AsnRpkiBatchRequest(BaseModel):
+    asn: str
+    limit: int = Field(default=25, ge=1, le=100)
 
     @field_validator("asn")
     @classmethod

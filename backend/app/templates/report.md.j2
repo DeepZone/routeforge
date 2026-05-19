@@ -39,3 +39,18 @@
 ```json
 {{ report.checks.rpki.raw | tojson(indent=2) if report.checks and report.checks.rpki else '{}' }}
 ```
+
+
+{% if report.details and report.details.rpki_summary %}
+## RPKI Batch Summary
+```json
+{{ report.details.rpki_summary | tojson(indent=2) }}
+```
+{% endif %}
+
+{% if report.details and report.details.results %}
+## RPKI Batch Ergebnisse
+```json
+{{ report.details.results | tojson(indent=2) }}
+```
+{% endif %}

@@ -70,3 +70,12 @@ export async function checkPrefix(prefix: string, origin_as?: string): Promise<C
     body: JSON.stringify({ prefix, origin_as: origin_as || null }),
   })
 }
+
+
+export async function checkAsnRpki(asn: string, limit = 25): Promise<CheckResponse> {
+  return requestJson<CheckResponse>(apiUrl('/api/check/asn-rpki'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ asn, limit }),
+  })
+}
