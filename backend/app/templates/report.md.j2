@@ -30,6 +30,12 @@
 - Erklärung: {{ report.checks.registry.explanation if report.checks and report.checks.registry else '-' }}
 - Risiko: {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}
 
+### Routing Visibility
+- Status: **{{ report.checks.routing_visibility.status if report.checks and report.checks.routing_visibility else '-' }}**
+- Summary: {{ report.checks.routing_visibility.summary if report.checks and report.checks.routing_visibility else '-' }}
+- Erklärung: {{ report.checks.routing_visibility.explanation if report.checks and report.checks.routing_visibility else '-' }}
+- Risiko: {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}
+
 ## Rohdaten
 ### RPKI Rohdaten
 ```json
@@ -39,6 +45,11 @@
 ### Registry/IRR Rohdaten
 ```json
 {{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}
+```
+
+### Routing Visibility Rohdaten
+```json
+{{ (report.checks.routing_visibility.raw if report.checks and report.checks.routing_visibility else {}) | tojson(indent=2) }}
 ```
 
 ## Technische Details

@@ -26,7 +26,7 @@ export type CheckResponse = {
   risk?: string
   recommendations: string[]
   input?: { prefix?: string; origin_as?: string | null; asn?: string; limit?: number }
-  checks?: { rpki?: CheckSection; registry?: CheckSection } | null
+  checks?: { rpki?: CheckSection; registry?: CheckSection; routing_visibility?: CheckSection } | null
   details?: {
     rpki_explanation?: string
     extracted_prefixes?: string[]

@@ -4,119 +4,78 @@ from app.core.status import CheckStatus
 def evaluate_prefix_overall(
     rpki_check: dict,
     registry_check: dict,
+    routing_visibility_check: dict | None,
     prefix: str,
     origin_as: str | None,
 ) -> dict:
     _ = prefix
-    rpki_status = _normalize_status(rpki_check.get("status"))
-    registry_status = _normalize_status(registry_check.get("status"))
+    statuses = {
+        "rpki": _normalize_status(rpki_check.get("status")),
+        "registry": _normalize_status(registry_check.get("status")),
+        "routing": _normalize_status((routing_visibility_check or {}).get("status")),
+    }
 
     if not origin_as:
-        return {
-            "status": CheckStatus.WARNING.value,
-            "summary": "Keine vollständige Prefix-Origin-Prüfung möglich",
-            "explanation": "Ohne Origin-AS ist keine vollständige kombinierte Bewertung von RPKI und Registry-Origin möglich.",
-            "risk": "Die Gesamtaussage bleibt eingeschränkt, weil die Origin-Autorisierung nicht vollständig geprüft werden kann.",
-            "recommendations": [
-                "Origin-AS ergänzen, um die kombinierte Prefix-Bewertung zu vervollständigen.",
-                "RPKI- und Registry/IRR-Hinweise danach erneut gemeinsam prüfen.",
-            ],
-        }
+        return _warning("Keine vollständige Prefix-Origin-Prüfung möglich", "Ohne Origin-AS ist keine vollständige kombinierte Bewertung von RPKI, Registry/IRR und Routing Visibility möglich.")
 
-    if CheckStatus.CRITICAL in {rpki_status, registry_status}:
-        if registry_status == CheckStatus.CRITICAL:
-            return {
-                "status": CheckStatus.CRITICAL.value,
-                "summary": "Registry/IRR-Origin widerspricht dem angegebenen Origin-AS.",
-                "explanation": "Ein gefundenes route/route6-Origin weicht vom geprüften Origin-AS ab.",
-                "risk": "Hohe Wahrscheinlichkeit für Konfigurations- oder Dokumentationsfehler mit Hijack-/Erreichbarkeitsrisiko.",
-                "recommendations": [
-                    "Origin-AS und route/route6-Objekte in der zuständigen Registry sofort abgleichen.",
-                    "Fehlerhafte Registry-Einträge korrigieren.",
-                ],
-            }
-        return {
-            "status": CheckStatus.CRITICAL.value,
-            "summary": "RPKI meldet ein kritisches Problem trotz plausibler Registry-Daten.",
-            "explanation": "Registry/IRR-Daten wirken plausibel, aber RPKI würde diese Route als problematisch bewerten. Validierende Netze können die Route verwerfen.",
-            "risk": "Akute Erreichbarkeitsrisiken durch mögliche Routenverwerfung in ROV-validierenden Netzen.",
-            "recommendations": [
-                "Origin-AS und ROA-Zuordnung priorisiert prüfen.",
-                "RPKI-Inkonsistenz beheben und Prüfung erneut durchführen.",
-            ],
-        }
+    if CheckStatus.CRITICAL in statuses.values():
+        if statuses["routing"] == CheckStatus.CRITICAL:
+            return _critical("RPKI und Registry wirken plausibel, aber die sichtbare Routing-Origin weicht ab.", "Das Prefix ist sichtbar, aber nicht mit dem erwarteten Origin-AS.")
+        if statuses["rpki"] == CheckStatus.CRITICAL:
+            return _critical("Das Prefix ist zwar sichtbar, aber RPKI meldet ein kritisches Problem.", "RPKI bewertet das Prefix-Origin-Paar kritisch, obwohl andere Checks ggf. positive Hinweise liefern.")
+        return _critical("Registry/IRR-Origin widerspricht dem angegebenen Origin-AS.", "Ein gefundenes route/route6-Origin weicht vom geprüften Origin-AS ab.")
 
-    if rpki_status == CheckStatus.UNKNOWN and registry_status == CheckStatus.UNKNOWN:
-        return {
-            "status": CheckStatus.UNKNOWN.value,
-            "summary": "Keine belastbare Gesamtbewertung möglich.",
-            "explanation": "Sowohl RPKI als auch Registry/IRR liefern keine verlässliche Aussage.",
-            "risk": "Die Datenlage ist unzureichend für eine belastbare Routing-Sicherheitsbewertung.",
-            "recommendations": [
-                "Prüfung später wiederholen.",
-                "Rohdaten und Quellfehler in beiden Checks kontrollieren.",
-            ],
-        }
+    if statuses["rpki"] == statuses["registry"] == statuses["routing"] == CheckStatus.UNKNOWN:
+        return _unknown("Keine belastbare Gesamtbewertung möglich.", "RPKI, Registry/IRR und Routing Visibility liefern keine verlässliche Aussage.")
 
-    if rpki_status == CheckStatus.OK and registry_status == CheckStatus.OK:
+    if statuses["rpki"] == CheckStatus.OK and statuses["registry"] == CheckStatus.OK and statuses["routing"] == CheckStatus.OK:
         return {
             "status": CheckStatus.OK.value,
-            "summary": "Prefix-Origin-Paar wirkt plausibel und RPKI-valid.",
-            "explanation": "RPKI bestätigt die Origin-Autorisierung und Registry/IRR-Daten enthalten passende Hinweise.",
-            "risk": "Derzeit kein akutes Risiko aus RPKI- oder Registry-Sicht erkennbar.",
-            "recommendations": ["Weiterhin regelmäßig überwachen und Dokumentation aktuell halten."],
+            "summary": "Prefix-Origin-Paar wirkt autorisiert, dokumentiert und sichtbar.",
+            "explanation": "RPKI, Registry/IRR und Routing Visibility zeigen ein konsistentes Ergebnis.",
+            "risk": "Derzeit keine offensichtliche Inkonsistenz erkennbar.",
+            "recommendations": ["Routing-Sichtbarkeit und RPKI/Registry-Daten weiter überwachen."],
         }
 
-    if rpki_status == CheckStatus.OK and registry_status == CheckStatus.WARNING:
-        return {
-            "status": CheckStatus.WARNING.value,
-            "summary": "RPKI ist gültig, Registry/IRR-Dokumentation ist unvollständig.",
-            "explanation": "Das Prefix-Origin-Paar ist RPKI-valid, aber in den Registry-/IRR-Daten wurde kein klares passendes route/route6-Objekt gefunden.",
-            "risk": "Technisch aktuell stabil möglich, aber mit Dokumentations- und Nachvollziehbarkeitslücke.",
-            "recommendations": [
-                "Registry-/IRR-Daten auf vollständige route/route6-Dokumentation prüfen.",
-            ],
-        }
+    if statuses["rpki"] == CheckStatus.OK and statuses["registry"] == CheckStatus.OK and statuses["routing"] == CheckStatus.UNKNOWN:
+        return _warning("Routing-Sichtbarkeit konnte nicht belastbar bestimmt werden.", "RPKI und Registry/IRR sind plausibel, aber die Routing-Sichtbarkeit bleibt unklar.")
 
-    if rpki_status == CheckStatus.WARNING and registry_status == CheckStatus.WARNING:
-        return {
-            "status": CheckStatus.WARNING.value,
-            "summary": "Routing-Sicherheitslage ist unvollständig dokumentiert.",
-            "explanation": "Weder RPKI noch Registry/IRR liefern eine vollständig belastbare Bestätigung.",
-            "risk": "Erhöhtes operatives Risiko durch fehlende oder unvollständige Absicherung.",
-            "recommendations": ["RPKI- und Registry-Daten gemeinsam vervollständigen und erneut prüfen."],
-        }
+    if CheckStatus.WARNING in statuses.values():
+        return _warning("Kombinierte Prefix-Bewertung zeigt Warnhinweise.", "Mindestens eine Einzelprüfung meldet unvollständige oder unsichere Daten.")
 
-    # Konservativ: Teilweise positive Ergebnisse mit UNKNOWN bleiben WARNING.
-    if (rpki_status, registry_status) in {
-        (CheckStatus.OK, CheckStatus.UNKNOWN),
-        (CheckStatus.UNKNOWN, CheckStatus.OK),
-    }:
-        return {
-            "status": CheckStatus.WARNING.value,
-            "summary": "Teilweise bestätigte Datenlage mit Unsicherheit.",
-            "explanation": "Eine Quelle bestätigt die Plausibilität, die andere bleibt unklar. Die Gesamtbewertung ist daher konservativ WARNING.",
-            "risk": "Verbleibende Unsicherheit kann zu Fehlannahmen in der Routing-Bewertung führen.",
-            "recommendations": [
-                "Unklare Quelle gezielt nachprüfen und Datenlage vervollständigen.",
-            ],
-        }
+    if CheckStatus.UNKNOWN in statuses.values():
+        return _warning("Teilweise bestätigte Datenlage mit Unsicherheit.", "Mindestens eine Quelle ist unklar; die Gesamtbewertung bleibt daher konservativ WARNING.")
 
-    if CheckStatus.WARNING in {rpki_status, registry_status}:
-        return {
-            "status": CheckStatus.WARNING.value,
-            "summary": "Kombinierte Prefix-Bewertung zeigt Warnhinweise.",
-            "explanation": "Mindestens eine Einzelprüfung meldet eine unvollständige oder unsichere Datenlage.",
-            "risk": "Routing-Sicherheitsbewertung ist nicht vollständig belastbar.",
-            "recommendations": ["Hinweise aus RPKI und Registry/IRR gezielt nacharbeiten."],
-        }
+    return _unknown("Kombinierte Prefix-Bewertung nicht eindeutig bestimmbar.", "Die vorliegenden Einzelergebnisse konnten nicht konsistent kombiniert werden.")
 
+
+def _warning(summary: str, explanation: str) -> dict:
+    return {
+        "status": CheckStatus.WARNING.value,
+        "summary": summary,
+        "explanation": explanation,
+        "risk": "Die Gesamtaussage bleibt eingeschränkt.",
+        "recommendations": ["Einzelprüfungen und Rohdaten gezielt nacharbeiten."],
+    }
+
+
+def _critical(summary: str, explanation: str) -> dict:
+    return {
+        "status": CheckStatus.CRITICAL.value,
+        "summary": summary,
+        "explanation": explanation,
+        "risk": "Erhöhtes Risiko für Fehlrouting, Erreichbarkeitsprobleme oder Sicherheitsvorfälle.",
+        "recommendations": ["Abweichung priorisiert prüfen und beheben."],
+    }
+
+
+def _unknown(summary: str, explanation: str) -> dict:
     return {
         "status": CheckStatus.UNKNOWN.value,
-        "summary": "Kombinierte Prefix-Bewertung nicht eindeutig bestimmbar.",
-        "explanation": "Die vorliegenden Einzelergebnisse konnten nicht konsistent kombiniert werden.",
-        "risk": "Die Gesamtaussage bleibt unklar.",
-        "recommendations": ["Einzelprüfungen und Rohdaten manuell verifizieren."],
+        "summary": summary,
+        "explanation": explanation,
+        "risk": "Die Datenlage ist unzureichend für eine belastbare Routing-Sicherheitsbewertung.",
+        "recommendations": ["Prüfung später wiederholen und Rohdaten kontrollieren."],
     }
 
 

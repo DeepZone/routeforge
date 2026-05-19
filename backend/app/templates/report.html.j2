@@ -36,11 +36,21 @@
   <li><strong>Risiko:</strong> {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}</li>
 </ul>
 
+<h3>Routing Visibility</h3>
+<ul>
+  <li><strong>Status:</strong> {{ report.checks.routing_visibility.status if report.checks and report.checks.routing_visibility else '-' }}</li>
+  <li><strong>Summary:</strong> {{ report.checks.routing_visibility.summary if report.checks and report.checks.routing_visibility else '-' }}</li>
+  <li><strong>Erklärung:</strong> {{ report.checks.routing_visibility.explanation if report.checks and report.checks.routing_visibility else '-' }}</li>
+  <li><strong>Risiko:</strong> {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}</li>
+</ul>
+
 <h2>Rohdaten</h2>
 <h3>RPKI Rohdaten</h3>
 <pre>{{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }}</pre>
 <h3>Registry/IRR Rohdaten</h3>
 <pre>{{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}</pre>
+<h3>Routing Visibility Rohdaten</h3>
+<details><summary>Ein-/ausklappen</summary><pre>{{ (report.checks.routing_visibility.raw if report.checks and report.checks.routing_visibility else {}) | tojson(indent=2) }}</pre></details>
 
 <h2>Technische Details</h2><pre>{{ report.details | tojson(indent=2) }}</pre>
 
