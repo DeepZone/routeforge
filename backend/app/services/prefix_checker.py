@@ -3,6 +3,7 @@ from app.core.prefix_evaluation import evaluate_prefix_overall
 from app.core.status import CheckStatus
 from app.config import settings
 from app.services.registry_checker import RegistryChecker
+from app.services.routing_visibility_checker import RoutingVisibilityChecker
 from app.services.ripe_db_client import RipeDbClient
 from app.services.ripe_stat_client import RipeStatClient
 from app.services.rpki_checker import RpkiChecker
@@ -14,6 +15,7 @@ class PrefixChecker:
         self.ripe_db = RipeDbClient(client)
         self.rpki = RpkiChecker(client)
         self.registry = RegistryChecker()
+        self.routing_visibility = RoutingVisibilityChecker()
 
     def check(self, prefix: str, origin_as: str | None) -> dict:
         normalized_prefix = validate_prefix(prefix)
@@ -23,14 +25,17 @@ class PrefixChecker:
         routing_status = self.client.get("routing-status", {"resource": normalized_prefix})
         rpki_check = self.rpki.check(normalized_prefix, normalized_origin)
         registry_check = self.registry.check(normalized_prefix, normalized_origin, whois)
+        routing_visibility_check = self.routing_visibility.check(normalized_prefix, normalized_origin, routing_status)
 
         warnings: list[str] = []
         if whois.get("error") or routing_status.get("error"):
             warnings.append("Mindestens eine zusätzliche Datenquelle war nicht erreichbar.")
         if rpki_check.get("status") == CheckStatus.UNKNOWN.value and rpki_check.get("raw", {}).get("error"):
             warnings.append("RPKI-Quelle nicht erreichbar oder unvollständig.")
+        if routing_visibility_check.get("status") == CheckStatus.UNKNOWN.value:
+            warnings.append("Routing-Sichtbarkeit konnte nicht belastbar bestimmt werden.")
 
-        overall = evaluate_prefix_overall(rpki_check, registry_check, normalized_prefix, normalized_origin)
+        overall = evaluate_prefix_overall(rpki_check, registry_check, routing_visibility_check, normalized_prefix, normalized_origin)
 
         return {
             "status": overall["status"],
@@ -56,6 +61,14 @@ class PrefixChecker:
                     "recommendations": registry_check["recommendations"],
                     "raw": registry_check.get("raw", {}),
                 },
+                "routing_visibility": {
+                    "status": routing_visibility_check["status"],
+                    "summary": routing_visibility_check["summary"],
+                    "explanation": routing_visibility_check["explanation"],
+                    "risk": routing_visibility_check["risk"],
+                    "recommendations": routing_visibility_check["recommendations"],
+                    "raw": routing_visibility_check.get("raw", {}),
+                },
             },
             "details": {
                 "whois": whois,
@@ -65,9 +78,10 @@ class PrefixChecker:
                     "routing_status": routing_status.get("error"),
                     "rpki": rpki_check.get("raw", {}).get("error") if isinstance(rpki_check.get("raw"), dict) else None,
                     "registry": registry_check.get("raw", {}).get("error") if isinstance(registry_check.get("raw"), dict) else None,
+                    "routing_visibility": routing_visibility_check.get("raw", {}).get("routing_payload", {}).get("error") if isinstance(routing_visibility_check.get("raw"), dict) else None,
                 },
                 "warnings": warnings,
                 "demo_mode": settings.demo_mode,
             },
-            "sources": ["RIPEstat rpki-validation", "RIPEstat routing-status", "RIPEstat whois"],
+            "sources": ["RIPEstat rpki-validation", "RIPEstat routing-status", "RIPEstat whois", "RIPEstat routing visibility"],
         }

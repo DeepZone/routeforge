@@ -65,6 +65,11 @@ Der Check bewertet Hinweise auf route/route6-Objekte und eine mögliche Origin-A
 Er ersetzt keine manuelle Registry-Prüfung.
 
 
+## Routing Visibility Check
+
+Der Routing Visibility Check prüft read-only, ob aus verfügbaren RIPEstat-Routingdaten sichtbare Origin-ASNs für ein Prefix abgeleitet werden können.
+Er ersetzt kein vollständiges BGP-Monitoring und keine manuelle Looking-Glass-Prüfung.
+
 ## Kombinierte Prefix-Bewertung
 
 RouteForge bewertet Prefix-Checks nicht nur anhand einer einzelnen Quelle. RPKI und Registry/IRR werden getrennt angezeigt, aber zusätzlich zu einer Gesamtbewertung zusammengeführt.

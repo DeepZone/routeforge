@@ -50,6 +50,14 @@ class RipeStatClient:
                 },
                 "demo_mode": True,
             }
+        if endpoint == "routing-status":
+            demo_routing = {
+                "192.0.2.0/24": {"data": {"routes": [{"origin": "AS3320"}]}, "demo_mode": True},
+                "198.51.100.0/24": {"data": {"routes": [{"origin": "AS64496"}]}, "demo_mode": True},
+                "203.0.113.0/24": {"data": {"visibility": [{"prefix": "203.0.113.0/24"}]}, "demo_mode": True},
+            }
+            return demo_routing.get(resource.lower(), {"data": {}, "demo_mode": True})
+
         if endpoint == "rpki-validation":
             prefix = str(params.get("resource", "")).lower()
             origin_param = params.get('prefix') or params.get('origin_asn') or params.get('origin')
