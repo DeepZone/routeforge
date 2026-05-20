@@ -43,7 +43,7 @@ async function requestText(url: string, options: RequestInit): Promise<string> {
 const apiUrl = (path: string) => (API_BASE_URL ? `${API_BASE_URL}${path}` : path)
 
 export const checkAsn = (asn: string) => requestJson<CheckResponse>(apiUrl('/api/check/asn'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asn }) })
-export const checkPrefix = (prefix: string, origin_as?: string) => requestJson<CheckResponse>(apiUrl('/api/check/prefix'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, origin_as: origin_as || null }) })
+export const checkPrefix = (prefix: string, origin_as?: string, change_case_id?: number) => requestJson<CheckResponse>(apiUrl('/api/check/prefix'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, origin_as: origin_as || null, change_case_id: change_case_id ?? null }) })
 export const checkAsnRpki = (asn: string, limit = 25) => requestJson<CheckResponse>(apiUrl('/api/check/asn-rpki'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asn, limit }) })
 export const getReports = () => requestJson<ReportListItem[]>(apiUrl('/api/reports'), { method: 'GET' })
 export const getSystemInfo = () => requestJson<SystemInfo>(apiUrl('/api/system/info'), { method: 'GET' })
@@ -51,7 +51,7 @@ export const getReportMarkdown = (reportId: number) => requestText(apiUrl(`/api/
 export const getReportHtml = (reportId: number) => requestText(apiUrl(`/api/reports/${reportId}/html`), { method: 'GET' })
 export const getReportSummary = (reportId: number) => requestText(apiUrl(`/api/reports/${reportId}/summary`), { method: 'GET' })
 
-export const checkPreflight = (prefix: string, planned_origin_as: string) => requestJson<CheckResponse>(apiUrl('/api/check/preflight'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, planned_origin_as }) })
+export const checkPreflight = (prefix: string, planned_origin_as: string, change_case_id?: number) => requestJson<CheckResponse>(apiUrl('/api/check/preflight'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, planned_origin_as, change_case_id: change_case_id ?? null }) })
 
 export const getSystemStatus = () => requestJson<SystemStatus>(apiUrl('/api/system/status'), { method: 'GET' })
 export const getSetupRequired = () => requestJson<{ setup_required: boolean }>(apiUrl('/api/auth/setup-required'), { method: 'GET' })
@@ -80,3 +80,7 @@ export const createChangeCase = (payload: { title: string; description?: string 
 export const updateChangeCase = (id: number, payload: { title?: string; description?: string; status?: string }) => requestJson<ChangeCaseItem>(apiUrl(`/api/change-cases/${id}`), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
 export const getChangeCaseReports = (id: number) => requestJson<any[]>(apiUrl(`/api/change-cases/${id}/reports`), { method: 'GET' })
 export const runAsnCheck = (asn: string, change_case_id?: number) => requestJson<CheckResponse>(apiUrl('/api/check/asn'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asn, change_case_id: change_case_id ?? null }) })
+
+export const deleteChangeCase = (id: number) => requestJson<{ ok: boolean; detached_checks: number }>(apiUrl(`/api/change-cases/${id}`), { method: 'DELETE' })
+export const runPrefixCheck = (prefix: string, origin_as?: string, change_case_id?: number) => checkPrefix(prefix, origin_as, change_case_id)
+export const runPreflightCheck = (prefix: string, planned_origin_as: string, change_case_id?: number) => checkPreflight(prefix, planned_origin_as, change_case_id)

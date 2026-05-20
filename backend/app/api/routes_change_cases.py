@@ -51,6 +51,19 @@ def patch_change_case(change_case_id: int, payload: ChangeCaseUpdate, db: Sessio
         write_audit_log(db, user_id=user.id, action='change_case_status_changed', target_type='change_case', target_id=str(cc.id), details_json={'from': old_status, 'to': cc.status})
     return cc
 
+@router.delete('/{change_case_id}')
+def delete_change_case(change_case_id: int, db: Session = Depends(get_db), user=Depends(require_role('operator', 'admin'))):
+    cc = db.query(ChangeCase).filter(ChangeCase.id == change_case_id).first()
+    if not cc:
+        raise HTTPException(status_code=404, detail='Change Case not found')
+
+    detached_checks = db.query(Check).filter(Check.change_case_id == change_case_id).update({Check.change_case_id: None}, synchronize_session=False)
+    details = {'title': cc.title, 'status': cc.status, 'detached_checks': detached_checks}
+    db.delete(cc)
+    db.commit()
+    write_audit_log(db, user_id=user.id, action='change_case_deleted', target_type='change_case', target_id=str(change_case_id), details_json=details)
+    return {'ok': True, 'detached_checks': detached_checks}
+
 @router.get('/{change_case_id}/reports')
 def list_change_case_reports(change_case_id: int, db: Session = Depends(get_db), _=Depends(require_role('viewer','operator','admin'))):
     cc = db.query(ChangeCase).filter(ChangeCase.id == change_case_id).first()

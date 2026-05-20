@@ -269,3 +269,10 @@ Key capabilities in v0.2.x:
 - Added visible logout action.
 - Improved migration warnings in Dashboard/System views.
 - Improved handling of stale database schemas.
+
+## v0.7.0-beta hotfix: Change Cases UX polish
+
+- Added `DELETE /api/change-cases/{id}` for operators/admins with check detachment and audit logging (`change_case_deleted`).
+- Improved Change Cases frontend UX with in-app create/edit forms, status workflow buttons, check execution inputs, report table, and delete action with confirmation.
+- Added frontend API helpers for deleting cases and running prefix/preflight checks with `change_case_id`.
+- Added backend tests for change-case deletion authorization, detachment behavior, and audit event emission.
