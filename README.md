@@ -236,4 +236,4 @@ npm run build
 
 ## License
 
-This project is released under the [MIT License](LICENSE).
+RouteForge is licensed under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later).

@@ -1,5 +1,14 @@
 # Release Notes
 
+
+## Licensing
+
+RouteForge is now licensed under AGPL-3.0-or-later.
+
+The license choice reflects RouteForge's selfhosted-first and network-service nature and ensures that improvements to publicly hosted modified versions remain available to users.
+
+---
+
 ## v0.5.3-beta
 
 **Database Lifecycle & Migrations**
