@@ -1,4 +1,4 @@
-import type { CheckResponse, ReportListItem, SystemInfo, SystemStatus } from './types'
+import type { CheckResponse, ReportListItem, SystemInfo, SystemStatus, User, UserCreatePayload, UserUpdatePayload } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
@@ -55,7 +55,10 @@ export const checkPreflight = (prefix: string, planned_origin_as: string) => req
 
 export const getSystemStatus = () => requestJson<SystemStatus>(apiUrl('/api/system/status'), { method: 'GET' })
 export const getSetupRequired = () => requestJson<{ setup_required: boolean }>(apiUrl('/api/auth/setup-required'), { method: 'GET' })
-export const getMe = () => requestJson<{ user: { id: number; username: string; email?: string; role: string } }>(apiUrl('/api/auth/me'), { method: 'GET' })
+export const getMe = () => requestJson<{ user: User }>(apiUrl('/api/auth/me'), { method: 'GET' })
 export const setupAdmin = (payload: { username: string; email?: string; password: string; password_confirm: string }) => requestJson<{ user?: { id: number; username: string } }>(apiUrl('/api/auth/setup'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
 export const login = (payload: { username: string; password: string }) => requestJson<{ user?: { id: number; username: string } }>(apiUrl('/api/auth/login'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
 export const logout = () => requestJson<{ ok: boolean }>(apiUrl('/api/auth/logout'), { method: 'POST' })
+export const listUsers = () => requestJson<User[]>(apiUrl('/api/users'), { method: 'GET' })
+export const createUser = (payload: UserCreatePayload) => requestJson<User>(apiUrl('/api/users'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+export const updateUser = (userId: number, payload: UserUpdatePayload) => requestJson<User>(apiUrl(`/api/users/${userId}`), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })

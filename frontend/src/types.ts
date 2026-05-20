@@ -91,3 +91,30 @@ export type SystemStatus = {
   features?: SystemFeatures
   security_warnings?: string[]
 }
+
+export type UserRole = 'admin' | 'operator' | 'viewer'
+
+export type User = {
+  id: number
+  username: string
+  email?: string | null
+  role: UserRole
+  is_active?: boolean
+  created_at?: string
+  updated_at?: string
+  last_login_at?: string | null
+}
+
+export type UserCreatePayload = {
+  username: string
+  email?: string
+  password: string
+  role: UserRole
+}
+
+export type UserUpdatePayload = {
+  email?: string | null
+  role?: UserRole
+  is_active?: boolean
+  password?: string
+}

@@ -33,3 +33,20 @@ Update auf `v0.6.4-beta` oder neuer, dann:
 ```bash
 docker compose exec backend alembic upgrade head
 ```
+
+
+## Ich sehe keine Check-Menüpunkte
+
+Rolle prüfen: `viewer` sieht nur Dashboard/Reports/About.
+
+## 403 bei Checks
+
+User ist `viewer` oder inaktiv. Rolle und `is_active` im Admin User Management prüfen.
+
+## Login geht nicht
+
+Prüfen: User aktiv? Passwort korrekt? Wurde `SECRET_KEY` geändert?
+
+## Nach SECRET_KEY Änderung
+
+Alle Sessions sind ungültig. Bitte neu einloggen.

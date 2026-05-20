@@ -1,5 +1,29 @@
 # Release Notes
 
+## v0.6.5-beta
+
+**Auth UX & Admin Console Polish**
+
+### Highlights
+
+- Logged-in user and role are clearly visible in the UI.
+- Added visible logout flow.
+- Added admin-only user management UI.
+- Added role-aware navigation for admin/operator/viewer.
+- Improved permission and session-expired messages.
+- Dashboard now explains current user capabilities.
+- User management API responses avoid password hash exposure.
+- Audit Log UI/API may be included if implemented.
+
+### Known limitations
+
+- No OAuth/SSO yet.
+- No LDAP yet.
+- No email password reset flow yet.
+- Audit log UI may still be limited if not implemented in this sprint.
+
+---
+
 ## v0.6.4-beta
 
 **Alembic Logging Config Hotfix**
