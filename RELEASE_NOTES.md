@@ -1,5 +1,28 @@
 # Release Notes
 
+## v0.5.0-beta
+
+**Production Selfhosting Foundation**
+
+### Highlights
+
+- Production Docker Compose
+- PostgreSQL-backed deployment path
+- Healthchecks
+- Backup/Restore documentation
+- Reverse proxy documentation
+- Logging and upgrade documentation
+- Continued read-only safety model
+
+### Known limitations
+
+- Database migrations are currently simple/alpha-grade and will be hardened before v1.0.
+- No authentication yet
+- No multi-user support yet
+- No write operations
+
+---
+
 ## v0.4.2-alpha
 
 ### Highlights

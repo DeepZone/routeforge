@@ -1,7 +1,7 @@
 # RouteForge Roadmap
 
 ## Current Status
-v0.3.0-alpha, functional alpha, read-only
+v0.5.0-beta, beta foundation for production selfhosting, read-only
 
 ## v0.3.x
 - demo polish

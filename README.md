@@ -2,7 +2,7 @@
 
 RouteForge is a read-only routing preflight and explainability tool for BGP, RPKI, Registry/IRR and Routing Visibility checks.
 
-Current user-facing version: **v0.4.2-alpha**.
+Current user-facing version: **v0.5.0-beta**.
 
 <!-- Screenshot gallery placeholder:
 - docs/screenshots/dashboard.png
@@ -32,7 +32,7 @@ Routing changes often require fast but traceable checks across multiple external
 
 ## Current Alpha Status
 
-RouteForge is a **functional alpha** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.4.2-alpha**.
+RouteForge is a **functional alpha** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.5.0-beta**.
 
 ## Quickstart with Docker Compose
 
@@ -144,6 +144,38 @@ RouteForge is read-only by design:
 - No local RPKI validator yet.
 - No full BGP monitoring replacement.
 - No user management yet.
+
+
+## Selfhosting
+
+### Dev/Demo Start
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+### Production Start
+```bash
+cp .env.example .env
+# edit .env (especially POSTGRES_PASSWORD, DATABASE_URL, CORS_ORIGINS, VITE_API_URL)
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+### Environment
+- `.env.example` documents required production variables.
+- Keep RouteForge read-only (no write operations to RIPE DB, RPKI, or routers).
+
+### Database
+- Recommended production path: PostgreSQL via `docker-compose.prod.yml`.
+- Backend initializes tables on startup using SQLAlchemy `create_all`.
+- Alembic exists, but migration workflows are still beta-grade.
+- Database migrations are currently simple/alpha-grade and will be hardened before v1.0.
+
+### Operations docs
+- Backup/Restore: `docs/operations/backup-restore.md`
+- Reverse Proxy: `docs/operations/reverse-proxy.md`
+- Logging: `docs/operations/logging.md`
+- Upgrades: `docs/operations/upgrades.md`
 
 ## Roadmap
 
