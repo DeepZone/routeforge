@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     session_cookie_name: str = Field(default="routeforge_session", validation_alias="SESSION_COOKIE_NAME")
     session_expire_hours: int = Field(default=12, validation_alias="SESSION_EXPIRE_HOURS")
     cookie_secure: bool = Field(default=False, validation_alias="COOKIE_SECURE")
+    cookie_samesite: str = Field(default="lax", validation_alias="COOKIE_SAMESITE")
+    allow_sqlite_create_all: bool = Field(default=True, validation_alias="ALLOW_SQLITE_CREATE_ALL")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

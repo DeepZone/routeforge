@@ -2,7 +2,7 @@
   <img src="frontend/public/routeforge.png" alt="RouteForge Logo" width="420">
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.8.1--beta-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.9.0--rc-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-orange" alt="License">
   <img src="https://img.shields.io/badge/status-beta-yellow" alt="Status">
   <img src="https://img.shields.io/badge/selfhosted-ready-success" alt="Selfhosted">
@@ -214,7 +214,7 @@ In the standard setup, RouteForge does **not** require a hardcoded host IP in th
 ### Database
 - Recommended production path: PostgreSQL via `docker-compose.prod.yml`.
 - Production/PostgreSQL lifecycle is managed with Alembic migrations.
-- SQLite/dev mode keeps lightweight startup initialization (`create_all`) for local/demo compatibility.
+- SQLite/dev mode can keep lightweight startup initialization (`create_all`) only when `ALLOW_SQLITE_CREATE_ALL=true` (default for local/demo). Disable it in production-like environments.
 - Run migrations manually before production upgrades (`alembic upgrade head`).
 
 ### SQLite permission note

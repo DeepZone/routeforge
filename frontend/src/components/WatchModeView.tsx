@@ -141,7 +141,7 @@ export function WatchModeView({ role }: { role: UserRole }) {
         {canEdit && <div className='flex gap-2 flex-wrap'>
           <button className='rf-btn-secondary' disabled={submitting} onClick={async()=>{ setSubmitting(true); setError(null); await runWatchTarget(selected.id); await loadTargets(selected.id); const nt = await listWatchTargets(); setSelected(nt.find(x=>x.id===selected.id)||null); setSuccess('Run started successfully.'); setSubmitting(false) }}>Run Now</button>
           <button className='rf-btn-secondary' onClick={startEdit}>Edit</button>
-          <button className='rf-btn-secondary' disabled={submitting} onClick={async()=>{ if(!confirm(`Delete watch target "${selected.name}"?`)) return; setSubmitting(true); await deleteWatchTarget(selected.id); setSelected(null); setRuns([]); await loadTargets(); setSuccess('Watch target deleted.'); setSubmitting(false) }}>Delete</button>
+          <button className='rf-btn-secondary' disabled={submitting} onClick={async()=>{ setSubmitting(true); await deleteWatchTarget(selected.id); setSelected(null); setRuns([]); await loadTargets(); setSuccess('Watch target deleted.'); setSubmitting(false) }}>Delete</button>
         </div>}
 
         {editForm && canEdit && <div className='space-y-2 border-t pt-3'>

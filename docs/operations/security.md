@@ -60,3 +60,11 @@ The backend entrypoint ensures `/app/data` is writable for the non-root runtime 
 - Inactive users cannot log in
 - Password reset is admin-driven (set new password in user management)
 - No external auth/SSO in this version
+
+
+## v0.9.0-rc baseline
+
+- Session cookies use `HttpOnly`, configurable `COOKIE_SAMESITE` (default `lax`) and `COOKIE_SECURE` policy.
+- Password hashing uses `pbkdf2_sha256` with legacy `sha256` verify compatibility for existing users.
+- Viewer role remains strictly read-only for checks and watch execution/mutation endpoints.
+- RouteForge remains read-only to external systems (no write operations to RIPE DB/RPKI/router APIs).
