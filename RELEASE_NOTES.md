@@ -1,9 +1,17 @@
-# Release Notes: v0.1.1-alpha
+# Release Notes: v0.2.0-alpha
 
 ## Überblick
 
-RouteForge v0.1.1-alpha ist ein selfhosted, read-only Preflight- und Explainability-Tool für BGP/RPKI/RIPE-nahe Prüfabläufe.  
+RouteForge v0.2.0-alpha ist ein selfhosted, read-only Preflight- und Explainability-Tool für BGP/RPKI/RIPE-nahe Prüfabläufe.  
 Diese Alpha-Version ist für Demos, frühes Feedback und nachvollziehbare Erstbewertungen gedacht.
+
+## Highlights
+
+- Change Preflight Mode
+- Routing Visibility Check
+- Modernisierte Operator-GUI
+- RPKI + Registry/IRR + Routing Visibility Gesamtbewertung
+- Demo-Modus weiterhin read-only
 
 ## Enthaltene Funktionen
 
@@ -29,7 +37,7 @@ Diese Alpha-Version ist für Demos, frühes Feedback und nachvollziehbare Erstbe
 
 ## Read-only Sicherheitsmodell
 
-RouteForge arbeitet in v0.1.1-alpha vollständig read-only.  
+RouteForge arbeitet in v0.2.0-alpha vollständig read-only.  
 Das Tool sammelt, normalisiert und bewertet Daten, nimmt aber keine operativen Änderungen an Routing-Infrastruktur oder Registry-Systemen vor.
 
 ## Demo-Modus
