@@ -3,6 +3,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from app.core.auth import require_operator_or_admin
+from app.core.audit import write_audit_log
 from app.database import get_db
 from app.models import Check, Report
 from app.schemas import AsnCheckRequest, AsnRpkiBatchRequest, CheckResponse, PrefixCheckRequest, PreflightCheckRequest
@@ -71,6 +72,8 @@ def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | 
         db.add(report)
         db.commit()
         db.refresh(report)
+        write_audit_log(db, user_id=user_id, action='check_executed', target_type='check', target_id=str(check.id), details_json={'check_type': ctype, 'input_resource': resource, 'status': result.get('status')})
+        write_audit_log(db, user_id=user_id, action='report_generated', target_type='report', target_id=str(report.id), details_json={'check_id': check.id, 'check_type': ctype})
         return CheckResponse(report_id=report.id, status=result["status"], summary=result["summary"], explanation=result.get("explanation"), risk=result.get("risk"), recommendations=result["recommendations"], input=result.get("input"), checks=result.get("checks"), details=result["details"], markdown=md, html=html)
     except OperationalError as exc:
         db.rollback()

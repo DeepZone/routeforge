@@ -6,10 +6,10 @@ import importlib
 from fastapi.testclient import TestClient
 
 
-def _client() -> TestClient:
+def _client(**overrides) -> TestClient:
     import app.config as config
 
-    config.settings = config.Settings(_env_file=None, ROUTEFORGE_DEMO_MODE=True)
+    config.settings = config.Settings(_env_file=None, ROUTEFORGE_DEMO_MODE=True, **overrides)
     import app.main as main_module
     import app.database as database
 
@@ -177,7 +177,7 @@ def test_system_status_endpoint() -> None:
     response = client.get('/api/system/status')
     assert response.status_code == 200
     payload = response.json()
-    assert payload.get('version') == 'v0.6.5-beta'
+    assert payload.get('version') == 'v0.6.6-beta'
     assert payload.get('read_only') is True
     assert payload.get('database', {}).get('status')
     assert payload.get('ripestat', {}).get('cache_ttl_seconds') is not None
@@ -320,3 +320,52 @@ def test_inactive_user_cannot_login() -> None:
     client.post('/api/auth/logout')
     login = client.post('/api/auth/login', json={'username': 'inactive1', 'password': 'InactivePass123!'})
     assert login.status_code == 401
+
+def test_audit_log_admin_only_and_contains_login_success() -> None:
+    client = _client()
+    _setup_and_login(client)
+    resp = client.get('/api/audit-log')
+    assert resp.status_code == 200
+    actions = [i.get('action') for i in resp.json().get('items', [])]
+    assert 'login_success' in actions or 'initial_admin_setup' in actions
+
+
+def test_audit_log_forbidden_for_operator_and_viewer() -> None:
+    client = _client()
+    _setup_and_login(client)
+    assert client.post('/api/users', json={'username': 'op3', 'email': 'op3@example.org', 'password': 'OperatorPass123!', 'role': 'operator'}).status_code == 200
+    assert client.post('/api/users', json={'username': 'vw3', 'email': 'vw3@example.org', 'password': 'ViewerPass123!', 'role': 'viewer'}).status_code == 200
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'op3', 'password': 'OperatorPass123!'}).status_code == 200
+    assert client.get('/api/audit-log').status_code == 403
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'vw3', 'password': 'ViewerPass123!'}).status_code == 200
+    assert client.get('/api/audit-log').status_code == 403
+
+
+def test_login_failed_audit_has_no_password() -> None:
+    client = _client()
+    _setup_and_login(client)
+    bad = client.post('/api/auth/login', json={'username': 'admin', 'password': 'wrong'})
+    assert bad.status_code == 401
+    resp = client.get('/api/audit-log')
+    events = [i for i in resp.json().get('items', []) if i.get('action') == 'login_failed']
+    assert events
+    assert 'password' not in str(events[0].get('details_json', {})).lower()
+
+
+def test_cookie_name_and_logout_cookie_settings() -> None:
+    secure_client = _client(SESSION_COOKIE_NAME='rf_cookie_test', COOKIE_SECURE=True)
+    setup = secure_client.post('/api/auth/setup', json={'username': 'admin', 'email': 'admin@example.org', 'password': 'AdminPass123!', 'password_confirm': 'AdminPass123!'})
+    assert setup.status_code == 200
+    cookie_header = setup.headers.get('set-cookie', '')
+    assert 'rf_cookie_test=' in cookie_header
+    assert 'Secure' in cookie_header
+
+    client = _client(SESSION_COOKIE_NAME='rf_cookie_test', COOKIE_SECURE=False)
+    setup2 = client.post('/api/auth/setup', json={'username': 'admin', 'email': 'admin@example.org', 'password': 'AdminPass123!', 'password_confirm': 'AdminPass123!'})
+    assert setup2.status_code == 200
+    out = client.post('/api/auth/logout')
+    assert out.status_code == 200
+    logout_cookie = out.headers.get('set-cookie', '')
+    assert 'rf_cookie_test=' in logout_cookie

@@ -9,13 +9,13 @@ from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
-from app.config import settings
+import app.config as config
 from app.database import get_db
 from app.models import User
 
 
 def _sign(data: str) -> str:
-    return hmac.new(settings.secret_key.encode(), data.encode(), hashlib.sha256).hexdigest()
+    return hmac.new(config.settings.secret_key.encode(), data.encode(), hashlib.sha256).hexdigest()
 
 
 def create_session_token(user: User) -> str:
@@ -23,7 +23,7 @@ def create_session_token(user: User) -> str:
         "user_id": user.id,
         "username": user.username,
         "role": user.role,
-        "exp": int((datetime.now(timezone.utc) + timedelta(hours=settings.session_expire_hours)).timestamp()),
+        "exp": int((datetime.now(timezone.utc) + timedelta(hours=config.settings.session_expire_hours)).timestamp()),
     }
     raw = json.dumps(payload, separators=(",", ":"), sort_keys=True)
     b64 = base64.urlsafe_b64encode(raw.encode()).decode()
@@ -44,7 +44,7 @@ def _decode_token(token: str) -> dict:
 
 
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
-    token = request.cookies.get(settings.session_cookie_name)
+    token = request.cookies.get(config.settings.session_cookie_name)
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     payload = _decode_token(token)

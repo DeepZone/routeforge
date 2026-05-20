@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.core.audit import write_audit_log_for_request
 from app.core.auth import require_admin
 from app.core.security import hash_password, validate_password_strength
 from app.database import get_db
@@ -27,17 +28,18 @@ def list_users(_: User = Depends(require_admin), db: Session = Depends(get_db)):
     return [{"id":u.id,"username":u.username,"email":u.email,"role":u.role,"is_active":u.is_active,"created_at":u.created_at.isoformat(),"updated_at":u.updated_at.isoformat(),"last_login_at":u.last_login_at.isoformat() if u.last_login_at else None} for u in users]
 
 @router.post('')
-def create_user(payload: UserCreate, _: User = Depends(require_admin), db: Session = Depends(get_db)):
+def create_user(payload: UserCreate, request: Request, admin: User = Depends(require_admin), db: Session = Depends(get_db)):
     if payload.role not in {'admin','operator','viewer'}:
         raise HTTPException(status_code=400, detail='Invalid role')
     errs=validate_password_strength(payload.password)
     if errs: raise HTTPException(status_code=400, detail='; '.join(errs))
     user=User(username=payload.username.strip(), email=payload.email, password_hash=hash_password(payload.password), role=payload.role, is_active=True)
     db.add(user); db.commit(); db.refresh(user)
+    write_audit_log_for_request(db, request, action='user_created', actor=admin, target_type='user', target_id=str(user.id), details_json={'username': user.username, 'role': user.role})
     return {"id":user.id,"username":user.username,"email":user.email,"role":user.role,"is_active":user.is_active,"created_at":user.created_at.isoformat(),"updated_at":user.updated_at.isoformat(),"last_login_at":user.last_login_at.isoformat() if user.last_login_at else None}
 
 @router.patch('/{user_id}')
-def patch_user(user_id:int,payload:UserPatch,_:User=Depends(require_admin),db:Session=Depends(get_db)):
+def patch_user(user_id:int,payload:UserPatch,request: Request,admin:User=Depends(require_admin),db:Session=Depends(get_db)):
     user=db.query(User).filter(User.id==user_id).first()
     if not user: raise HTTPException(status_code=404, detail='User not found')
     if payload.email is not None: user.email=payload.email
@@ -51,4 +53,5 @@ def patch_user(user_id:int,payload:UserPatch,_:User=Depends(require_admin),db:Se
         if errs: raise HTTPException(status_code=400, detail='; '.join(errs))
         user.password_hash=hash_password(payload.password)
     db.commit(); db.refresh(user)
+    write_audit_log_for_request(db, request, action='user_updated', actor=admin, target_type='user', target_id=str(user.id), details_json={'username': user.username, 'role': user.role, 'is_active': user.is_active})
     return {"id":user.id,"username":user.username,"email":user.email,"role":user.role,"is_active":user.is_active,"created_at":user.created_at.isoformat(),"updated_at":user.updated_at.isoformat(),"last_login_at":user.last_login_at.isoformat() if user.last_login_at else None}

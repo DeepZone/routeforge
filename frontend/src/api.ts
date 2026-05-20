@@ -1,4 +1,4 @@
-import type { CheckResponse, ReportListItem, SystemInfo, SystemStatus, User, UserCreatePayload, UserUpdatePayload } from './types'
+import type { AuditLogEntry, CheckResponse, ReportListItem, SystemInfo, SystemStatus, User, UserCreatePayload, UserUpdatePayload } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
@@ -62,3 +62,15 @@ export const logout = () => requestJson<{ ok: boolean }>(apiUrl('/api/auth/logou
 export const listUsers = () => requestJson<User[]>(apiUrl('/api/users'), { method: 'GET' })
 export const createUser = (payload: UserCreatePayload) => requestJson<User>(apiUrl('/api/users'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
 export const updateUser = (userId: number, payload: UserUpdatePayload) => requestJson<User>(apiUrl(`/api/users/${userId}`), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+
+
+export const getAuditLog = (params: { action?: string; user_id?: number; target_type?: string; limit?: number; offset?: number }) => {
+  const search = new URLSearchParams()
+  if (params.action) search.set('action', params.action)
+  if (params.user_id !== undefined) search.set('user_id', String(params.user_id))
+  if (params.target_type) search.set('target_type', params.target_type)
+  if (params.limit !== undefined) search.set('limit', String(params.limit))
+  if (params.offset !== undefined) search.set('offset', String(params.offset))
+  const suffix = search.toString()
+  return requestJson<{ items: AuditLogEntry[]; limit: number; offset: number }>(apiUrl('/api/audit-log' + (suffix ? `?${suffix}` : '')), { method: 'GET' })
+}
