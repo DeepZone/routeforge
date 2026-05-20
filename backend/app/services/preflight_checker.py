@@ -1,4 +1,5 @@
 from app.config import settings
+from app.core.holder_extraction import extract_holder
 from app.core.normalize import format_asn, normalize_asn, validate_prefix
 from app.core.preflight_evaluation import evaluate_preflight
 from app.services.registry_checker import RegistryChecker
@@ -35,6 +36,7 @@ class PreflightChecker:
             warnings.append("Routing visibility could not be verified.")
 
         overall = evaluate_preflight(rpki_check, registry_check, routing_visibility_check, normalized_prefix, normalized_origin)
+        decision_map = {"OK": "GO", "WARNING": "CAUTION", "CRITICAL": "NO-GO", "UNKNOWN": "UNKNOWN"}
 
         return {
             **overall,
@@ -46,8 +48,14 @@ class PreflightChecker:
             },
             "details": {
                 "preflight_mode": True,
+                "preflight_decision": decision_map.get(overall.get("status"), "UNKNOWN"),
                 "visible_origins": visible_origins,
                 "planned_origin_as": normalized_origin,
+                "resource_holder": extract_holder(
+                    {"_source": "whois", **(whois if isinstance(whois, dict) else {})},
+                    {"_source": "prefix-overview", **(routing_status.get("data", {}) if isinstance(routing_status, dict) and isinstance(routing_status.get("data"), dict) else {})},
+                    {"_source": "registry", **(registry_check.get("raw", {}) if isinstance(registry_check.get("raw"), dict) else {})},
+                ),
                 "conflicts": conflicts,
                 "source_errors": {
                     "whois": whois.get("error") if isinstance(whois, dict) else None,

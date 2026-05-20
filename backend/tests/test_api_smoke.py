@@ -33,6 +33,7 @@ def test_prefix_check_without_origin_as() -> None:
     assert isinstance(payload.get('details'), dict)
     assert payload.get('markdown')
     assert payload.get('html')
+    assert payload.get('details', {}).get('resource_holder')
 
 
 def test_asn_check() -> None:
@@ -44,6 +45,7 @@ def test_asn_check() -> None:
     details = payload.get('details', {})
     assert details.get('rpki_applicable') is False or details.get('rpki_explanation')
     assert 'extracted_prefixes' in details
+    assert details.get('resource_holder')
 
 
 def test_asn_rpki_batch() -> None:
@@ -86,3 +88,5 @@ def test_preflight_check() -> None:
     assert 'registry' in checks
     assert 'routing_visibility' in checks
     assert payload.get('details', {}).get('preflight_mode') is True
+    assert payload.get('details', {}).get('resource_holder')
+    assert payload.get('details', {}).get('preflight_decision') in {'GO', 'CAUTION', 'NO-GO', 'UNKNOWN'}

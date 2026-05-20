@@ -4,12 +4,17 @@
 - Check-ID: {{ report.check_id }}
 
 ## Eingabe
+- Check-Typ: {{ report.input_check_type or '-' }}
 - Prefix: {{ report.input.prefix if report.input else '-' }}
 - Origin-AS: {{ report.input.origin_as if report.input and report.input.origin_as else '-' }}
+- Planned Origin-AS: {{ report.input.planned_origin_as if report.input and report.input.planned_origin_as else '-' }}
+- ASN: {{ report.input.asn if report.input and report.input.asn else '-' }}
+- Holder: {{ report.details.resource_holder.holder if report.details and report.details.resource_holder else 'Unknown' }}
 
 ## Gesamtbewertung
 - Status: **{{ report.status }}**
 - Kurzfassung: {{ report.summary }}
+- Preflight Decision: {{ report.details.preflight_decision if report.details and report.details.preflight_decision else '-' }}
 - Erklärung: {{ report.explanation or '-' }}
 - Risiko: {{ report.risk or '-' }}
 

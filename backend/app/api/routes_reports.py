@@ -26,6 +26,7 @@ def list_reports(db: Session = Depends(get_db)):
             'origin_as': check.origin_as,
             'status': check.status,
             'summary': check.summary,
+            'holder': ((report.json_data or {}).get('details', {}).get('resource_holder', {}) or {}).get('holder'),
             'created_at': report.created_at.isoformat(),
         }
         for report, check in rows

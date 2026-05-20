@@ -2,6 +2,7 @@ from app.core.normalize import format_asn, normalize_asn, validate_prefix
 from app.core.prefix_evaluation import evaluate_prefix_overall
 from app.core.status import CheckStatus
 from app.config import settings
+from app.core.holder_extraction import extract_holder
 from app.services.registry_checker import RegistryChecker
 from app.services.routing_visibility_checker import RoutingVisibilityChecker
 from app.services.ripe_db_client import RipeDbClient
@@ -73,6 +74,11 @@ class PrefixChecker:
             "details": {
                 "whois": whois,
                 "routing_status": routing_status,
+                "resource_holder": extract_holder(
+                    {"_source": "whois", **(whois if isinstance(whois, dict) else {})},
+                    {"_source": "prefix-overview", **(routing_status.get("data", {}) if isinstance(routing_status, dict) and isinstance(routing_status.get("data"), dict) else {})},
+                    {"_source": "registry", **(registry_check.get("raw", {}) if isinstance(registry_check.get("raw"), dict) else {})},
+                ),
                 "source_errors": {
                     "whois": whois.get("error"),
                     "routing_status": routing_status.get("error"),

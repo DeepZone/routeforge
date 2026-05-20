@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from app.core.normalize import format_asn, normalize_asn
 from app.core.status import CheckStatus
 from app.config import settings
+from app.core.holder_extraction import extract_holder
 from app.services.rpki_checker import RpkiChecker
 from app.services.ripe_stat_client import RipeStatClient
 
@@ -61,6 +62,10 @@ class AsnChecker:
                 "resource": resource,
                 "as_overview": overview.get("data", {}),
                 "announced_prefixes": announced_data if isinstance(announced_data, dict) else {},
+                "resource_holder": extract_holder(
+                    {"_source": "as-overview", **(overview.get("data", {}) if isinstance(overview, dict) else {})},
+                    {"_source": "prefix-overview", **(announced_data if isinstance(announced_data, dict) else {})},
+                ),
                 "extracted_prefixes": extracted_prefixes,
                 "rpki_applicable": False,
                 "rpki_explanation": "RPKI validation requires a concrete prefix-origin pair. An ASN alone cannot be classified as RPKI-valid or invalid.",

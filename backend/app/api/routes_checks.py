@@ -63,7 +63,7 @@ def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | 
     db.add(check)
     db.commit()
     db.refresh(check)
-    report_json, md, html = render_report({"check_id": check.id, **result})
+    report_json, md, html = render_report({"check_id": check.id, "input_check_type": ctype, **result})
     report = Report(check_id=check.id, json_data=report_json, markdown=md, html=html)
     db.add(report)
     db.commit()
