@@ -177,7 +177,7 @@ def test_system_status_endpoint() -> None:
     response = client.get('/api/system/status')
     assert response.status_code == 200
     payload = response.json()
-    assert payload.get('version') == 'v0.6.4-beta'
+    assert payload.get('version') == 'v0.6.5-beta'
     assert payload.get('read_only') is True
     assert payload.get('database', {}).get('status')
     assert payload.get('ripestat', {}).get('cache_ttl_seconds') is not None
@@ -278,3 +278,45 @@ def test_check_store_operational_error_message() -> None:
     except Exception as exc:
         assert getattr(exc, "status_code", None) == 503
         assert "Database schema is not up to date" in str(getattr(exc, "detail", ""))
+
+def test_users_endpoint_admin_only_and_no_password_hash() -> None:
+    client = _client()
+    _setup_and_login(client)
+    created = client.post('/api/users', json={'username': 'u1', 'email': 'u1@example.org', 'password': 'UserPass123!', 'role': 'viewer'})
+    assert created.status_code == 200
+    assert 'password_hash' not in created.json()
+    resp = client.get('/api/users')
+    assert resp.status_code == 200
+    for row in resp.json():
+        assert 'password_hash' not in row
+        assert 'updated_at' in row
+        assert 'last_login_at' in row
+
+
+def test_users_endpoint_forbidden_for_operator_and_viewer() -> None:
+    client = _client()
+    _setup_and_login(client)
+    assert client.post('/api/users', json={'username': 'op2', 'email': 'op2@example.org', 'password': 'OperatorPass123!', 'role': 'operator'}).status_code == 200
+    assert client.post('/api/users', json={'username': 'vw2', 'email': 'vw2@example.org', 'password': 'ViewerPass123!', 'role': 'viewer'}).status_code == 200
+
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'op2', 'password': 'OperatorPass123!'}).status_code == 200
+    assert client.get('/api/users').status_code == 403
+
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'vw2', 'password': 'ViewerPass123!'}).status_code == 200
+    assert client.get('/api/users').status_code == 403
+
+
+def test_inactive_user_cannot_login() -> None:
+    client = _client()
+    _setup_and_login(client)
+    create = client.post('/api/users', json={'username': 'inactive1', 'email': 'inactive@example.org', 'password': 'InactivePass123!', 'role': 'viewer'})
+    assert create.status_code == 200
+    uid = create.json()['id']
+    patch = client.patch(f'/api/users/{uid}', json={'is_active': False})
+    assert patch.status_code == 200
+
+    client.post('/api/auth/logout')
+    login = client.post('/api/auth/login', json={'username': 'inactive1', 'password': 'InactivePass123!'})
+    assert login.status_code == 401

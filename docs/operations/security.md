@@ -55,5 +55,8 @@ The backend entrypoint ensures `/app/data` is writable for the non-root runtime 
 
 ## Current limitations
 
-- no authentication yet
-- no multi-user support yet
+- Role model: admin/operator/viewer
+- Admin-only user management
+- Inactive users cannot log in
+- Password reset is admin-driven (set new password in user management)
+- No external auth/SSO in this version

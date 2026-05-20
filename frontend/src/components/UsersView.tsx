@@ -1,0 +1,57 @@
+import { useEffect, useState } from 'react'
+import { ApiError, createUser, listUsers, updateUser } from '../api'
+import type { User, UserRole } from '../types'
+
+const ROLES: UserRole[] = ['admin', 'operator', 'viewer']
+
+export function UsersView() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [createForm, setCreateForm] = useState({ username: '', email: '', password: '', role: 'viewer' as UserRole })
+
+  const load = async () => {
+    setLoading(true)
+    setError('')
+    try { setUsers(await listUsers()) } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Failed to load users') } finally { setLoading(false) }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const onCreate = async () => {
+    if (!createForm.username.trim() || !createForm.password) { setError('Username and password are required.'); return }
+    setError(''); setSuccess('')
+    try {
+      await createUser({ username: createForm.username.trim(), email: createForm.email || undefined, password: createForm.password, role: createForm.role })
+      setCreateForm({ username: '', email: '', password: '', role: 'viewer' })
+      setSuccess('User created.')
+      await load()
+    } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Create failed') }
+  }
+
+  const onPatch = async (user: User, patch: Partial<User> & { password?: string }) => {
+    setError(''); setSuccess('')
+    try {
+      await updateUser(user.id, { email: patch.email ?? user.email ?? null, role: (patch.role as UserRole) ?? user.role, is_active: patch.is_active ?? user.is_active, password: patch.password || undefined })
+      setSuccess(`Updated ${user.username}.`)
+      await load()
+    } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Update failed') }
+  }
+
+  return <section className='rf-card p-4 space-y-4'>
+    <h2 className='text-xl font-semibold'>User Management</h2>
+    {error && <div className='rounded border border-rose-200 bg-rose-50 p-2 text-sm text-rose-700'>{error}</div>}
+    {success && <div className='rounded border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-700'>{success}</div>}
+    <div className='grid gap-2 md:grid-cols-4'>
+      <input className='rf-input' placeholder='Username' value={createForm.username} onChange={e => setCreateForm({ ...createForm, username: e.target.value })} />
+      <input className='rf-input' placeholder='Email (optional)' value={createForm.email} onChange={e => setCreateForm({ ...createForm, email: e.target.value })} />
+      <input className='rf-input' placeholder='Password' type='password' value={createForm.password} onChange={e => setCreateForm({ ...createForm, password: e.target.value })} />
+      <div className='flex gap-2'>
+        <select className='rf-input' value={createForm.role} onChange={e => setCreateForm({ ...createForm, role: e.target.value as UserRole })}>{ROLES.map(r => <option key={r}>{r}</option>)}</select>
+        <button className='rf-btn-primary' onClick={onCreate}>Create</button>
+      </div>
+    </div>
+    {loading ? <div className='text-sm text-slate-500'>Loading users…</div> : <div className='overflow-x-auto'><table className='w-full text-sm'><thead><tr className='text-left'><th>User</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>{users.map(u => <tr key={u.id} className='border-t'><td>{u.username}<div className='text-xs text-slate-500'>{u.email || '—'}</div></td><td><span className='rounded-full bg-violet-50 px-2 py-1 text-xs text-violet-700'>{u.role}</span></td><td>{u.is_active ? 'active' : 'inactive'}</td><td><div className='flex flex-wrap gap-2'><select className='rf-input' value={u.role} onChange={e => onPatch(u, { role: e.target.value as UserRole })}>{ROLES.map(r => <option key={r}>{r}</option>)}</select><button className='rf-btn-secondary' onClick={() => onPatch(u, { is_active: !u.is_active })}>{u.is_active ? 'Deactivate' : 'Activate'}</button><button className='rf-btn-secondary' onClick={() => { const p = prompt(`Set new password for ${u.username}`); if (p) onPatch(u, { password: p }) }}>Reset password</button></div></td></tr>)}</tbody></table></div>}
+  </section>
+}

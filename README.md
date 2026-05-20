@@ -2,7 +2,7 @@
   <img src="frontend/public/routeforge.png" alt="RouteForge Logo" width="420">
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.6.4--beta-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.6.5--beta-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-orange" alt="License">
   <img src="https://img.shields.io/badge/status-beta-yellow" alt="Status">
   <img src="https://img.shields.io/badge/selfhosted-ready-success" alt="Selfhosted">
@@ -43,7 +43,7 @@ Routing changes often require fast but traceable checks across multiple external
 
 ## Current Alpha Status
 
-RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.6.4-beta**.
+RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.6.5-beta**.
 
 ## Quickstart with Docker Compose
 
@@ -178,7 +178,9 @@ RouteForge is read-only by design:
 - RIPEstat payloads can vary over time.
 - No local RPKI validator yet.
 - No full BGP monitoring replacement.
-- No user management yet.
+- No OAuth/SSO yet.
+- No LDAP yet.
+- No email password reset flow yet.
 
 
 ## Selfhosting
@@ -262,3 +264,13 @@ For production polish and selfhosting hardening guidance, see:
 - `docs/operations/release-checklist.md`
 
 In the standard Docker setup, API calls are same-origin via frontend nginx (`/api` proxy). CORS is primarily needed for split frontend/backend deployments.
+
+
+## User Management
+
+- Initial admin setup is required on first start.
+- Login/Logout are session-cookie based.
+- Roles: `admin`, `operator`, `viewer`.
+- User management is **admin-only**.
+- Viewers cannot execute checks.
+- Keep `SECRET_KEY` stable; changing it invalidates existing sessions.
