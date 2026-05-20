@@ -2,7 +2,7 @@
 
 RouteForge is a read-only routing preflight and explainability tool for BGP, RPKI, Registry/IRR and Routing Visibility checks.
 
-Current user-facing version: **v0.4.0-alpha**.
+Current user-facing version: **v0.4.1-alpha**.
 
 <!-- Screenshot gallery placeholder:
 - docs/screenshots/dashboard.png
@@ -32,7 +32,7 @@ Routing changes often require fast but traceable checks across multiple external
 
 ## Current Alpha Status
 
-RouteForge is a **functional alpha** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.4.0-alpha**.
+RouteForge is a **functional alpha** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.4.1-alpha**.
 
 ## Quickstart with Docker Compose
 
@@ -93,6 +93,17 @@ Preflight decision model:
 - `CAUTION`
 - `NO-GO`
 - `UNKNOWN`
+
+## Cache and Freshness
+
+RouteForge shows per-source diagnostics indicating whether data was fetched live or served from cache. Cache Age, TTL and Freshness help operators assess how current a result is.
+
+Freshness values:
+- `LIVE`: queried live
+- `FRESH`: cached and fresh
+- `EXPIRING_SOON`: cache close to expiry
+- `STALE`: older than TTL
+- `UNKNOWN`: cache age cannot be determined
 
 ## Export and Sharing
 

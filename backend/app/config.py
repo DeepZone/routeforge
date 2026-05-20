@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./routeforge.db"
     ripestat_base_url: str = "https://stat.ripe.net/data"
     http_timeout_seconds: int = 10
-    cache_ttl_seconds: int = 900
+    cache_ttl_seconds: int = Field(default=900, validation_alias="RIPESTAT_CACHE_TTL_SECONDS")
     cors_origins: str = "http://192.168.58.167:3000,http://127.0.0.1:3000"
     demo_mode: bool = Field(default=False, validation_alias="ROUTEFORGE_DEMO_MODE")
 

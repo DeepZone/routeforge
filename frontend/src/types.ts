@@ -27,6 +27,10 @@ export type SourceDiagnostic = {
   duration_ms?: number | null
   cached?: boolean | null
   cache_age_seconds?: number | null
+  cache_ttl_seconds?: number | null
+  fetched_at?: string | null
+  expires_at?: string | null
+  freshness?: "LIVE" | "FRESH" | "EXPIRING_SOON" | "STALE" | "UNKNOWN" | string
   http_status?: number | null
   error_type?: string | null
   details?: Record<string, unknown>

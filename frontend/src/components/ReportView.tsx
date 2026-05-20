@@ -7,6 +7,19 @@ import { StatusBadge } from './StatusBadge'
 const order = { CRITICAL: 0, WARNING: 1, UNKNOWN: 2, OK: 3 }
 const decisionByStatus: Record<string, string> = { OK: 'GO', WARNING: 'CAUTION', CRITICAL: 'NO-GO', UNKNOWN: 'UNKNOWN' }
 
+const formatDurationSeconds = (seconds: number): string => {
+  if (seconds < 60) return `${seconds}s`
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
+  return `${Math.floor(seconds / 3600)}h`
+}
+
+const freshnessClass = (freshness?: string): string => {
+  if (freshness === 'LIVE' || freshness === 'FRESH') return 'text-emerald-700'
+  if (freshness === 'EXPIRING_SOON') return 'text-amber-700'
+  if (freshness === 'STALE') return 'text-red-700'
+  return 'text-slate-500'
+}
+
 export function ReportView({ report }: { report: CheckResponse }) {
   const [copyMessage, setCopyMessage] = useState<string>('')
   const details = report.details ?? {}
@@ -76,7 +89,7 @@ export function ReportView({ report }: { report: CheckResponse }) {
     </section>
 
 
-    {sourceDiagnostics.length > 0 && <section className='rf-card p-4 space-y-2'><h4 className='font-semibold'>Data Source Diagnostics</h4><div className='overflow-x-auto'><table className='w-full text-sm'><thead><tr className='border-b text-left'><th className='py-2'>Source</th><th>Endpoint</th><th>Status</th><th>Duration</th><th>Cache</th><th>Message</th></tr></thead><tbody>{sourceDiagnostics.map((d, idx) => <tr key={`${d.name}-${idx}`} className='border-b border-slate-100'><td>{d.name || '-'}</td><td className='font-mono'>{d.endpoint || '-'}</td><td><StatusBadge status={d.status || 'UNKNOWN'} /></td><td>{typeof d.duration_ms === 'number' ? `${d.duration_ms} ms` : '-'}</td><td>{d.cached === true ? 'HIT' : d.cached === false ? 'MISS' : '-'}</td><td>{d.message || '-'}</td></tr>)}</tbody></table></div></section>}
+    {sourceDiagnostics.length > 0 && <section className='rf-card p-4 space-y-2'><h4 className='font-semibold'>Data Source Diagnostics</h4><div className='overflow-x-auto'><table className='w-full text-sm'><thead><tr className='border-b text-left'><th className='py-2'>Source</th><th>Endpoint</th><th>Status</th><th>Freshness</th><th>Duration</th><th>Cache</th><th>Age</th><th>TTL</th><th>Message</th></tr></thead><tbody>{sourceDiagnostics.map((d, idx) => <tr key={`${d.name}-${idx}`} className='border-b border-slate-100'><td>{d.name || '-'}</td><td className='font-mono'>{d.endpoint || '-'}</td><td><StatusBadge status={d.status || 'UNKNOWN'} /></td><td className={freshnessClass(d.freshness)}>{d.freshness || 'UNKNOWN'}</td><td>{typeof d.duration_ms === 'number' ? `${d.duration_ms} ms` : '-'}</td><td>{d.cached === true ? 'HIT' : d.cached === false ? 'MISS' : '-'}</td><td>{typeof d.cache_age_seconds === 'number' ? formatDurationSeconds(d.cache_age_seconds) : 'Unknown'}</td><td>{typeof d.cache_ttl_seconds === 'number' ? formatDurationSeconds(d.cache_ttl_seconds) : 'Unknown'}</td><td>{d.message || '-'}</td></tr>)}</tbody></table></div></section>}
 
     <details className='rf-card p-4'><summary className='cursor-pointer text-sm font-semibold'>Technische Details</summary><pre className='mt-3 overflow-auto rounded-xl bg-slate-50 p-3 text-xs'>{JSON.stringify({ input: report.input, holder: details.resource_holder, warnings: details.warnings, source_errors: details.source_errors }, null, 2)}</pre></details>
     {sortedResults.length > 0 && <section className='rf-card p-4'><h4 className='mb-2 font-semibold'>Batch Results</h4><div className='overflow-x-auto'><table className='w-full text-sm'><thead><tr className='border-b text-left'><th className='py-2'>Status</th><th>Prefix</th><th>Summary</th></tr></thead><tbody>{sortedResults.map((item, idx) => <tr key={`${item.prefix}-${idx}`} className='border-b border-slate-100'><td className='py-2'><StatusBadge status={item.status || 'UNKNOWN'} /></td><td className='font-mono'>{item.prefix}</td><td>{item.summary || '-'}</td></tr>)}</tbody></table></div></section>}
