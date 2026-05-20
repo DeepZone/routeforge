@@ -2,7 +2,7 @@
   <img src="frontend/public/routeforge.png" alt="RouteForge Logo" width="420">
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.6.6--beta-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.7.0--beta-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-orange" alt="License">
   <img src="https://img.shields.io/badge/status-beta-yellow" alt="Status">
   <img src="https://img.shields.io/badge/selfhosted-ready-success" alt="Selfhosted">
