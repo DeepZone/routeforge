@@ -86,3 +86,5 @@ export const runPrefixCheck = (prefix: string, origin_as?: string, change_case_i
 export const runPreflightCheck = (prefix: string, planned_origin_as: string, change_case_id?: number) => checkPreflight(prefix, planned_origin_as, change_case_id)
 
 export const runBgpVisibilityCheck = (prefix: string, expected_origin_as?: string, change_case_id?: number) => requestJson<CheckResponse>(apiUrl('/api/check/bgp-visibility'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, expected_origin_as: expected_origin_as || null, change_case_id: change_case_id ?? null }) })
+
+export const runRoaPreflightCheck = (prefix: string, origin_as: string, max_length?: number, change_case_id?: number) => requestJson<CheckResponse>(apiUrl('/api/check/roa-preflight'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, origin_as, max_length: max_length ?? null, change_case_id: change_case_id ?? null }) })

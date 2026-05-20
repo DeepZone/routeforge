@@ -91,6 +91,25 @@ class PreflightCheckRequest(BaseModel):
 
 
 
+
+class RoaPreflightCheckRequest(BaseModel):
+    change_case_id: int | None = None
+    prefix: str
+    origin_as: str
+    max_length: int | None = None
+
+    @field_validator("prefix")
+    @classmethod
+    def valid_prefix(cls, v: str) -> str:
+        validate_prefix(v)
+        return v
+
+    @field_validator("origin_as")
+    @classmethod
+    def valid_origin(cls, v: str) -> str:
+        normalize_asn(v)
+        return v
+
 class BgpVisibilityCheckRequest(BaseModel):
     change_case_id: int | None = None
     prefix: str

@@ -502,3 +502,64 @@ def test_bgp_visibility_status_mapping():
     assert svc.check('198.51.100.0/24', 'AS3320')['status'] == 'CRITICAL'
     svc2 = BgpVisibilityService(C({'routing-status': ({'data': {'routes': [{'origin': 'AS3320'}, {'origin': 'AS64496'}]}}, {}), 'bgp-state': ({'data': {}}, {})}))
     assert svc2.check('198.51.100.0/24', None)['status'] == 'WARNING'
+
+
+def test_roa_preflight_roles_and_behavior() -> None:
+    client = _client()
+    _setup_and_login(client)
+    assert client.post('/api/check/roa-preflight', json={'prefix':'192.0.2.0/24','origin_as':'AS3320','max_length':24}).status_code == 200
+
+    create_op = client.post('/api/users', json={'username': 'op_roa', 'email': 'op_roa@example.org', 'password': 'OperatorPass123!', 'role': 'operator'})
+    assert create_op.status_code == 200
+    create_vw = client.post('/api/users', json={'username': 'vw_roa', 'email': 'vw_roa@example.org', 'password': 'ViewerPass123!', 'role': 'viewer'})
+    assert create_vw.status_code == 200
+
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username':'op_roa','password':'OperatorPass123!'}).status_code == 200
+    assert client.post('/api/check/roa-preflight', json={'prefix':'192.0.2.0/24','origin_as':'AS3320'}).status_code == 200
+
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username':'vw_roa','password':'ViewerPass123!'}).status_code == 200
+    assert client.post('/api/check/roa-preflight', json={'prefix':'192.0.2.0/24','origin_as':'AS3320'}).status_code == 403
+
+
+def test_roa_preflight_change_case_and_audit() -> None:
+    client = _client()
+    _setup_and_login(client)
+    cc = client.post('/api/change-cases', json={'title':'ROA case','description':'x'})
+    assert cc.status_code == 200
+    cc_id = cc.json()['id']
+
+    not_found = client.post('/api/check/roa-preflight', json={'prefix':'198.51.100.0/24','origin_as':'AS64496','change_case_id':999999})
+    assert not_found.status_code == 404
+
+    resp = client.post('/api/check/roa-preflight', json={'prefix':'198.51.100.0/24','origin_as':'AS64496','max_length':16,'change_case_id':cc_id})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body['status'] in {'OK','WARNING','CRITICAL','UNKNOWN'}
+    assert body['details']['prefix'] == '198.51.100.0/24'
+    assert body['details']['origin_as'] == 'AS64496'
+    assert body['details']['effective_max_length'] == 16
+    assert body['details']['max_length_risk'] in {'none','broad','invalid_too_small','unknown'}
+
+    reports = client.get(f'/api/change-cases/{cc_id}/reports')
+    assert reports.status_code == 200
+    assert any(r.get('check_type') == 'roa-preflight' for r in reports.json())
+
+    audit = client.get('/api/audit-log?limit=200')
+    assert audit.status_code == 200
+    actions = [i.get('action') for i in audit.json().get('items', [])]
+    assert 'roa_preflight_checked' in actions
+
+
+def test_roa_preflight_suggested_roa_and_invalid_max_length() -> None:
+    client = _client()
+    _setup_and_login(client)
+    warning = client.post('/api/check/roa-preflight', json={'prefix':'203.0.113.0/24','origin_as':'AS3320'})
+    assert warning.status_code == 200
+    wd = warning.json()['details']
+    assert 'suggested_roa' in wd
+
+    critical = client.post('/api/check/roa-preflight', json={'prefix':'203.0.113.0/24','origin_as':'AS3320','max_length':23})
+    assert critical.status_code == 200
+    assert critical.json()['status'] == 'CRITICAL'

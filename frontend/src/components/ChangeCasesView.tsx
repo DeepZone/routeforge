@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ApiError, createChangeCase, deleteChangeCase, getChangeCaseReports, getReportHtml, getReportMarkdown, getReportSummary, listChangeCases, runAsnCheck, runBgpVisibilityCheck, runPrefixCheck, runPreflightCheck, updateChangeCase } from '../api'
+import { ApiError, createChangeCase, deleteChangeCase, getChangeCaseReports, getReportHtml, getReportMarkdown, getReportSummary, listChangeCases, runAsnCheck, runBgpVisibilityCheck, runPrefixCheck, runPreflightCheck, runRoaPreflightCheck, updateChangeCase } from '../api'
 import type { ChangeCaseItem, UserRole } from '../types'
 
 type ChangeCaseReport = { report_id:number; check_id:number; check_type:string; summary:string; status:string; created_at:string }
@@ -32,6 +32,9 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
   const [plannedOriginAs, setPlannedOriginAs] = useState('')
   const [bgpPrefix, setBgpPrefix] = useState('')
   const [bgpExpectedOriginAs, setBgpExpectedOriginAs] = useState('')
+  const [roaPrefix, setRoaPrefix] = useState('')
+  const [roaOriginAs, setRoaOriginAs] = useState('')
+  const [roaMaxLength, setRoaMaxLength] = useState('')
 
   const load = async () => { setLoading(true); setError(null); try { const next = await listChangeCases(); setItems(next); if (selected) { const found = next.find(i => i.id === selected.id) || null; setSelected(found) } } catch (e) { setError((e as Error).message) } finally { setLoading(false) } }
   const loadReports = async (id: number) => { try { setReports(await getChangeCaseReports(id)) } catch { setReports([]) } }
@@ -75,6 +78,7 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
         <input className='rf-input' value={editTitle} onChange={e=>setEditTitle(e.target.value)} />
         <textarea className='rf-input min-h-20' value={editDescription} onChange={e=>setEditDescription(e.target.value)} />
         <div className='flex gap-2'><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await updateChangeCase(selected.id,{title:editTitle,description:editDescription}); setEditing(false); await load();}, 'Change Case updated.')}>Save</button><button className='rf-btn-secondary' onClick={()=>setEditing(false)}>Cancel</button></div>
+        <div className='space-y-2'><h4 className='font-medium'>Run ROA Preflight</h4><input className='rf-input' placeholder='203.0.113.0/24' value={roaPrefix} onChange={e=>setRoaPrefix(e.target.value)} /><input className='rf-input' placeholder='Origin AS' value={roaOriginAs} onChange={e=>setRoaOriginAs(e.target.value)} /><input className='rf-input' placeholder='Max Length (optional)' value={roaMaxLength} onChange={e=>setRoaMaxLength(e.target.value)} /><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runRoaPreflightCheck(roaPrefix, roaOriginAs, roaMaxLength ? Number(roaMaxLength) : undefined, selected.id); await loadReports(selected.id)}, 'ROA preflight check started.')}>Run ROA Preflight</button></div>
       </div>}
 
       {canEdit && <div className='flex flex-wrap gap-2'>
@@ -87,6 +91,7 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
         <div className='space-y-2'><h4 className='font-medium'>Run Prefix Check</h4><input className='rf-input' placeholder='203.0.113.0/24' value={prefix} onChange={e=>setPrefix(e.target.value)} /><input className='rf-input' placeholder='Origin AS (optional)' value={originAs} onChange={e=>setOriginAs(e.target.value)} /><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runPrefixCheck(prefix, originAs || undefined, selected.id); await loadReports(selected.id)}, 'Prefix check started.')}>Run Prefix Check</button></div>
         <div className='space-y-2'><h4 className='font-medium'>Run BGP Visibility Check</h4><input className='rf-input' placeholder='203.0.113.0/24' value={bgpPrefix} onChange={e=>setBgpPrefix(e.target.value)} /><input className='rf-input' placeholder='Expected Origin AS (optional)' value={bgpExpectedOriginAs} onChange={e=>setBgpExpectedOriginAs(e.target.value)} /><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runBgpVisibilityCheck(bgpPrefix, bgpExpectedOriginAs || undefined, selected.id); await loadReports(selected.id)}, 'BGP visibility check started.')}>Run BGP Visibility Check</button></div>
         <div className='space-y-2'><h4 className='font-medium'>Run Preflight Check</h4><input className='rf-input' placeholder='203.0.113.0/24' value={preflightPrefix} onChange={e=>setPreflightPrefix(e.target.value)} /><input className='rf-input' placeholder='Planned Origin AS' value={plannedOriginAs} onChange={e=>setPlannedOriginAs(e.target.value)} /><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runPreflightCheck(preflightPrefix, plannedOriginAs, selected.id); await loadReports(selected.id)}, 'Preflight check started.')}>Run Preflight Check</button></div>
+        <div className='space-y-2'><h4 className='font-medium'>Run ROA Preflight</h4><input className='rf-input' placeholder='203.0.113.0/24' value={roaPrefix} onChange={e=>setRoaPrefix(e.target.value)} /><input className='rf-input' placeholder='Origin AS' value={roaOriginAs} onChange={e=>setRoaOriginAs(e.target.value)} /><input className='rf-input' placeholder='Max Length (optional)' value={roaMaxLength} onChange={e=>setRoaMaxLength(e.target.value)} /><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runRoaPreflightCheck(roaPrefix, roaOriginAs, roaMaxLength ? Number(roaMaxLength) : undefined, selected.id); await loadReports(selected.id)}, 'ROA preflight check started.')}>Run ROA Preflight</button></div>
       </div>}
 
       <div className='border-t pt-3'>
