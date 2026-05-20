@@ -1,5 +1,18 @@
 # Release Notes
 
+## v0.4.2-alpha
+
+### Highlights
+
+- Retry & Resilience
+- Retry diagnostics
+- Attempts/retry count visible
+- Rate-limit handling
+- Optional stale cache fallback
+- UI/report warning when fallback data is used
+
+---
+
 ## v0.4.1-alpha
 
 ### Highlights

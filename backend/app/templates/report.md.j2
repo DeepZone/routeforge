@@ -43,9 +43,9 @@
 
 ## Data Source Diagnostics
 {% if report.details and report.details.source_diagnostics %}
-| Quelle | Endpoint | Status | Dauer | Freshness | Cache | Cache Age | TTL | Message |
+| Quelle | Endpoint | Status | Freshness | Attempts | Retries | Fallback | Stale Cache | Dauer | Cache | Cache Age | TTL | Message |
 |---|---|---|---:|---|---|
-{% for d in report.details.source_diagnostics %}| {{ d.name or '-' }} | {{ d.endpoint or '-' }} | {{ d.status or '-' }} | {{ d.duration_ms if d.duration_ms is not none else '-' }} | {{ d.freshness or 'UNKNOWN' }} | {{ 'HIT' if d.cached is sameas true else ('MISS' if d.cached is sameas false else '-') }} | {{ d.cache_age_seconds if d.cache_age_seconds is not none else 'Unknown' }} | {{ d.cache_ttl_seconds if d.cache_ttl_seconds is not none else 'Unknown' }} | {{ d.message or '-' }} |
+{% for d in report.details.source_diagnostics %}| {{ d.name or '-' }} | {{ d.endpoint or '-' }} | {{ d.status or '-' }} | {{ d.freshness or 'UNKNOWN' }} | {{ d.attempts if d.attempts is not none else '-' }} | {{ d.retry_count if d.retry_count is not none else '-' }} | {{ 'yes' if d.fallback_used is sameas true else ('no' if d.fallback_used is sameas false else '-') }} | {{ 'yes' if d.stale_cache_used is sameas true else ('no' if d.stale_cache_used is sameas false else '-') }} | {{ d.duration_ms if d.duration_ms is not none else '-' }} | {{ 'HIT' if d.cached is sameas true else ('MISS' if d.cached is sameas false else '-') }} | {{ d.cache_age_seconds if d.cache_age_seconds is not none else 'Unknown' }} | {{ d.cache_ttl_seconds if d.cache_ttl_seconds is not none else 'Unknown' }} | {{ d.message or '-' }}{% if d.fallback_used is sameas true %} (Live request failed. Cached data was used.){% endif %} |
 {% endfor %}
 {% else %}No source diagnostics available.
 {% endif %}

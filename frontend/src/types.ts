@@ -34,6 +34,11 @@ export type SourceDiagnostic = {
   http_status?: number | null
   error_type?: string | null
   details?: Record<string, unknown>
+  retry_count?: number | null
+  attempts?: number | null
+  fallback_used?: boolean | null
+  fallback_reason?: string | null
+  stale_cache_used?: boolean | null
 }
 
 export type CheckResponse = {

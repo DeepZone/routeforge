@@ -34,7 +34,7 @@ def test_prefix_check_without_origin_as() -> None:
     assert payload.get('markdown')
     assert payload.get('html')
     assert payload.get('details', {}).get('resource_holder')
-    assert any('freshness' in d for d in payload.get('details', {}).get('source_diagnostics', []) if isinstance(d, dict))
+    assert any('attempts' in d for d in payload.get('details', {}).get('source_diagnostics', []) if isinstance(d, dict))
 
 
 def test_asn_check() -> None:
@@ -48,7 +48,7 @@ def test_asn_check() -> None:
     assert 'extracted_prefixes' in details
     assert details.get('rpki_batch', {}).get('available') is True
     assert details.get('resource_holder')
-    assert any('freshness' in d for d in details.get('source_diagnostics', []) if isinstance(d, dict))
+    assert any('attempts' in d for d in details.get('source_diagnostics', []) if isinstance(d, dict))
 
 
 def test_asn_check_without_prefixes_has_batch_reason() -> None:
@@ -114,7 +114,7 @@ def test_preflight_check() -> None:
     assert 'routing_visibility' in checks
     assert payload.get('details', {}).get('preflight_mode') is True
     assert isinstance(payload.get('details', {}).get('source_diagnostics'), list)
-    assert any('freshness' in d for d in payload.get('details', {}).get('source_diagnostics', []) if isinstance(d, dict))
+    assert any('attempts' in d for d in payload.get('details', {}).get('source_diagnostics', []) if isinstance(d, dict))
     assert payload.get('details', {}).get('resource_holder')
     assert payload.get('details', {}).get('preflight_decision') in {'GO', 'CAUTION', 'NO-GO', 'UNKNOWN'}
 

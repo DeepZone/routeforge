@@ -72,6 +72,11 @@ def make_source_diagnostic(
     http_status: int | None = None,
     error_type: str | None = None,
     details: dict[str, Any] | None = None,
+    retry_count: int | None = None,
+    attempts: int | None = None,
+    fallback_used: bool | None = None,
+    fallback_reason: str | None = None,
+    stale_cache_used: bool | None = None,
 ) -> dict[str, Any]:
     return {
         "name": name,
@@ -88,4 +93,9 @@ def make_source_diagnostic(
         "http_status": http_status,
         "error_type": error_type,
         "details": details or {},
+        "retry_count": retry_count,
+        "attempts": attempts,
+        "fallback_used": fallback_used,
+        "fallback_reason": fallback_reason,
+        "stale_cache_used": stale_cache_used,
     }
