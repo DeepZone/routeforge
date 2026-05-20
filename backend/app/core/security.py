@@ -5,20 +5,37 @@ import hmac
 import os
 import re
 
+PBKDF2_ITERATIONS = 210_000
+
 
 def hash_password(password: str) -> str:
-    salt = os.urandom(16).hex()
-    digest = hashlib.sha256((salt + password).encode()).hexdigest()
-    return f"sha256${salt}${digest}"
+    salt = os.urandom(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, PBKDF2_ITERATIONS).hex()
+    return f"pbkdf2_sha256${PBKDF2_ITERATIONS}${salt.hex()}${digest}"
 
 
 def verify_password(password: str, password_hash: str) -> bool:
     try:
-        _, salt, digest = password_hash.split('$', 2)
+        scheme, *parts = password_hash.split('$')
     except ValueError:
         return False
-    check = hashlib.sha256((salt + password).encode()).hexdigest()
-    return hmac.compare_digest(check, digest)
+
+    if scheme == "pbkdf2_sha256" and len(parts) == 3:
+        iterations_s, salt_hex, digest = parts
+        try:
+            iterations = int(iterations_s)
+            salt = bytes.fromhex(salt_hex)
+        except ValueError:
+            return False
+        check = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, iterations).hex()
+        return hmac.compare_digest(check, digest)
+
+    if scheme == "sha256" and len(parts) == 2:
+        salt, digest = parts
+        check = hashlib.sha256((salt + password).encode()).hexdigest()
+        return hmac.compare_digest(check, digest)
+
+    return False
 
 
 def validate_password_strength(password: str) -> list[str]:

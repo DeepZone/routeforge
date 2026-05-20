@@ -50,3 +50,16 @@ Prüfen: User aktiv? Passwort korrekt? Wurde `SECRET_KEY` geändert?
 ## Nach SECRET_KEY Änderung
 
 Alle Sessions sind ungültig. Bitte neu einloggen.
+
+
+## Migration required in UI/System Status
+
+Wenn `migration_status=behind` gemeldet wird, führe nacheinander aus:
+
+```bash
+alembic current
+alembic heads
+alembic upgrade head
+```
+
+Nur wenn Schema bereits existiert und exakt zum Baseline-Stand passt: `alembic stamp 0001_initial_schema`.

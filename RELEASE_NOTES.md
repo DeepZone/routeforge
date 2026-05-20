@@ -1,3 +1,12 @@
+
+## v0.9.0-rc (2026-05-20)
+
+- Security review hardening for session cookies (`COOKIE_SAMESITE` support), CORS warnings, and stronger PBKDF2 password hashing with backward-compatible legacy hash verification.
+- Added system-status security warnings for invalid SameSite configurations and permissive CORS settings.
+- Guarded SQLite `create_all` startup path behind `ALLOW_SQLITE_CREATE_ALL` to avoid replacing migration discipline in production-like setups.
+- Version bump across backend/frontend/system status to `0.9.0` / `v0.9.0-rc`.
+- Added upgrade validation script for Alembic empty-db/head/current checks and migration-behind detection.
+- UX cleanup: removed browser prompt/confirm usage in Users and Watch Mode flows.
 ## v0.8.1-beta hotfix: Watch Mode UX
 
 ### Motivation

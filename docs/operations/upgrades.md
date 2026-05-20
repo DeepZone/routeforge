@@ -44,3 +44,10 @@ docker compose -f docker-compose.prod.yml run --rm backend alembic stamp 0001_in
   - `alembic current`
   - `alembic heads`
   - `alembic upgrade head`
+
+
+## v0.9.0-rc upgrade validation
+
+- Run `python backend/scripts/check_upgrade_path.py` for a CI-friendly SQLite upgrade sanity check (empty DB -> head, current/head checks, simulated behind revision).
+- Use `alembic upgrade head` for real schema upgrades.
+- Use `alembic stamp <revision>` only to baseline pre-existing schema that already matches the target revision.

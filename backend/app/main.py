@@ -20,7 +20,7 @@ from app.database import Base, engine
 logging.basicConfig(level=getattr(logging, settings.log_level.upper(), logging.INFO))
 logger = logging.getLogger("routeforge")
 
-app = FastAPI(title="RouteForge", version="0.8.1")
+app = FastAPI(title="RouteForge", version="0.9.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,7 +33,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup() -> None:
-    if settings.database_url.startswith("sqlite"):
+    if settings.database_url.startswith("sqlite") and settings.allow_sqlite_create_all:
         Base.metadata.create_all(bind=engine)
 
     logger.info(

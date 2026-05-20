@@ -125,6 +125,12 @@ def _security_warnings() -> list[str]:
         warnings.append("POSTGRES_PASSWORD uses the default example value. Change it before production use.")
     if not settings.cookie_secure:
         warnings.append("COOKIE_SECURE is false. Use true behind HTTPS in production.")
+    if settings.cookie_samesite.lower() not in {"lax", "strict", "none"}:
+        warnings.append("COOKIE_SAMESITE should be one of: lax, strict, none.")
+    if settings.cookie_samesite.lower() == "none" and not settings.cookie_secure:
+        warnings.append("COOKIE_SAMESITE=none requires COOKIE_SECURE=true in modern browsers.")
+    if settings.cors_origins.strip() in {"*", ""}:
+        warnings.append("CORS_ORIGINS is too permissive. Set explicit frontend origins.")
     return warnings
 
 
@@ -147,7 +153,7 @@ def build_system_status(engine: Engine | None) -> dict:
     return {
         "status": "ok",
         "name": settings.app_name,
-        "version": "v0.8.1-beta",
+        "version": "v0.9.0-rc",
         "read_only": True,
         "mode": "demo" if settings.demo_mode else "live",
         "demo_mode": settings.demo_mode,

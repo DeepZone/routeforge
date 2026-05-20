@@ -38,7 +38,7 @@ def setup(payload: SetupRequest, request: Request, response: Response, db: Sessi
     user = User(username=payload.username.strip(), email=payload.email, password_hash=hash_password(payload.password), role='admin', is_active=True)
     db.add(user); db.commit(); db.refresh(user)
     token = create_session_token(user)
-    response.set_cookie(config.settings.session_cookie_name, token, httponly=True, samesite='lax', secure=config.settings.cookie_secure)
+    response.set_cookie(config.settings.session_cookie_name, token, httponly=True, samesite=config.settings.cookie_samesite, secure=config.settings.cookie_secure)
     write_audit_log_for_request(db, request, action='initial_admin_setup', actor=user, target_type='user', target_id=str(user.id), details_json={'username': user.username, 'role': user.role})
     return {"user": {"id": user.id, "username": user.username, "email": user.email, "role": user.role}}
 
@@ -50,14 +50,14 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
         raise HTTPException(status_code=401, detail='Invalid credentials')
     user.last_login_at = datetime.utcnow(); db.commit()
     token = create_session_token(user)
-    response.set_cookie(config.settings.session_cookie_name, token, httponly=True, samesite='lax', secure=config.settings.cookie_secure)
+    response.set_cookie(config.settings.session_cookie_name, token, httponly=True, samesite=config.settings.cookie_samesite, secure=config.settings.cookie_secure)
     write_audit_log_for_request(db, request, action='login_success', actor=user, target_type='user', target_id=str(user.id), details_json={'username': user.username})
     return {"user": {"id": user.id, "username": user.username, "email": user.email, "role": user.role}}
 
 @router.post('/logout')
 def logout(request: Request, response: Response, user: User = Depends(require_authenticated_user), db: Session = Depends(get_db)):
     write_audit_log_for_request(db, request, action='logout', actor=user, target_type='user', target_id=str(user.id), details_json={'username': user.username})
-    response.delete_cookie(config.settings.session_cookie_name, httponly=True, samesite='lax', secure=config.settings.cookie_secure)
+    response.delete_cookie(config.settings.session_cookie_name, httponly=True, samesite=config.settings.cookie_samesite, secure=config.settings.cookie_secure)
     return {"ok": True}
 
 @router.get('/me')
