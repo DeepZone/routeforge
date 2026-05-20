@@ -49,6 +49,9 @@
   <li><strong>Risiko:</strong> {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}</li>
 </ul>
 
+<h2>Data Source Diagnostics</h2>
+{% if report.details and report.details.source_diagnostics %}<table border="1" cellpadding="6" cellspacing="0"><tr><th>Quelle</th><th>Endpoint</th><th>Status</th><th>Dauer</th><th>Cache</th><th>Message</th></tr>{% for d in report.details.source_diagnostics %}<tr><td>{{ d.name or '-' }}</td><td>{{ d.endpoint or '-' }}</td><td>{{ d.status or '-' }}</td><td>{{ d.duration_ms if d.duration_ms is not none else '-' }}</td><td>{{ 'HIT' if d.cached is sameas true else ('MISS' if d.cached is sameas false else '-') }}</td><td>{{ d.message or '-' }}{% if d.details %}<details><summary>Details</summary><pre>{{ d.details | tojson(indent=2) }}</pre></details>{% endif %}</td></tr>{% endfor %}</table>{% else %}<p>No source diagnostics available.</p>{% endif %}
+
 <h2>Rohdaten</h2>
 <h3>RPKI Rohdaten</h3>
 <pre>{{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }}</pre>

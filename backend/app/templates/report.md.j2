@@ -41,6 +41,15 @@
 - Erklärung: {{ report.checks.routing_visibility.explanation if report.checks and report.checks.routing_visibility else '-' }}
 - Risiko: {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}
 
+## Data Source Diagnostics
+{% if report.details and report.details.source_diagnostics %}
+| Quelle | Endpoint | Status | Dauer | Cache | Message |
+|---|---|---|---:|---|---|
+{% for d in report.details.source_diagnostics %}| {{ d.name or '-' }} | {{ d.endpoint or '-' }} | {{ d.status or '-' }} | {{ d.duration_ms if d.duration_ms is not none else '-' }} | {{ 'HIT' if d.cached is sameas true else ('MISS' if d.cached is sameas false else '-') }} | {{ d.message or '-' }} |
+{% endfor %}
+{% else %}No source diagnostics available.
+{% endif %}
+
 ## Rohdaten
 ### RPKI Rohdaten
 ```json

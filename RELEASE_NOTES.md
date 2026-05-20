@@ -1,6 +1,6 @@
 # Release Notes
 
-## v0.3.0-alpha
+## v0.4.0-alpha
 
 **Product Demo & Release Readiness**
 

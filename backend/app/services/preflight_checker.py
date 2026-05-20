@@ -21,8 +21,10 @@ class PreflightChecker:
         normalized_prefix = validate_prefix(prefix)
         normalized_origin = format_asn(normalize_asn(planned_origin_as))
 
-        whois = self.ripe_db.whois(normalized_prefix)
-        routing_status = self.client.get("routing-status", {"resource": normalized_prefix})
+        whois, whois_diag = self.client.get_with_diagnostics("whois", {"resource": normalized_prefix})
+        whois = whois or {}
+        routing_status, routing_diag = self.client.get_with_diagnostics("routing-status", {"resource": normalized_prefix})
+        routing_status = routing_status or {}
         rpki_check = self.rpki.check(normalized_prefix, normalized_origin)
         registry_check = self.registry.check(normalized_prefix, normalized_origin, whois)
         routing_visibility_check = self.routing_visibility.check(normalized_prefix, normalized_origin, routing_status)
@@ -64,6 +66,7 @@ class PreflightChecker:
                     "registry": registry_check.get("raw", {}).get("error") if isinstance(registry_check.get("raw"), dict) else None,
                 },
                 "warnings": warnings,
+                "source_diagnostics": [d for d in [rpki_check.get("source_diagnostic"), whois_diag, routing_diag] if isinstance(d, dict)],
                 "demo_mode": settings.demo_mode,
             },
             "sources": ["RIPEstat rpki-validation", "RIPEstat whois", "RIPEstat routing-status"],

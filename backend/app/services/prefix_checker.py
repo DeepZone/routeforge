@@ -1,4 +1,5 @@
 from app.core.normalize import format_asn, normalize_asn, validate_prefix
+from app.core.source_diagnostics import NO_DATA, UNKNOWN_STRUCTURE
 from app.core.prefix_evaluation import evaluate_prefix_overall
 from app.core.status import CheckStatus
 from app.config import settings
@@ -22,11 +23,21 @@ class PrefixChecker:
         normalized_prefix = validate_prefix(prefix)
         normalized_origin = format_asn(normalize_asn(origin_as)) if origin_as else None
 
-        whois = self.ripe_db.whois(normalized_prefix)
-        routing_status = self.client.get("routing-status", {"resource": normalized_prefix})
+        whois, whois_diag = self.client.get_with_diagnostics("whois", {"resource": normalized_prefix})
+        whois = whois or {}
+        routing_status, routing_diag = self.client.get_with_diagnostics("routing-status", {"resource": normalized_prefix})
+        routing_status = routing_status or {}
         rpki_check = self.rpki.check(normalized_prefix, normalized_origin)
         registry_check = self.registry.check(normalized_prefix, normalized_origin, whois)
         routing_visibility_check = self.routing_visibility.check(normalized_prefix, normalized_origin, routing_status)
+
+        source_diagnostics = [rpki_check.get("source_diagnostic"), whois_diag, routing_diag]
+        if routing_visibility_check.get("raw", {}).get("structure_unknown"):
+            routing_diag["status"] = UNKNOWN_STRUCTURE
+            routing_diag["message"] = "Response received, but visible origins could not be extracted"
+        if not whois.get("data") and not whois.get("error"):
+            whois_diag["status"] = NO_DATA
+            whois_diag["message"] = "No registry data available in response"
 
         warnings: list[str] = []
         if whois.get("error") or routing_status.get("error"):
@@ -87,6 +98,7 @@ class PrefixChecker:
                     "routing_visibility": routing_visibility_check.get("raw", {}).get("routing_payload", {}).get("error") if isinstance(routing_visibility_check.get("raw"), dict) else None,
                 },
                 "warnings": warnings,
+                "source_diagnostics": [d for d in source_diagnostics if isinstance(d, dict)],
                 "demo_mode": settings.demo_mode,
             },
             "sources": ["RIPEstat rpki-validation", "RIPEstat routing-status", "RIPEstat whois", "RIPEstat routing visibility"],

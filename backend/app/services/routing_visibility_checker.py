@@ -23,15 +23,15 @@ class RoutingVisibilityChecker:
 
         if not visible_origins:
             return {
-                "status": CheckStatus.WARNING.value,
-                "summary": "Prefix visibility unclear",
-                "explanation": "Es wurden Routingdaten gefunden, aber kein klares sichtbares Origin-AS extrahiert.",
-                "risk": "Das Prefix könnte nicht sichtbar sein oder die Datenstruktur wurde nicht eindeutig erkannt.",
+                "status": CheckStatus.UNKNOWN.value,
+                "summary": "Routing visibility could not be determined",
+                "explanation": "RIPEstat routing-status returned data, but RouteForge could not extract visible Origin-AS information from the response.",
+                "risk": "Die Datenstruktur war nicht eindeutig auswertbar.",
                 "recommendations": [
                     "Prüfe das Prefix zusätzlich über ein Looking Glass.",
                     "Prüfe, ob das Prefix aktuell announced werden soll.",
                 ],
-                "raw": raw,
+                "raw": {**raw, "structure_unknown": True},
             }
 
         if not expected_origin:
@@ -41,7 +41,7 @@ class RoutingVisibilityChecker:
                 "explanation": "Für das Prefix wurden sichtbare Origin-ASNs gefunden. Ohne erwartetes Origin-AS erfolgt kein Konsistenzabgleich.",
                 "risk": "Die Sichtbarkeit ist grundsätzlich erkennbar, aber die erwartete Origin-Zuordnung wurde nicht geprüft.",
                 "recommendations": ["Gib ein erwartetes Origin-AS an, um die Sichtbarkeit vollständig zu bewerten."],
-                "raw": raw,
+                "raw": {**raw, "structure_unknown": True},
             }
 
         if expected_origin in visible_origins:
@@ -51,7 +51,7 @@ class RoutingVisibilityChecker:
                 "explanation": "Das Prefix wird mit dem erwarteten Origin-AS im Routing sichtbar.",
                 "risk": "Keine offensichtliche Routing-Visibility-Inkonsistenz erkannt.",
                 "recommendations": ["Routing-Sichtbarkeit weiter überwachen."],
-                "raw": raw,
+                "raw": {**raw, "structure_unknown": True},
             }
 
         return {
@@ -71,7 +71,7 @@ class RoutingVisibilityChecker:
         return {
             "status": CheckStatus.UNKNOWN.value,
             "summary": "Routing visibility could not be determined",
-            "explanation": "Die Sichtbarkeit des Prefixes im globalen Routing konnte aus den verfügbaren Daten nicht zuverlässig bestimmt werden.",
+            "explanation": "RIPEstat routing-status did not respond before the configured timeout or returned no usable payload.",
             "risk": "Die Bewertung ist unvollständig.",
             "recommendations": [
                 "Prüfe die Rohdaten.",

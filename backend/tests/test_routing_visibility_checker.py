@@ -32,7 +32,7 @@ def test_payload_without_extractable_origins_is_warning():
     c = RoutingVisibilityChecker()
     payload = {"data": {"routes": [{"prefix": "193.0.6.0/24"}]}}
     result = c.check("193.0.6.0/24", "AS3333", payload)
-    assert result["status"] == "WARNING"
+    assert result["status"] == "UNKNOWN"
 
 
 def test_numeric_asn_is_normalized_to_as_prefix():
