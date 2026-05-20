@@ -191,3 +191,16 @@ Key capabilities in v0.2.x:
 - Export & sharing (Summary, Markdown, HTML)
 - ASN-RPKI batch availability explanations
 - Demo mode and CI-backed test workflows
+
+## v0.6.3-beta
+
+**Migration UX & Auth Visibility Hotfix**
+
+### Highlights
+
+- Improved visibility for database migration status.
+- Added clearer troubleshooting for missing `created_by_user_id` columns after v0.6 upgrade.
+- Added logged-in user and role display in the UI.
+- Added visible logout action.
+- Improved migration warnings in Dashboard/System views.
+- Improved handling of stale database schemas.
