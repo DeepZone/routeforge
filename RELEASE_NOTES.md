@@ -1,15 +1,16 @@
 # Release Notes
 
-## v0.6.0-beta
+## v0.6.1-beta
 
-**SQLite Volume Permission Hotfix**
+**Auth Bootstrap Fix**
 
 ### Highlights
 
-- Fixes SQLite readonly database errors after non-root container hardening.
-- Backend entrypoint now prepares `/app/data` permissions for the `routeforge` runtime user.
-- Runtime remains non-root.
-- Troubleshooting documentation added.
+- Fixed missing Initial Admin Setup screen.
+- App now blocks dashboard/check views until setup/login state is resolved.
+- Fixed NoneType crash when running checks without authenticated user.
+- Check endpoints now return 401/403 instead of HTTP 500.
+- API requests include session cookies consistently.
 
 ---
 

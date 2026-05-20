@@ -14,8 +14,18 @@ def _client() -> TestClient:
     import app.database as database
 
     importlib.reload(main_module)
+    database.Base.metadata.drop_all(bind=database.engine)
     database.Base.metadata.create_all(bind=database.engine)
     return TestClient(main_module.app)
+
+
+def _setup_and_login(client: TestClient, username: str = "admin", password: str = "AdminPass123!") -> None:
+    setup = client.post('/api/auth/setup', json={'username': username, 'email': 'admin@example.org', 'password': password, 'password_confirm': password})
+    if setup.status_code == 403:
+        login = client.post('/api/auth/login', json={'username': username, 'password': password})
+        assert login.status_code == 200
+        return
+    assert setup.status_code == 200
 
 
 def test_health() -> None:
@@ -27,6 +37,7 @@ def test_health() -> None:
 
 def test_prefix_check_without_origin_as() -> None:
     client = _client()
+    _setup_and_login(client)
     response = client.post('/api/check/prefix', json={'prefix': '193.0.6.0/24'})
     assert response.status_code == 200
     payload = response.json()
@@ -42,6 +53,7 @@ def test_prefix_check_without_origin_as() -> None:
 
 def test_asn_check() -> None:
     client = _client()
+    _setup_and_login(client)
     response = client.post('/api/check/asn', json={'asn': 'AS3320'})
     assert response.status_code == 200
     payload = response.json()
@@ -56,6 +68,7 @@ def test_asn_check() -> None:
 
 def test_asn_check_without_prefixes_has_batch_reason() -> None:
     client = _client()
+    _setup_and_login(client)
     response = client.post('/api/check/asn', json={'asn': 'AS4491'})
     assert response.status_code == 200
     details = response.json().get('details', {})
@@ -67,6 +80,7 @@ def test_asn_check_without_prefixes_has_batch_reason() -> None:
 
 def test_asn_rpki_batch() -> None:
     client = _client()
+    _setup_and_login(client)
     response = client.post('/api/check/asn-rpki', json={'asn': 'AS3320', 'limit': 3})
     assert response.status_code == 200
     payload = response.json()
@@ -79,6 +93,7 @@ def test_asn_rpki_batch() -> None:
 
 def test_asn_rpki_batch_without_prefixes() -> None:
     client = _client()
+    _setup_and_login(client)
     response = client.post('/api/check/asn-rpki', json={'asn': 'AS4491', 'limit': 25})
     assert response.status_code == 200
     payload = response.json()
@@ -99,6 +114,7 @@ def test_system_info() -> None:
 
 def test_reports_list_empty_or_present() -> None:
     client = _client()
+    _setup_and_login(client)
     response = client.get('/api/reports')
     assert response.status_code == 200
     payload = response.json()
@@ -107,6 +123,7 @@ def test_reports_list_empty_or_present() -> None:
 
 def test_preflight_check() -> None:
     client = _client()
+    _setup_and_login(client)
     response = client.post('/api/check/preflight', json={'prefix': '192.0.2.0/24', 'planned_origin_as': 'AS3320'})
     assert response.status_code == 200
     payload = response.json()
@@ -124,6 +141,7 @@ def test_preflight_check() -> None:
 
 def test_report_export_endpoints() -> None:
     client = _client()
+    _setup_and_login(client)
     check_response = client.post('/api/check/prefix', json={'prefix': '193.0.6.0/24'})
     assert check_response.status_code == 200
     report_id = check_response.json().get('report_id')
@@ -146,6 +164,7 @@ def test_report_export_endpoints() -> None:
 
 def test_report_export_not_found() -> None:
     client = _client()
+    _setup_and_login(client)
     for endpoint in ('summary', 'markdown', 'html'):
         response = client.get(f'/api/reports/999999/{endpoint}')
         assert response.status_code == 404
@@ -154,10 +173,11 @@ def test_report_export_not_found() -> None:
 
 def test_system_status_endpoint() -> None:
     client = _client()
+    _setup_and_login(client)
     response = client.get('/api/system/status')
     assert response.status_code == 200
     payload = response.json()
-    assert payload.get('version') == 'v0.5.5-beta'
+    assert payload.get('version') == 'v0.6.1-beta'
     assert payload.get('read_only') is True
     assert payload.get('database', {}).get('status')
     assert payload.get('ripestat', {}).get('cache_ttl_seconds') is not None
@@ -172,6 +192,7 @@ def test_safe_database_url() -> None:
 
 def test_system_status_includes_migration_fields() -> None:
     client = _client()
+    _setup_and_login(client)
     response = client.get('/api/system/status')
     assert response.status_code == 200
     database = response.json().get('database', {})
@@ -190,3 +211,39 @@ def test_migration_status_unknown_does_not_crash() -> None:
     payload = ss.get_database_status(FakeBrokenEngine())
     assert payload.get('status') == 'error'
     assert payload.get('migration_status') == 'error'
+
+
+def test_setup_required_without_users() -> None:
+    client = _client()
+    response = client.get('/api/auth/setup-required')
+    assert response.status_code == 200
+    assert response.json().get('setup_required') is True
+
+
+def test_asn_check_requires_authentication() -> None:
+    client = _client()
+    response = client.post('/api/check/asn', json={'asn': 'AS3320'})
+    assert response.status_code == 401
+
+
+def test_asn_check_forbidden_for_viewer() -> None:
+    client = _client()
+    _setup_and_login(client)
+    create = client.post('/api/users', json={'username': 'viewer', 'email': 'viewer@example.org', 'password': 'ViewerPass123!', 'role': 'viewer'})
+    assert create.status_code == 200
+    client.post('/api/auth/logout')
+    login = client.post('/api/auth/login', json={'username': 'viewer', 'password': 'ViewerPass123!'})
+    assert login.status_code == 200
+    response = client.post('/api/check/asn', json={'asn': 'AS3320'})
+    assert response.status_code == 403
+
+
+def test_asn_check_allowed_for_operator() -> None:
+    client = _client()
+    _setup_and_login(client)
+    create = client.post('/api/users', json={'username': 'operator1', 'email': 'op@example.org', 'password': 'OperatorPass123!', 'role': 'operator'})
+    assert create.status_code == 200
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'operator1', 'password': 'OperatorPass123!'}).status_code == 200
+    response = client.post('/api/check/asn', json={'asn': 'AS3320'})
+    assert response.status_code == 200

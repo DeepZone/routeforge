@@ -15,7 +15,7 @@ export class ApiError extends Error {
 }
 
 async function requestJson<T>(url: string, options: RequestInit): Promise<T> {
-  const response = await fetch(url, options)
+  const response = await fetch(url, { ...options, credentials: 'include' })
   const rawText = await response.text()
   let parsedBody: unknown = rawText
   if (rawText) {
@@ -31,7 +31,7 @@ async function requestJson<T>(url: string, options: RequestInit): Promise<T> {
 }
 
 async function requestText(url: string, options: RequestInit): Promise<string> {
-  const response = await fetch(url, options)
+  const response = await fetch(url, { ...options, credentials: 'include' })
   const text = await response.text()
   if (!response.ok) {
     throw new ApiError(`HTTP ${response.status}: ${text || response.statusText || 'Request failed'}`, response.status, text)
@@ -53,3 +53,7 @@ export const getReportSummary = (reportId: number) => requestText(apiUrl(`/api/r
 export const checkPreflight = (prefix: string, planned_origin_as: string) => requestJson<CheckResponse>(apiUrl('/api/check/preflight'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, planned_origin_as }) })
 
 export const getSystemStatus = () => requestJson<SystemStatus>(apiUrl('/api/system/status'), { method: 'GET' })
+export const getSetupRequired = () => requestJson<{ setup_required: boolean }>(apiUrl('/api/auth/setup-required'), { method: 'GET' })
+export const getMe = () => requestJson<{ user: { id: number; username: string; email?: string; role: string } }>(apiUrl('/api/auth/me'), { method: 'GET' })
+export const setupAdmin = (payload: { username: string; email?: string; password: string; password_confirm: string }) => requestJson<{ user?: { id: number; username: string } }>(apiUrl('/api/auth/setup'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+export const login = (payload: { username: string; password: string }) => requestJson<{ user?: { id: number; username: string } }>(apiUrl('/api/auth/login'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })

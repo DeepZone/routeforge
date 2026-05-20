@@ -60,8 +60,6 @@ def require_authenticated_user(user: User = Depends(get_current_user)) -> User:
 
 def require_role(*roles: str):
     def checker(request: Request, db: Session = Depends(get_db)):
-        if db.query(User).count() == 0:
-            return None
         current = get_current_user(request, db)
         if current.role not in roles:
             raise HTTPException(status_code=403, detail="Insufficient role")
