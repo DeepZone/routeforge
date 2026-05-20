@@ -1,3 +1,21 @@
+## v0.8.0-beta hotfix: Watch Mode UX
+
+### Motivation
+Make Watch Mode usable in production by replacing placeholder target creation with full create/edit UX.
+
+### Changes
+- Added Watch Target create form with watch-type specific fields and sensible defaults (`interval_minutes=60`, `is_active=true`).
+- Added Watch Target edit mode with Save/Cancel and refresh of target list/detail after updates.
+- Improved target detail panel with key scheduling/status fields and richer run history columns.
+- Enforced clear viewer read-only UX hint and disabled create/edit/delete/run actions for viewers.
+
+### Testing
+- backend unchanged for this hotfix.
+- frontend: `npm run build`
+
+### Known Limitations
+- Form validation remains primarily API-driven; frontend currently forwards server-side validation errors.
+
 ## v0.8.0-beta: BGP Visibility Details
 
 ### Motivation
