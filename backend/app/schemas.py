@@ -90,6 +90,26 @@ class PreflightCheckRequest(BaseModel):
         return v
 
 
+
+class BgpVisibilityCheckRequest(BaseModel):
+    change_case_id: int | None = None
+    prefix: str
+    expected_origin_as: str | None = None
+
+    @field_validator("prefix")
+    @classmethod
+    def valid_prefix(cls, v: str) -> str:
+        validate_prefix(v)
+        return v
+
+    @field_validator("expected_origin_as")
+    @classmethod
+    def valid_expected_origin(cls, v: str | None) -> str | None:
+        if v is not None:
+            normalize_asn(v)
+        return v
+
+
 class CheckResponse(BaseModel):
     report_id: int
     status: str

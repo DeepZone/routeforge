@@ -1,3 +1,31 @@
+## v0.7.1-beta: BGP Visibility Details
+
+### Motivation
+Improve prefix visibility checks with explicit BGP origin visibility details while preserving RouteForge's strict read-only model.
+
+### Implemented Changes
+- Added dedicated backend service and API endpoint `POST /api/check/bgp-visibility`.
+- Added frontend BGP Visibility page and Change Case integration action.
+- Added audit event `bgp_visibility_checked` plus existing case attachment events when linked to a Change Case.
+- Extended report output to include structured BGP visibility details via generic detail rendering.
+
+### BGP Visibility Logic
+- `OK`: prefix visible and expected origin (if provided) is seen.
+- `WARNING`: prefix visible with multiple or unexpected origins (without strict expectation).
+- `CRITICAL`: prefix not visible with expected origin requirement, or expected origin not visible.
+- `UNKNOWN`: no reliable source data.
+
+### Security Notes
+BGP visibility checks remain read-only and do not modify RIPE DB, RPKI objects, or routers. Results are external visibility snapshots.
+
+### Testing
+- backend: `pytest -q`
+- frontend: `npm run build`
+
+### Known Limitations
+- Visibility depends on external RIPEstat data quality and timing.
+- Results are point-in-time and not a substitute for continuous monitoring.
+
 ## v0.7.0-beta
 - Added Projects / Change Cases lifecycle (draft, in_review, approved, closed).
 - Added Change Case API, UI navigation and detail workflow.
