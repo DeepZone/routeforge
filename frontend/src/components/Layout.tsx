@@ -16,7 +16,13 @@ export function Layout({ children, active, onNav, systemLine, title, demoMode }:
   return <div className='min-h-screen bg-slate-100 text-slate-900'>
     <div className='mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:grid lg:grid-cols-[260px_1fr]'>
       <aside className='rf-card p-4'>
-        <div className='mb-4'><p className='text-xs font-semibold uppercase tracking-wider text-blue-700'>RouteForge</p><h1 className='text-xl font-bold'>Operator Console</h1></div>
+        <div className='mb-4 flex items-center gap-3'>
+          <img src='/routeforge.png' alt='RouteForge' className='h-11 w-11 rounded-xl object-contain' />
+          <div>
+            <p className='text-xs font-semibold uppercase tracking-wider text-blue-700'>RouteForge</p>
+            <h1 className='text-xl font-bold'>Operator Console</h1>
+          </div>
+        </div>
         <nav className='flex gap-2 overflow-auto lg:flex-col'>
           {nav.map((n) => <button key={n.key} onClick={() => onNav(n.key)} className={`min-w-fit rounded-xl px-3 py-2 text-left text-sm transition lg:w-full ${active === n.key ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}><div className='font-semibold'>{n.label}</div><div className={`text-xs ${active === n.key ? 'text-slate-300' : 'text-slate-500'}`}>{n.desc}</div></button>)}
         </nav>
