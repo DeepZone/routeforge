@@ -8,4 +8,4 @@ router = APIRouter()
 
 @router.get('/health')
 def health() -> dict:
-    return {"status": "ok", "version": "v0.5.5-beta", "database": get_database_status(engine).get("status", "unknown")}
+    return {"status": "ok", "version": "v0.6.1-beta", "database": get_database_status(engine).get("status", "unknown")}
