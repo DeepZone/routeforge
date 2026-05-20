@@ -6,7 +6,7 @@ from urllib.parse import urlsplit, urlunsplit
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 
 from app.config import settings
@@ -73,8 +73,23 @@ def _migration_snapshot(engine: Engine) -> dict:
             payload["migration_status"] = "up_to_date"
         else:
             payload["migration_status"] = "behind"
-    except Exception:
+    except Exception as exc:
         payload["migration_status"] = "unknown"
+        payload["migration_message"] = _safe_error_message(exc)
+    try:
+        with engine.connect() as connection:
+            inspector = inspect(connection)
+            tables = inspector.get_table_names()
+            has_alembic_version = "alembic_version" in tables
+        if not has_alembic_version and tables:
+            payload["schema_version"] = "unknown"
+            if payload["migration_head"] != "unknown":
+                payload["migration_status"] = "behind"
+                payload["migration_message"] = "alembic_version table is missing while database tables exist"
+            else:
+                payload["migration_status"] = "unknown"
+    except Exception:
+        pass
     return payload
 
 
@@ -114,14 +129,21 @@ def _security_warnings() -> list[str]:
 
 
 def build_system_status(engine: Engine | None) -> dict:
+    database = get_database_status(engine)
+    operational_warnings: list[str] = []
+    if database.get("migration_status") != "up_to_date":
+        operational_warnings.append(
+            "Database schema is behind the application version. Run database migrations before using checks."
+        )
+
     return {
         "status": "ok",
         "name": settings.app_name,
-        "version": "v0.6.2-beta",
+        "version": "v0.6.3-beta",
         "read_only": True,
         "mode": "demo" if settings.demo_mode else "live",
         "demo_mode": settings.demo_mode,
-        "database": get_database_status(engine),
+        "database": database,
         "api_proxy": {"status": "ok", "mode": "same-origin", "frontend_proxy_expected": True},
         "ripestat": {
             "cache_ttl_seconds": settings.cache_ttl_seconds,
@@ -131,6 +153,7 @@ def build_system_status(engine: Engine | None) -> dict:
             "use_stale_cache_on_error": settings.ripestat_use_stale_cache_on_error,
         },
         "security_warnings": _security_warnings(),
+        "operational_warnings": operational_warnings,
         "features": {
             "asn_check": True,
             "prefix_check": True,

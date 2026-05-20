@@ -12,7 +12,7 @@ const nav: { key: NavKey; label: string; desc: string }[] = [
   { key: 'about', label: 'About', desc: 'Data sources and limits' },
 ]
 
-export function Layout({ children, active, onNav, systemLine, title, demoMode }: { children: ReactNode; active: NavKey; onNav: (key: NavKey) => void; systemLine: string; title: string; demoMode: boolean }) {
+export function Layout({ children, active, onNav, systemLine, title, demoMode, currentUser, onLogout }: { children: ReactNode; active: NavKey; onNav: (key: NavKey) => void; systemLine: string; title: string; demoMode: boolean; currentUser?: { username: string; role: string } | null; onLogout: () => void }) {
   return <div className='min-h-screen bg-slate-100 text-slate-900'>
     <div className='mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:grid lg:grid-cols-[260px_1fr]'>
       <aside className='rf-card p-4'>
@@ -31,10 +31,12 @@ export function Layout({ children, active, onNav, systemLine, title, demoMode }:
       <div className='space-y-4'>
         <header className='rf-card flex flex-wrap items-center justify-between gap-3 p-4'>
           <h2 className='text-xl font-semibold'>{title}</h2>
-          <div className='flex flex-wrap gap-2 text-xs font-semibold'>
+          <div className='flex flex-wrap items-center gap-2 text-xs font-semibold'>
+            {currentUser && <span className='rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-violet-700'>Angemeldet als {currentUser.username} · {currentUser.role}</span>}
             <span className={`rounded-full border px-3 py-1 ${demoMode ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700'}`}>{demoMode ? 'DEMO' : 'LIVE'}</span>
             <span className='rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700'>READ-ONLY</span>
-            <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>v0.6.2-beta</span>
+            <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>v0.6.3-beta</span>
+            <button className='rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700 hover:bg-rose-100' onClick={onLogout}>Logout</button>
           </div>
         </header>
         <main className='space-y-4'>{children}</main>

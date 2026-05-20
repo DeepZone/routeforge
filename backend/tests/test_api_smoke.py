@@ -177,7 +177,7 @@ def test_system_status_endpoint() -> None:
     response = client.get('/api/system/status')
     assert response.status_code == 200
     payload = response.json()
-    assert payload.get('version') == 'v0.6.2-beta'
+    assert payload.get('version') == 'v0.6.3-beta'
     assert payload.get('read_only') is True
     assert payload.get('database', {}).get('status')
     assert payload.get('ripestat', {}).get('cache_ttl_seconds') is not None
@@ -247,3 +247,34 @@ def test_asn_check_allowed_for_operator() -> None:
     assert client.post('/api/auth/login', json={'username': 'operator1', 'password': 'OperatorPass123!'}).status_code == 200
     response = client.post('/api/check/asn', json={'asn': 'AS3320'})
     assert response.status_code == 200
+
+
+def test_system_status_warns_when_migration_behind(monkeypatch) -> None:
+    from app.core import system_status as ss
+
+    monkeypatch.setattr(ss, "get_database_status", lambda _engine: {"status": "ok", "migration_status": "behind", "schema_version": "0001", "migration_head": "0002"})
+    payload = ss.build_system_status(None)
+    assert payload.get("database", {}).get("migration_status") == "behind"
+    assert payload.get("operational_warnings")
+
+
+def test_check_store_operational_error_message() -> None:
+    from sqlalchemy.exc import OperationalError
+    from app.api import routes_checks as rc
+
+    class FakeDB:
+        def add(self, _):
+            return None
+        def commit(self):
+            raise OperationalError("insert", {}, Exception("no column named created_by_user_id"))
+        def refresh(self, _):
+            return None
+        def rollback(self):
+            return None
+
+    try:
+        rc._store_and_respond(FakeDB(), "asn", "AS3320", None, {"status": "OK", "summary": "ok", "recommendations": [], "details": {}}, 1)
+        assert False
+    except Exception as exc:
+        assert getattr(exc, "status_code", None) == 503
+        assert "Database schema is not up to date" in str(getattr(exc, "detail", ""))

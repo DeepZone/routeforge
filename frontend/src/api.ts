@@ -25,7 +25,8 @@ async function requestJson<T>(url: string, options: RequestInit): Promise<T> {
     const detail = typeof parsedBody === 'object' && parsedBody !== null && 'detail' in parsedBody
       ? String((parsedBody as { detail: unknown }).detail)
       : response.statusText || 'Unbekannter API-Fehler'
-    throw new ApiError(`HTTP ${response.status}: ${detail}`, response.status, parsedBody)
+    const friendly = detail.includes('Database schema is not up to date') ? 'Database migration required. Please run alembic upgrade head.' : detail
+    throw new ApiError(`HTTP ${response.status}: ${friendly}`, response.status, parsedBody)
   }
   return parsedBody as T
 }
@@ -57,3 +58,4 @@ export const getSetupRequired = () => requestJson<{ setup_required: boolean }>(a
 export const getMe = () => requestJson<{ user: { id: number; username: string; email?: string; role: string } }>(apiUrl('/api/auth/me'), { method: 'GET' })
 export const setupAdmin = (payload: { username: string; email?: string; password: string; password_confirm: string }) => requestJson<{ user?: { id: number; username: string } }>(apiUrl('/api/auth/setup'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
 export const login = (payload: { username: string; password: string }) => requestJson<{ user?: { id: number; username: string } }>(apiUrl('/api/auth/login'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+export const logout = () => requestJson<{ ok: boolean }>(apiUrl('/api/auth/logout'), { method: 'POST' })

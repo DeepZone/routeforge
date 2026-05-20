@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from app.core.auth import require_operator_or_admin
@@ -60,13 +61,19 @@ def check_preflight(payload: PreflightCheckRequest, db: Session = Depends(get_db
 
 
 def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | None, result: dict, user_id: int | None = None) -> CheckResponse:
-    check = Check(check_type=ctype, input_resource=resource, origin_as=origin_as, status=result["status"], summary=result["summary"], created_by_user_id=user_id)
-    db.add(check)
-    db.commit()
-    db.refresh(check)
-    report_json, md, html = render_report({"check_id": check.id, "input_check_type": ctype, **result})
-    report = Report(check_id=check.id, created_by_user_id=user_id, json_data=report_json, markdown=md, html=html)
-    db.add(report)
-    db.commit()
-    db.refresh(report)
-    return CheckResponse(report_id=report.id, status=result["status"], summary=result["summary"], explanation=result.get("explanation"), risk=result.get("risk"), recommendations=result["recommendations"], input=result.get("input"), checks=result.get("checks"), details=result["details"], markdown=md, html=html)
+    try:
+        check = Check(check_type=ctype, input_resource=resource, origin_as=origin_as, status=result["status"], summary=result["summary"], created_by_user_id=user_id)
+        db.add(check)
+        db.commit()
+        db.refresh(check)
+        report_json, md, html = render_report({"check_id": check.id, "input_check_type": ctype, **result})
+        report = Report(check_id=check.id, created_by_user_id=user_id, json_data=report_json, markdown=md, html=html)
+        db.add(report)
+        db.commit()
+        db.refresh(report)
+        return CheckResponse(report_id=report.id, status=result["status"], summary=result["summary"], explanation=result.get("explanation"), risk=result.get("risk"), recommendations=result["recommendations"], input=result.get("input"), checks=result.get("checks"), details=result["details"], markdown=md, html=html)
+    except OperationalError as exc:
+        db.rollback()
+        if "no column named created_by_user_id" in str(exc).lower():
+            raise HTTPException(status_code=503, detail="Database schema is not up to date. Please run migrations: docker compose exec backend alembic upgrade head") from exc
+        raise
