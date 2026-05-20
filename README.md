@@ -48,7 +48,8 @@ URLs:
 - Frontend: http://localhost:3000
 - Backend: http://localhost:8000
 - Health: http://localhost:8000/health
-- System Info: http://localhost:8000/api/system/info
+- System Info (via frontend proxy): http://localhost:3000/api/system/info
+- Direct System Info (backend): http://localhost:8000/api/system/info
 
 ## Demo Mode
 
@@ -157,9 +158,16 @@ docker compose up --build
 ### Production Start
 ```bash
 cp .env.example .env
-# edit .env (especially POSTGRES_PASSWORD, DATABASE_URL, CORS_ORIGINS, VITE_API_URL)
+# edit .env (especially POSTGRES_PASSWORD, DATABASE_URL, CORS_ORIGINS)
 docker compose -f docker-compose.prod.yml up -d --build
 ```
+
+### Selfhosting Networking Default
+- Frontend UI: `http://<host>:3000`
+- API via same host (proxied by frontend nginx): `http://<host>:3000/api/...`
+- Direct backend access (optional/diagnostics): `http://<host>:8000`
+
+In the standard setup, RouteForge does **not** require a hardcoded host IP in the frontend build. The frontend nginx proxies `/api` internally to the backend service (`backend:8000`).
 
 ### Environment
 - `.env.example` documents required production variables.
