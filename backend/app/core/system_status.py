@@ -102,11 +102,18 @@ def get_database_status(engine: Engine | None) -> dict:
     return payload
 
 
+def _security_warnings() -> list[str]:
+    warnings: list[str] = []
+    if settings.postgres_password == "change-me":
+        warnings.append("POSTGRES_PASSWORD uses the default example value. Change it before production use.")
+    return warnings
+
+
 def build_system_status(engine: Engine | None) -> dict:
     return {
         "status": "ok",
         "name": settings.app_name,
-        "version": "v0.5.3-beta",
+        "version": "v0.5.4-beta",
         "read_only": True,
         "mode": "demo" if settings.demo_mode else "live",
         "demo_mode": settings.demo_mode,
@@ -119,6 +126,7 @@ def build_system_status(engine: Engine | None) -> dict:
             "retry_backoff_seconds": settings.ripestat_retry_backoff_seconds,
             "use_stale_cache_on_error": settings.ripestat_use_stale_cache_on_error,
         },
+        "security_warnings": _security_warnings(),
         "features": {
             "asn_check": True,
             "prefix_check": True,

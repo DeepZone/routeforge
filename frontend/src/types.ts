@@ -89,4 +89,5 @@ export type SystemStatus = {
   api_proxy?: ApiProxyStatus
   ripestat?: RipestatRuntimeSettings
   features?: SystemFeatures
+  security_warnings?: string[]
 }
