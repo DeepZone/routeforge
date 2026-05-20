@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ApiError, getMe, getReportHtml, getReportMarkdown, getReportSummary, getReports, getSetupRequired, getSystemInfo, getSystemStatus, login, setupAdmin } from './api'
 import { AsnCheckForm } from './components/AsnCheckForm'
 import { Layout } from './components/Layout'
@@ -73,18 +73,18 @@ export default function App() {
   if (authMode === 'login') return <LoginView onSubmit={onLoginSubmit} error={authError} />
   if (authMode === 'error') return <div className='p-8 text-center text-rose-700'>{authError}</div>
 
-  const systemLine = useMemo(() => system ? `${system.name} ${system.version} · mode=${system.demo_mode ? 'DEMO' : 'LIVE'} · read_only=${String(system.read_only)}` : 'RouteForge v0.6.1-beta · read-only preflight checks', [system])
+  const systemLine = system ? `${system.name} ${system.version} · mode=${system.demo_mode ? 'DEMO' : 'LIVE'} · read_only=${String(system.read_only)}` : 'RouteForge v0.6.2-beta · read-only preflight checks'
   const title = { dashboard: 'Dashboard', asn: 'ASN Check', prefix: 'Prefix Check', preflight: 'Preflight Check', reports: 'Reports', system: 'System Status', about: 'About RouteForge' }[active]
   const proxyStatus = systemStatusError ? 'ERROR' : 'OK'
   const migrationStatus = systemStatus?.database?.migration_status || 'unknown'
 
   return <Layout active={active} onNav={setActive} systemLine={systemLine} title={title} demoMode={Boolean(system?.demo_mode)}>
-    {active === 'dashboard' && <section className='space-y-4'><article className='rf-card p-6'><h1 className='text-2xl font-bold'>RouteForge v0.6.1-beta</h1><p className='mt-2 text-slate-600'>Modernes read-only Operator-Tool für Preflight Checks von ASN, Prefix, RPKI und Registry/IRR.</p></article></section>}
+    {active === 'dashboard' && <section className='space-y-4'><article className='rf-card p-6'><h1 className='text-2xl font-bold'>RouteForge v0.6.2-beta</h1><p className='mt-2 text-slate-600'>Modernes read-only Operator-Tool für Preflight Checks von ASN, Prefix, RPKI und Registry/IRR.</p></article></section>}
     {active === 'asn' && <AsnCheckForm />}
     {active === 'prefix' && <PrefixCheckForm />}
     {active === 'preflight' && <PreflightCheckForm />}
     {active === 'reports' && <section className='rf-card p-4'><h2 className='mb-3 text-xl font-semibold'>Reports</h2>{reports.length===0 ? <div className='rounded-xl border border-dashed border-slate-300 p-6 text-sm text-slate-500'>Noch keine Reports vorhanden.</div> : <div className='overflow-x-auto'><table className='w-full text-sm'><tbody>{reports.map(r=><tr key={r.report_id}><td>{r.summary}</td><td><button className='rf-btn-secondary' onClick={async ()=>navigator.clipboard?.writeText(await getReportSummary(r.report_id))}>Copy Summary</button><button className='rf-btn-secondary' onClick={async ()=>{const t=await getReportMarkdown(r.report_id);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/markdown'}));a.download=`routeforge-report-${r.report_id}.md`;a.click()}}>Download Markdown</button><button className='rf-btn-secondary' onClick={async ()=>{const t=await getReportHtml(r.report_id);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/html'}));a.download=`routeforge-report-${r.report_id}.html`;a.click()}}>Download HTML</button></td></tr>)}</tbody></table></div>}</section>}
     {active === 'system' && <section className='space-y-3'>{systemStatusError && <article className='rf-card p-4 text-rose-700'>{systemStatusError}</article>}{systemStatus && <article className='rf-card p-4 grid gap-2 md:grid-cols-2 text-sm'><div>Version: <b>{systemStatus.version}</b></div><div>Mode: <b>{systemStatus.mode}</b></div><div>API Proxy: <b>{proxyStatus}</b></div><div>Migration Status: <StatusBadge status={migrationStatus === 'up_to_date' ? 'OK' : migrationStatus === 'behind' ? 'WARNING' : migrationStatus === 'error' ? 'CRITICAL' : 'UNKNOWN'} /></div></article>}</section>}
-    {active === 'about' && <section className='rf-card p-5 space-y-2 text-sm text-slate-700'><p><b>Version:</b> v0.6.1-beta</p></section>}
+    {active === 'about' && <section className='rf-card p-5 space-y-2 text-sm text-slate-700'><p><b>Version:</b> v0.6.2-beta</p></section>}
   </Layout>
 }
