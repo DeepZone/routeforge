@@ -31,3 +31,11 @@ def test_make_cache_metadata_freshness_rules() -> None:
 def test_known_status_values_present() -> None:
     for value in [OK, TIMEOUT, "HTTP_ERROR", "PARSE_ERROR", "UNKNOWN_STRUCTURE", "RATE_LIMITED", "CACHE_HIT", "CACHE_MISS", "EMPTY_RESPONSE", "NO_DATA", "ERROR"]:
         assert value in KNOWN_SOURCE_STATUSES
+
+
+def test_make_source_diagnostic_retry_fields() -> None:
+    d = make_source_diagnostic("n", "e", OK, "m", attempts=2, retry_count=1, fallback_used=True, stale_cache_used=True)
+    assert d["attempts"] == 2
+    assert d["retry_count"] == 1
+    assert d["fallback_used"] is True
+    assert d["stale_cache_used"] is True
