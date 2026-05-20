@@ -1,5 +1,19 @@
 # Release Notes
 
+## v0.5.5-beta
+
+**SQLite Volume Permission Hotfix**
+
+### Highlights
+
+- Fixes SQLite readonly database errors after non-root container hardening.
+- Backend entrypoint now prepares `/app/data` permissions for the `routeforge` runtime user.
+- Runtime remains non-root.
+- Troubleshooting documentation added.
+
+---
+
+
 ## v0.5.4-beta
 
 **Production Polish & Security Baseline**

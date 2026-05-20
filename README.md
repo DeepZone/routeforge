@@ -2,7 +2,7 @@
   <img src="frontend/public/routeforge.png" alt="RouteForge Logo" width="420">
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.5.4--beta-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.5.5--beta-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-orange" alt="License">
   <img src="https://img.shields.io/badge/status-beta-yellow" alt="Status">
   <img src="https://img.shields.io/badge/selfhosted-ready-success" alt="Selfhosted">
@@ -43,7 +43,7 @@ Routing changes often require fast but traceable checks across multiple external
 
 ## Current Alpha Status
 
-RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.5.4-beta**.
+RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.5.5-beta**.
 
 ## Quickstart with Docker Compose
 
@@ -215,9 +215,13 @@ In the standard setup, RouteForge does **not** require a hardcoded host IP in th
 - SQLite/dev mode keeps lightweight startup initialization (`create_all`) for local/demo compatibility.
 - Run migrations manually before production upgrades (`alembic upgrade head`).
 
+### SQLite permission note
+- For SQLite selfhosting setups, the backend entrypoint ensures `/app/data` is writable by the non-root runtime user `routeforge` at container startup.
+
 ### Operations docs
 - Backup/Restore: `docs/operations/backup-restore.md`
 - Reverse Proxy: `docs/operations/reverse-proxy.md`
+- Troubleshooting: `docs/operations/troubleshooting.md`
 - Logging: `docs/operations/logging.md`
 - Upgrades: `docs/operations/upgrades.md`
 
