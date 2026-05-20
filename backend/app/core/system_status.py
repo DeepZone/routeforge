@@ -135,11 +135,19 @@ def build_system_status(engine: Engine | None) -> dict:
         operational_warnings.append(
             "Database schema is behind the application version. Run database migrations before using checks."
         )
+    if database.get("migration_status") == "behind":
+        operational_warnings.extend(
+            [
+                "Run: alembic current",
+                "Run: alembic heads",
+                "Run: alembic upgrade head",
+            ]
+        )
 
     return {
         "status": "ok",
         "name": settings.app_name,
-        "version": "v0.7.1-beta",
+        "version": "v0.8.1-beta",
         "read_only": True,
         "mode": "demo" if settings.demo_mode else "live",
         "demo_mode": settings.demo_mode,

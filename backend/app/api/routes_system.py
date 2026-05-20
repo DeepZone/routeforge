@@ -12,7 +12,7 @@ router = APIRouter(prefix='/api/system', tags=['system'])
 def system_info():
     return {
         'name': 'RouteForge',
-        'version': 'v0.7.2-beta',
+        'version': 'v0.8.1-beta',
         'demo_mode': settings.demo_mode,
         'read_only': True,
         'data_sources': ['RIPEstat', 'RIPEstat Whois/Registry'],

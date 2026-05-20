@@ -2,7 +2,7 @@
   <img src="frontend/public/routeforge.png" alt="RouteForge Logo" width="420">
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.7.1--beta-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.8.1--beta-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-orange" alt="License">
   <img src="https://img.shields.io/badge/status-beta-yellow" alt="Status">
   <img src="https://img.shields.io/badge/selfhosted-ready-success" alt="Selfhosted">
@@ -43,7 +43,7 @@ Routing changes often require fast but traceable checks across multiple external
 
 ## Current Alpha Status
 
-RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.8.0-beta**.
+RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.8.1-beta**.
 
 ## Quickstart with Docker Compose
 
@@ -276,6 +276,6 @@ In the standard Docker setup, API calls are same-origin via frontend nginx (`/ap
 - Keep `SECRET_KEY` stable; changing it invalidates existing sessions.
 
 
-## BGP Visibility Details (v0.8.0-beta)
+## BGP Visibility Details (v0.8.1-beta)
 - Read-only BGP visibility validation for prefix and optional expected origin AS.
 - Uses external RIPEstat visibility data; results are momentary snapshots and do not replace continuous monitoring.
