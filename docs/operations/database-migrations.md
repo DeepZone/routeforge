@@ -13,16 +13,16 @@ RouteForge uses Alembic for schema lifecycle tracking from `v0.5.3-beta`.
 
 ## Commands
 ```bash
-cd backend
-alembic history
-alembic current
-alembic upgrade head
+docker compose exec backend alembic current
+docker compose exec backend alembic heads
+docker compose exec backend alembic upgrade head
 ```
 
 ## Existing pre-baseline databases
 If the schema already exists from historical `create_all`, mark baseline first:
 ```bash
-alembic stamp 0001_initial_schema
+docker compose exec backend alembic stamp 0001_initial_schema
+docker compose exec backend alembic upgrade head
 ```
 
 ## Auto migration
