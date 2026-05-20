@@ -1,4 +1,4 @@
-import type { AuditLogEntry, CheckResponse, ReportListItem, SystemInfo, SystemStatus, User, UserCreatePayload, UserUpdatePayload } from './types'
+import type { AuditLogEntry, ChangeCaseItem, CheckResponse, ReportListItem, SystemInfo, SystemStatus, User, UserCreatePayload, UserUpdatePayload } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
@@ -74,3 +74,9 @@ export const getAuditLog = (params: { action?: string; user_id?: number; target_
   const suffix = search.toString()
   return requestJson<{ items: AuditLogEntry[]; limit: number; offset: number }>(apiUrl('/api/audit-log' + (suffix ? `?${suffix}` : '')), { method: 'GET' })
 }
+
+export const listChangeCases = () => requestJson<ChangeCaseItem[]>(apiUrl('/api/change-cases'), { method: 'GET' })
+export const createChangeCase = (payload: { title: string; description?: string }) => requestJson<ChangeCaseItem>(apiUrl('/api/change-cases'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+export const updateChangeCase = (id: number, payload: { title?: string; description?: string; status?: string }) => requestJson<ChangeCaseItem>(apiUrl(`/api/change-cases/${id}`), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+export const getChangeCaseReports = (id: number) => requestJson<any[]>(apiUrl(`/api/change-cases/${id}/reports`), { method: 'GET' })
+export const runAsnCheck = (asn: string, change_case_id?: number) => requestJson<CheckResponse>(apiUrl('/api/check/asn'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asn, change_case_id: change_case_id ?? null }) })

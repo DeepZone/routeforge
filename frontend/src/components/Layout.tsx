@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import type { UserRole } from '../types'
 
-type NavKey = 'dashboard' | 'asn' | 'prefix' | 'preflight' | 'reports' | 'system' | 'users' | 'audit' | 'about'
+type NavKey = 'dashboard' | 'asn' | 'prefix' | 'preflight' | 'reports' | 'change-cases' | 'system' | 'users' | 'audit' | 'about'
 
 const nav: { key: NavKey; label: string; desc: string }[] = [
   { key: 'dashboard', label: 'Dashboard', desc: 'Overview & quick actions' },
@@ -9,6 +9,7 @@ const nav: { key: NavKey; label: string; desc: string }[] = [
   { key: 'prefix', label: 'Prefix Check', desc: 'Prefix + origin validation' },
   { key: 'preflight', label: 'Preflight', desc: 'Planned prefix-origin validation' },
   { key: 'reports', label: 'Reports', desc: 'History and outcomes' },
+  { key: 'change-cases', label: 'Change Cases', desc: 'Project-bound routing cases' },
   { key: 'system', label: 'System', desc: 'Operational checks' },
   { key: 'users', label: 'Users', desc: 'Admin user management' },
   { key: 'audit', label: 'Audit Log', desc: 'Admin audit trail' },
@@ -20,7 +21,7 @@ export function Layout({ children, active, onNav, systemLine, title, demoMode, c
     if (!currentUser) return ['dashboard', 'about'].includes(item.key)
     if (currentUser.role === 'admin') return true
     if (currentUser.role === 'operator') return !['users', 'audit'].includes(item.key)
-    return ['dashboard', 'reports', 'about'].includes(item.key)
+    return ['dashboard', 'reports', 'change-cases', 'about'].includes(item.key)
   })
   return <div className='min-h-screen bg-slate-100 text-slate-900'>
     <div className='mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:grid lg:grid-cols-[260px_1fr]'>
@@ -44,7 +45,7 @@ export function Layout({ children, active, onNav, systemLine, title, demoMode, c
             {currentUser && <span className='rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-violet-700'>Angemeldet als {currentUser.username} · {currentUser.role}</span>}
             <span className={`rounded-full border px-3 py-1 ${demoMode ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700'}`}>{demoMode ? 'DEMO' : 'LIVE'}</span>
             <span className='rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700'>READ-ONLY</span>
-            <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>v0.6.6-beta</span>
+            <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>v0.7.0-beta</span>
             <button className='rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700 hover:bg-rose-100' onClick={onLogout}>Logout</button>
           </div>
         </header>

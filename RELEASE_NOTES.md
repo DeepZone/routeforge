@@ -1,6 +1,13 @@
+## v0.7.0-beta
+- Added Projects / Change Cases lifecycle (draft, in_review, approved, closed).
+- Added Change Case API, UI navigation and detail workflow.
+- Checks and reports can be attached to Change Cases for local RouteForge workflow traceability.
+- Added audit events for Change Case and attachment operations.
+- Security: Change Cases are local workflow metadata only; no writes to RIPE DB, RPKI, or routers are performed.
+
 # Release Notes
 
-## v0.6.6-beta
+## v0.7.0-beta
 
 **Audit Log UI & Session Hardening**
 

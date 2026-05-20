@@ -1,7 +1,7 @@
 # RouteForge Roadmap
 
 ## Current Status
-v0.6.6-beta, audit log UI/API and session hardening completed, read-only
+v0.7.0-beta, audit log UI/API and session hardening completed, read-only
 
 ## v0.7.0-beta
 - projects/change cases
