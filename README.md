@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/read--only-routing%20safe-informational" alt="Read-only">
 </p>
 
-<h1 align="center">RouteForge</h1>
+
 
 <p align="center">
   Read-only routing preflight and explainability for BGP, RPKI, Registry/IRR and Routing Visibility.
