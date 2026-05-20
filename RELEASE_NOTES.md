@@ -1,5 +1,28 @@
 # Release Notes
 
+## v0.5.2-beta
+
+**System Status & Operational Checks**
+
+### Highlights
+
+- New `/api/system/status` endpoint
+- GUI System Status view
+- Database health visibility
+- RIPEstat runtime settings visibility
+- Read-only safety state shown
+- API proxy status visible from frontend
+- Improved selfhosting observability
+
+### Known limitations
+
+- No authentication yet
+- No multi-user support yet
+- No advanced alerting
+- No scheduled health checks yet
+
+---
+
 ## v0.5.0-beta
 
 **Production Selfhosting Foundation**
