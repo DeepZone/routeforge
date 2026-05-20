@@ -1,173 +1,149 @@
-# RouteForge v0.2.0-alpha
+# RouteForge
 
-RouteForge ist ein selfhosted, read-only Preflight- und Explainability-Tool für BGP/RPKI/RIPE-Daten.
+RouteForge is a read-only routing preflight and explainability tool for BGP, RPKI, Registry/IRR and Routing Visibility checks.
 
-## Was kann v0.1?
-- ASN Check (RIPEstat as-overview + announced-prefixes)
-- Prefix Check (routing-status, whois, optional rpki-validation mit Origin-AS)
-- ASN-RPKI-Batchprüfung für sichtbare Prefixe
-- Ampelstatus: OK, WARNING, CRITICAL, UNKNOWN
-- Reports als JSON, Markdown, HTML
-- REST API, Web UI, Typer CLI
+Current user-facing version: **v0.3.0-alpha**.
 
-## Was kann v0.1 bewusst noch nicht?
-- Keine RIPE DB Schreibzugriffe
-- Keine ROA Erstellung
-- Kein Router Deployment
-- Keine EVPN/VXLAN Features
-- Kein Cloud-Zwang
+<!-- Screenshot gallery placeholder:
+- docs/screenshots/dashboard.png
+- docs/screenshots/asn-check.png
+- docs/screenshots/asn-batch-available.png
+- docs/screenshots/asn-batch-unavailable.png
+- docs/screenshots/prefix-check-overall.png
+- docs/screenshots/preflight-check.png
+- docs/screenshots/reports-view.png
+- docs/screenshots/export-actions.png
+- docs/screenshots/demo-mode-banner.png
+See docs/screenshots/README.md for capture guidance.
+-->
 
-## Installation
+## What RouteForge does
+
+RouteForge helps operators answer three practical questions before a routing change:
+- Is it authorized? (RPKI)
+- Is it documented? (Registry/IRR)
+- Is it visible? (Routing Visibility)
+
+It combines these checks into an explainable, read-only preflight workflow.
+
+## Why it exists
+
+Routing changes often require fast but traceable checks across multiple external data views. RouteForge provides a single UI/API workflow so teams can run consistent preflight checks, share results, and keep a documented decision trail.
+
+## Current Alpha Status
+
+RouteForge is a **functional alpha** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.3.0-alpha**.
+
+## Quickstart with Docker Compose
+
 ```bash
+git clone https://github.com/DeepZone/routeforge.git
+cd routeforge
+cp .env.example .env
 docker compose up --build
 ```
 
-Mit Hot Reload:
-```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
-```
+URLs:
 
-## Typische Nutzung
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- Health: http://localhost:8000/health
+- System Info: http://localhost:8000/api/system/info
 
-### 1) Prefix gegen Origin-AS prüfen
-```bash
-curl -X POST http://localhost:8000/api/check/prefix \
-  -H "Content-Type: application/json" \
-  -d '{"prefix":"193.0.6.0/24","origin_as":"AS3333"}'
-```
+## Demo Mode
 
-### 2) ASN prüfen
-```bash
-curl -X POST http://localhost:8000/api/check/asn \
-  -H "Content-Type: application/json" \
-  -d '{"asn":"AS3320"}'
-```
+Set `ROUTEFORGE_DEMO_MODE=true` to use fixed demo data.
 
-### 3) RPKI Batchprüfung für sichtbare Prefixe einer ASN
-```bash
-curl -X POST http://localhost:8000/api/check/asn-rpki \
-  -H "Content-Type: application/json" \
-  -d '{"asn":"AS3320","limit":25}'
-```
+Use cases:
+- Presentations
+- Repeatable tests
+- Offline demos
 
-## Statuswerte
+Do **not** use demo mode for real routing decisions.
 
-- **OK:** Keine akute Auffälligkeit im geprüften Kontext.
-- **WARNING:** Prüfung war möglich, aber es gibt Hinweise wie fehlende ROA-Abdeckung oder unvollständige Daten.
-- **CRITICAL:** Es wurde ein kritisches RPKI-Problem gefunden, zum Beispiel `invalid_asn` oder `invalid_length`.
-- **UNKNOWN:** Die Bewertung konnte nicht zuverlässig durchgeführt werden, zum Beispiel wegen fehlender Daten oder API-Fehlern.
-
-
-## Registry/IRR Check
-
-Der Prefix Check enthält zusätzlich einen read-only Registry/IRR-Plausibilitätscheck auf Basis verfügbarer RIPEstat-/Whois-/Registry-Daten.
-Der Check bewertet Hinweise auf route/route6-Objekte und eine mögliche Origin-AS-Plausibilität, liefert bei unklarer Datenlage bewusst `UNKNOWN` oder `WARNING` und zeigt Rohdaten zur Nachvollziehbarkeit an.
-Er ersetzt keine manuelle Registry-Prüfung.
-
-
-## Routing Visibility Check
-
-Der Routing Visibility Check prüft read-only, ob aus verfügbaren RIPEstat-Routingdaten sichtbare Origin-ASNs für ein Prefix abgeleitet werden können.
-Er ersetzt kein vollständiges BGP-Monitoring und keine manuelle Looking-Glass-Prüfung.
-
-## Kombinierte Prefix-Bewertung
-
-RouteForge bewertet Prefix-Checks nicht nur anhand einer einzelnen Quelle. RPKI und Registry/IRR werden getrennt angezeigt, aber zusätzlich zu einer Gesamtbewertung zusammengeführt.
-Ein `CRITICAL` aus einer Einzelprüfung bleibt `CRITICAL` in der Gesamtbewertung. `WARNING` weist auf unvollständige oder unsichere Datenlage hin.
-
-## Demo-Modus
-
-`ROUTEFORGE_DEMO_MODE=true` nutzt feste Beispieldaten und ist für Präsentationen, Tests und Offline-Demos gedacht.  
-Der Demo-Modus darf nicht für echte Routing-Bewertungen verwendet werden.
-
-Beispiel per Umgebungsvariable:
 ```bash
 ROUTEFORGE_DEMO_MODE=true docker compose up --build
 ```
 
-Alternativ über `.env`:
+Or set in `.env`:
+
 ```env
 ROUTEFORGE_DEMO_MODE=true
 ```
 
-## Alpha Demo Flow
+## Core Checks
 
-1. Demo-Modus starten (`ROUTEFORGE_DEMO_MODE=true`).
-2. ASN Check ausführen.
-3. ASN-RPKI-Batchprüfung starten.
-4. Prefix + Origin-AS prüfen.
-5. Gesamtbewertung und Einzelprüfungen lesen.
-6. Markdown Report kopieren.
+- ASN Check
+- Prefix Check
+- RPKI Check
+- Registry/IRR Plausibility Check
+- Routing Visibility Check
+- Change Preflight Mode
 
-## Bekannte Einschränkungen
+## Result Model
 
-- RIPEstat-/Whois-Strukturen können je nach Antwort variieren.
-- Der Registry/IRR Check ist eine Plausibilitätsprüfung und keine autoritative Entscheidung.
-- Der Demo-Modus nutzt feste Beispieldaten.
-- RouteForge arbeitet vollständig read-only (keine Schreibzugriffe).
-- Es gibt noch keinen lokalen RPKI Validator.
-- RIPE Atlas Messungen sind noch nicht integriert.
-- Eine historische Trendanalyse ist noch nicht enthalten.
+Check severities:
+- `OK`
+- `WARNING`
+- `CRITICAL`
+- `UNKNOWN`
 
-## Tests ausführen
+Preflight decision model:
+- `GO`
+- `CAUTION`
+- `NO-GO`
+- `UNKNOWN`
+
+## Export and Sharing
+
+RouteForge reports can be exported/shared as:
+- Summary (plain text)
+- Markdown
+- HTML
+
+## Report History
+
+RouteForge keeps report history so teams can revisit previous checks and share consistent outputs in change workflows.
+
+## Read-only Security Model
+
+RouteForge is read-only by design:
+- no RIPE DB writes
+- no ROA creation
+- no router deployment
+
+## Known Limitations
+
+- Alpha software, interfaces may evolve.
+- RIPEstat payloads can vary over time.
+- No local RPKI validator yet.
+- No full BGP monitoring replacement.
+- No user management yet.
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md).
+
+## Development
+
+Local setup and contribution process are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Tests
 
 Backend:
+
 ```bash
 cd backend
 pytest -q
 ```
 
 Frontend:
+
 ```bash
 cd frontend
 npm run build
 ```
 
-## CLI Beispiele
-```bash
-cd backend
-routeforge check-asn AS3320
-routeforge check-prefix 193.0.22.0/23 --origin-as AS3333
-routeforge report 1 --format markdown
-```
+## License
 
-## Datenquellen
-- RIPEstat Data API: https://stat.ripe.net/docs/02.data-api
-- RPKI Validation Endpoint: https://stat.ripe.net/docs/data-api/api-endpoints/rpki-validation
-- RIPEstat Dokumentation: https://www.ripe.net/publications/documentation/ripestat-documentation/
-
-## Security Hinweis
-RouteForge v0.2.0-alpha ist vollständig read-only.
-
-
-## Change Preflight Mode
-RouteForge kann geplante Prefix-Origin-Announcements read-only prüfen. Es erzeugt keine ROAs, ändert keine Registry-Daten und deployt keine Router-Konfiguration.
-
-```bash
-curl -X POST http://localhost:8000/api/check/preflight \
-  -H "Content-Type: application/json" \
-  -d '{"prefix":"203.0.113.0/24","planned_origin_as":"AS64500"}'
-```
-
-## Result clarity and holder display
-
-RouteForge stellt Ergebnisse mit klarer Ergebnis-Zusammenfassung dar und versucht den Holder (Ressource-Inhaber) aus vorhandenen AS-/Prefix-/Whois-/Registry-Daten abzuleiten.
-Wenn keine belastbare Quelle vorhanden ist, zeigt RouteForge **"Unknown"** an.
-Die Holder-Erkennung ist **read-only**, rein informativ und führt keine Schreiboperationen (keine ROA-Erstellung, keine RIPE-DB-Änderungen, kein Deployment) aus.
-
-## Export and sharing
-
-RouteForge Reports können als **Markdown**, **HTML** oder als kurze **Plain-Text Summary** exportiert werden.
-Die Summary ist für Change-Tickets, Maintenance-Dokumentation oder interne Reviews gedacht.
-
-```bash
-curl http://localhost:8000/api/reports/1/summary
-curl http://localhost:8000/api/reports/1/markdown -o routeforge-report.md
-curl http://localhost:8000/api/reports/1/html -o routeforge-report.html
-```
-
-## Warum ist ASN-RPKI-Batch manchmal nicht verfügbar?
-
-Die ASN-RPKI-Batchprüfung benötigt sichtbare, auswertbare Prefixe aus `announced-prefixes`.
-Wenn keine Prefixe vorliegen, die ASN aktuell nichts announced, die Datenstruktur nicht interpretierbar ist oder RIPEstat temporär fehlschlägt, kann RouteForge keinen Batch starten.
-In diesem Fall zeigt RouteForge den konkreten Grund direkt im ASN-Ergebnis (`details.rpki_batch.message` und `reason_code`) an.
+This project is released under the [MIT License](LICENSE).

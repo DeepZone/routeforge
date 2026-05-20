@@ -1,17 +1,28 @@
-# Screenshot Plan for Alpha Demo
+# RouteForge Screenshot Plan (v0.3.0-alpha)
 
-Dieses Verzeichnis enthält die geplanten Screenshots für die Alpha-Demo-Dokumentation.
-Aktuell werden nur Struktur und Zielmotive vorbereitet (keine Bilddateien enthalten).
+This folder is intentionally prepared for real screenshots that can be added during demo capture.
+No placeholder image files are generated automatically.
 
-## Gewünschte Screenshots
+## Expected files
 
-- `start-page.png`  
-  Startansicht mit Navigation und kurzer Tool-Einordnung.
-- `asn-check.png`  
-  ASN Check Formular mit ausgefülltem Beispiel und Ergebnisbereich.
-- `asn-rpki-batch.png`  
-  ASN-RPKI-Batchprüfung mit Summary und sortierten Einzelresultaten.
-- `prefix-overall-evaluation.png`  
-  Prefix-Check mit kombinierter Gesamtbewertung plus Einzelprüfungen.
-- `demo-mode-banner.png`  
-  Sichtbarer Hinweistext, dass Demo-Modus aktiv ist und feste Daten genutzt werden.
+- `dashboard.png`
+- `asn-check.png`
+- `asn-batch-available.png`
+- `asn-batch-unavailable.png`
+- `prefix-check-overall.png`
+- `preflight-check.png`
+- `reports-view.png`
+- `export-actions.png`
+- `demo-mode-banner.png`
+
+## Capture guidance
+
+- Use demo mode for reproducible screenshots (`ROUTEFORGE_DEMO_MODE=true`).
+- Prefer a consistent browser size (e.g., 1440×900).
+- Keep sensitive/private data out of screenshots.
+- Capture both “batch available” and “batch unavailable” ASN scenarios.
+- Ensure the demo-mode banner is visible where relevant.
+
+## Suggested naming rule
+
+Keep the exact filenames above so README/release assets can reference them directly.

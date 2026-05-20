@@ -1,75 +1,41 @@
-# Release Notes: v0.2.0-alpha
+# Release Notes
 
-## Überblick
+## v0.3.0-alpha
 
-RouteForge v0.2.0-alpha ist ein selfhosted, read-only Preflight- und Explainability-Tool für BGP/RPKI/RIPE-nahe Prüfabläufe.  
-Diese Alpha-Version ist für Demos, frühes Feedback und nachvollziehbare Erstbewertungen gedacht.
+**Product Demo & Release Readiness**
 
-## Highlights
+### Highlights
 
+- Improved README for public alpha usage
+- Demo flow documentation
+- Screenshot plan
+- Clear Quickstart
+- v0.2.x features summarized:
+  - Change Preflight Mode
+  - Routing Visibility Check
+  - Holder display
+  - Export/Sharing
+  - ASN-RPKI batch availability explanations
+
+### Known Limitations
+
+- Alpha software
+- RIPEstat payloads can vary
+- No write operations
+- No usermanagement yet
+- No local RPKI validator yet
+- No full BGP monitoring
+
+---
+
+## v0.2.0-alpha (history)
+
+RouteForge v0.2.0-alpha introduced the functional alpha baseline for read-only routing preflight checks.
+
+Key capabilities in v0.2.x:
 - Change Preflight Mode
 - Routing Visibility Check
-- Modernisierte Operator-GUI
-- RPKI + Registry/IRR + Routing Visibility Gesamtbewertung
-- Demo-Modus weiterhin read-only
-
-## Enthaltene Funktionen
-
-- ASN Check (inkl. Prefix-Extraktion aus sichtbaren Ankündigungen)
-- Prefix Check mit optionalem Origin-AS
-- RPKI Einzelprüfung im Prefix-Check
-- ASN-RPKI-Batchprüfung für sichtbare Prefixe
-- Registry/IRR-Plausibilitätscheck
-- Kombinierte Prefix-Gesamtbewertung mit Einzelprüfungen
-- Routing Visibility Check als zusätzliche read-only Alpha-Prüfung
-- Reports in JSON, Markdown und HTML
-- Export/Share Verbesserungen (alpha): Plain-Text Summary Export sowie verbesserte Download-/Sharing-Workflows für Markdown und HTML
-- Demo-Modus mit festen Beispieldaten
-- Robuste Parser und CI-Basis
-
-## Nicht enthalten
-
-- Keine neuen externen Datenquellen
-- Keine Schreibzugriffe auf Registries/IRR-Systeme
-- Keine ROA-Erstellung
-- Kein Router-Deployment
-- Keine EVPN/VXLAN-Funktionalität
-- Keine große Refaktorierung bestehender Endpoints
-
-## Read-only Sicherheitsmodell
-
-RouteForge arbeitet in v0.2.0-alpha vollständig read-only.  
-Das Tool sammelt, normalisiert und bewertet Daten, nimmt aber keine operativen Änderungen an Routing-Infrastruktur oder Registry-Systemen vor.
-
-## Demo-Modus
-
-Mit `ROUTEFORGE_DEMO_MODE=true` nutzt RouteForge feste Beispieldaten für reproduzierbare Vorführungen und Offline-Demos.  
-**Demo data, not for operational use.**
-
-## Bekannte Einschränkungen
-
-- RIPEstat-/Whois-Strukturen können variieren und unterschiedliche Detailgrade liefern.
-- Registry/IRR Check ist eine Plausibilitätsprüfung, keine autoritative Entscheidung.
-- Demo-Modus nutzt feste Beispieldaten und ist nicht für operative Entscheidungen geeignet.
-- Keine Schreibzugriffe (read-only by design).
-- Kein lokaler RPKI Validator enthalten.
-- Noch keine RIPE Atlas Messungen.
-- Noch keine historische Trendanalyse.
-
-## Beispielablauf
-
-1. RouteForge im Demo-Modus starten.
-2. ASN Check für eine Beispiel-ASN ausführen.
-3. ASN-RPKI-Batchprüfung der sichtbaren Prefixe starten.
-4. Prefix + Origin-AS einzeln prüfen.
-5. Gesamtbewertung und Einzelprüfungen vergleichen.
-6. Markdown-Report kopieren und im Team teilen.
-
-## Nächste geplante Schritte
-
-- Dokumentation und Demo-Artefakte weiter schärfen.
-- UI-Microcopy für technische Zielgruppen weiter vereinfachen.
-- Weitere Beispielreports für typische Warn-/Unknown-Szenarien ergänzen.
-- Stabilität, Testabdeckung und Präsentationsreife vor breiterem Alpha-Feedback erhöhen.
-
-- Added Change Preflight Mode (alpha): read-only planned Prefix-Origin assessment with no ROA creation, no registry writes, and no router deployment.
+- Holder detection/display
+- Export & sharing (Summary, Markdown, HTML)
+- ASN-RPKI batch availability explanations
+- Demo mode and CI-backed test workflows
