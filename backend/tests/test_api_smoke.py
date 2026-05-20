@@ -73,3 +73,16 @@ def test_reports_list_empty_or_present() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert isinstance(payload, list)
+
+
+def test_preflight_check() -> None:
+    client = _client()
+    response = client.post('/api/check/preflight', json={'prefix': '192.0.2.0/24', 'planned_origin_as': 'AS3320'})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload.get('report_id')
+    checks = payload.get('checks', {})
+    assert 'rpki' in checks
+    assert 'registry' in checks
+    assert 'routing_visibility' in checks
+    assert payload.get('details', {}).get('preflight_mode') is True

@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Check, Report
-from app.schemas import AsnCheckRequest, AsnRpkiBatchRequest, CheckResponse, PrefixCheckRequest
+from app.schemas import AsnCheckRequest, AsnRpkiBatchRequest, CheckResponse, PrefixCheckRequest, PreflightCheckRequest
 from app.services.asn_checker import AsnChecker
 from app.services.prefix_checker import PrefixChecker
+from app.services.preflight_checker import PreflightChecker
 from app.services.report_renderer import render_report
 from app.services.ripe_stat_client import RipeStatClient
 
@@ -43,6 +44,18 @@ def check_prefix(payload: PrefixCheckRequest, db: Session = Depends(get_db)) -> 
         raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Prefix-Prüfung fehlgeschlagen: {exc}") from exc
+
+
+
+@router.post('/preflight', response_model=CheckResponse)
+def check_preflight(payload: PreflightCheckRequest, db: Session = Depends(get_db)) -> CheckResponse:
+    try:
+        result = PreflightChecker(RipeStatClient(db)).check(payload.prefix, payload.planned_origin_as)
+        return _store_and_respond(db, "preflight", payload.prefix, payload.planned_origin_as, result)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Preflight-Prüfung fehlgeschlagen: {exc}") from exc
 
 
 def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | None, result: dict) -> CheckResponse:
