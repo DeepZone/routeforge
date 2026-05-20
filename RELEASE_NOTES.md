@@ -23,6 +23,7 @@ Diese Alpha-Version ist für Demos, frühes Feedback und nachvollziehbare Erstbe
 - Kombinierte Prefix-Gesamtbewertung mit Einzelprüfungen
 - Routing Visibility Check als zusätzliche read-only Alpha-Prüfung
 - Reports in JSON, Markdown und HTML
+- Export/Share Verbesserungen (alpha): Plain-Text Summary Export sowie verbesserte Download-/Sharing-Workflows für Markdown und HTML
 - Demo-Modus mit festen Beispieldaten
 - Robuste Parser und CI-Basis
 

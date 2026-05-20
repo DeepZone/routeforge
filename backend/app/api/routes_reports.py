@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Check, Report
+from app.services.report_renderer import render_plain_summary
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -48,10 +49,28 @@ def get_report(report_id: int, db: Session = Depends(get_db)):
 @router.get('/{report_id}/markdown')
 def get_report_markdown(report_id: int, db: Session = Depends(get_db)):
     r = _report_or_404(db, report_id)
-    return Response(content=r.markdown, media_type="text/markdown")
+    return Response(
+        content=r.markdown,
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="routeforge-report-{report_id}.md"'},
+    )
 
 
 @router.get('/{report_id}/html')
 def get_report_html(report_id: int, db: Session = Depends(get_db)):
     r = _report_or_404(db, report_id)
-    return Response(content=r.html, media_type="text/html")
+    return Response(
+        content=r.html,
+        media_type="text/html; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="routeforge-report-{report_id}.html"'},
+    )
+
+
+@router.get('/{report_id}/summary')
+def get_report_summary(report_id: int, db: Session = Depends(get_db)):
+    r = _report_or_404(db, report_id)
+    return Response(
+        content=render_plain_summary(r.json_data or {}),
+        media_type="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="routeforge-summary-{report_id}.txt"'},
+    )
