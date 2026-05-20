@@ -8,7 +8,7 @@ from app.api.routes_system import router as system_router
 from app.config import settings
 from app.database import Base, engine
 
-app = FastAPI(title="RouteForge", version="0.1.1")
+app = FastAPI(title="RouteForge", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
