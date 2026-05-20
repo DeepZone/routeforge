@@ -90,3 +90,25 @@ def test_preflight_check() -> None:
     assert payload.get('details', {}).get('preflight_mode') is True
     assert payload.get('details', {}).get('resource_holder')
     assert payload.get('details', {}).get('preflight_decision') in {'GO', 'CAUTION', 'NO-GO', 'UNKNOWN'}
+
+
+def test_report_export_endpoints() -> None:
+    client = _client()
+    check_response = client.post('/api/check/prefix', json={'prefix': '193.0.6.0/24'})
+    assert check_response.status_code == 200
+    report_id = check_response.json().get('report_id')
+    assert report_id
+
+    summary_response = client.get(f'/api/reports/{report_id}/summary')
+    assert summary_response.status_code == 200
+    assert 'text/plain' in summary_response.headers.get('content-type', '')
+    assert 'RouteForge' in summary_response.text
+    assert 'Status:' in summary_response.text
+
+    markdown_response = client.get(f'/api/reports/{report_id}/markdown')
+    assert markdown_response.status_code == 200
+    assert 'text/markdown' in markdown_response.headers.get('content-type', '')
+
+    html_response = client.get(f'/api/reports/{report_id}/html')
+    assert html_response.status_code == 200
+    assert 'text/html' in html_response.headers.get('content-type', '')

@@ -154,3 +154,14 @@ curl -X POST http://localhost:8000/api/check/preflight \
 RouteForge stellt Ergebnisse mit klarer Ergebnis-Zusammenfassung dar und versucht den Holder (Ressource-Inhaber) aus vorhandenen AS-/Prefix-/Whois-/Registry-Daten abzuleiten.
 Wenn keine belastbare Quelle vorhanden ist, zeigt RouteForge **"Unknown"** an.
 Die Holder-Erkennung ist **read-only**, rein informativ und führt keine Schreiboperationen (keine ROA-Erstellung, keine RIPE-DB-Änderungen, kein Deployment) aus.
+
+## Export and sharing
+
+RouteForge Reports können als **Markdown**, **HTML** oder als kurze **Plain-Text Summary** exportiert werden.
+Die Summary ist für Change-Tickets, Maintenance-Dokumentation oder interne Reviews gedacht.
+
+```bash
+curl http://localhost:8000/api/reports/1/summary
+curl http://localhost:8000/api/reports/1/markdown -o routeforge-report.md
+curl http://localhost:8000/api/reports/1/html -o routeforge-report.html
+```

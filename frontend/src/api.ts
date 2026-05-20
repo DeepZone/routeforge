@@ -30,6 +30,15 @@ async function requestJson<T>(url: string, options: RequestInit): Promise<T> {
   return parsedBody as T
 }
 
+async function requestText(url: string, options: RequestInit): Promise<string> {
+  const response = await fetch(url, options)
+  const text = await response.text()
+  if (!response.ok) {
+    throw new ApiError(`HTTP ${response.status}: ${response.statusText || 'Request failed'}`, response.status, text)
+  }
+  return text
+}
+
 const apiUrl = (path: string) => (API_BASE_URL ? `${API_BASE_URL}${path}` : path)
 
 export const checkAsn = (asn: string) => requestJson<CheckResponse>(apiUrl('/api/check/asn'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asn }) })
@@ -37,5 +46,8 @@ export const checkPrefix = (prefix: string, origin_as?: string) => requestJson<C
 export const checkAsnRpki = (asn: string, limit = 25) => requestJson<CheckResponse>(apiUrl('/api/check/asn-rpki'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asn, limit }) })
 export const getReports = () => requestJson<ReportListItem[]>(apiUrl('/api/reports'), { method: 'GET' })
 export const getSystemInfo = () => requestJson<SystemInfo>(apiUrl('/api/system/info'), { method: 'GET' })
+export const getReportMarkdown = (reportId: number) => requestText(apiUrl(`/api/reports/${reportId}/markdown`), { method: 'GET' })
+export const getReportHtml = (reportId: number) => requestText(apiUrl(`/api/reports/${reportId}/html`), { method: 'GET' })
+export const getReportSummary = (reportId: number) => requestText(apiUrl(`/api/reports/${reportId}/summary`), { method: 'GET' })
 
 export const checkPreflight = (prefix: string, planned_origin_as: string) => requestJson<CheckResponse>(apiUrl('/api/check/preflight'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, planned_origin_as }) })
