@@ -2,15 +2,6 @@
 
 RouteForge uses Alembic for schema lifecycle tracking from `v0.5.3-beta`.
 
-## Why
-- Traceable schema history
-- Safe, repeatable upgrades
-- Visible migration state in system status
-
-## Engines
-- Production: PostgreSQL (recommended)
-- Dev/demo: SQLite supported
-
 ## Commands
 ```bash
 docker compose exec backend alembic current
@@ -18,44 +9,30 @@ docker compose exec backend alembic heads
 docker compose exec backend alembic upgrade head
 ```
 
-## Existing pre-baseline databases
-If the schema already exists from historical `create_all`, mark baseline first:
-```bash
-docker compose exec backend alembic stamp 0001_initial_schema
-docker compose exec backend alembic upgrade head
-```
-
-## Auto migration
-`ROUTEFORGE_AUTO_MIGRATE` is not enabled by default in this beta.
-Run migrations manually before production upgrades.
-
-## Troubleshooting: missing `created_by_user_id` after v0.6 upgrade
-
-Fehlerbild:
-
-`sqlite3.OperationalError: table checks has no column named created_by_user_id`
-
-Ursache:
-
-Die Migration `0002_users_and_report_ownership` wurde auf einer bestehenden Datenbank nicht ausgeführt.
-
-Fix:
+## Docker QA runbook (v0.9.1-rc)
 
 ```bash
+docker compose up -d
+docker compose logs backend
 docker compose exec backend alembic current
 docker compose exec backend alembic heads
 docker compose exec backend alembic upgrade head
+docker compose restart backend
 ```
 
-Wenn bestehende Pre-Alembic DB:
+Validation goals:
+- backend comes up without migration crash
+- `alembic current` equals `alembic heads`
+- after restart, `/api/system/status` remains `migration_status=up_to_date`
 
+## Reverse proxy notes
+
+Use a reverse proxy for production TLS termination and same-origin `/api` forwarding.
+See `docs/operations/reverse-proxy.md` for deployment examples.
+
+## Existing pre-baseline databases
+If schema already exists from historical `create_all`, mark baseline first only after schema verification:
 ```bash
 docker compose exec backend alembic stamp 0001_initial_schema
 docker compose exec backend alembic upgrade head
-```
-
-Vorher Backup:
-
-```bash
-docker compose exec backend sh -c 'cp /app/data/routeforge.db /app/data/routeforge.db.bak.$(date +%s)'
 ```

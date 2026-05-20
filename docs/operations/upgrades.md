@@ -9,6 +9,62 @@ git pull
 docker compose -f docker-compose.prod.yml build
 ```
 
+## Upgrade QA matrix (v0.9.1-rc)
+
+### A) Fresh SQLite DB
+
+```bash
+rm -f backend/data/routeforge.db
+cd backend && alembic upgrade head
+cd .. && docker compose up -d
+```
+
+Expected:
+- backend starts cleanly
+- `/api/system/status` shows `migration_status=up_to_date`
+
+### B) Existing SQLite DB from older revision
+
+```bash
+cd backend && alembic current
+cd backend && alembic heads
+cd backend && alembic upgrade head
+cd .. && docker compose restart backend
+```
+
+Expected:
+- `alembic current` matches `alembic heads`
+- application starts without migration warnings
+
+### C) Behavior when DB is behind
+
+Expected behavior:
+- `/api/system/status` returns database migration status `behind`
+- operational warnings include upgrade command hints
+- release/deployment checks must fail until DB is upgraded
+
+### D) `ALLOW_SQLITE_CREATE_ALL=false`
+
+Expected behavior:
+- SQLite startup must not silently create schema via `create_all`
+- migration discipline remains Alembic-first
+
+### E) Safe `alembic stamp` usage
+
+Use `alembic stamp <revision>` only when:
+- schema was inspected and confirmed equivalent to stamped revision
+- DB is a pre-Alembic legacy DB initialized outside Alembic
+
+Recommended sequence:
+
+```bash
+alembic current
+alembic heads
+# verify tables/columns align with target baseline revision first
+alembic stamp 0001_initial_schema
+alembic upgrade head
+```
+
 ## Database migration workflow (production)
 
 ```bash
@@ -27,27 +83,3 @@ curl http://localhost:3000/api/system/status
   - `migration_head`
 - Open frontend and run a sample check.
 - Verify existing reports can still be viewed.
-
-## Notes on existing alpha databases
-- If tables were created via `create_all` before Alembic baseline, apply baseline carefully:
-
-```bash
-docker compose -f docker-compose.prod.yml run --rm backend alembic stamp 0001_initial_schema
-```
-
-- Then run normal upgrades (`alembic upgrade head`).
-
-## SQLite / dev mode note
-- In SQLite dev mode, `Base.metadata.create_all()` can create tables before Alembic revision stamping.
-- If `/api/system/status` shows tables but unknown/behind migration state, first verify schema, then use `alembic stamp <revision>` only when schema and migration baseline match.
-- Recommended diagnostics sequence:
-  - `alembic current`
-  - `alembic heads`
-  - `alembic upgrade head`
-
-
-## v0.9.0-rc upgrade validation
-
-- Run `python backend/scripts/check_upgrade_path.py` for a CI-friendly SQLite upgrade sanity check (empty DB -> head, current/head checks, simulated behind revision).
-- Use `alembic upgrade head` for real schema upgrades.
-- Use `alembic stamp <revision>` only to baseline pre-existing schema that already matches the target revision.

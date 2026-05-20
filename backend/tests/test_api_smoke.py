@@ -177,7 +177,7 @@ def test_system_status_endpoint() -> None:
     response = client.get('/api/system/status')
     assert response.status_code == 200
     payload = response.json()
-    assert payload.get('version') == 'v0.9.0-rc'
+    assert payload.get('version') == 'v0.9.1-rc'
     assert payload.get('read_only') is True
     assert payload.get('database', {}).get('status')
     assert payload.get('ripestat', {}).get('cache_ttl_seconds') is not None

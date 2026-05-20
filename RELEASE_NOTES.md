@@ -1,3 +1,30 @@
+## v0.9.1-rc (2026-05-20)
+
+### Motivation
+Finalize release-candidate validation for deployment, upgrade discipline, security posture, and role-based UX quality before v1.0.
+
+### Implemented Changes
+- Added deployment health check script (`backend/scripts/check_deployment_health.py`) for API/system/database/build smoke validation.
+- Expanded operations docs with explicit release QA, upgrade QA, Docker QA, and security checklist guidance.
+- Updated release checklist with role/feature UX validation scenarios for admin/operator/viewer.
+- Version bump across backend/frontend/docs to `0.9.1` / `v0.9.1-rc`.
+
+### Deployment QA Notes
+- Use `python backend/scripts/check_deployment_health.py --base-url http://localhost:8000 --check-setup`.
+- Ensure `/api/system/status` reports `read_only=true` and `migration_status` not `behind`.
+
+### Security QA Notes
+- Verify `COOKIE_SECURE=true` for HTTPS.
+- Use explicit `CORS_ORIGINS`, never `*` in production.
+- Ensure Alembic current/head parity before go-live.
+
+### Testing
+- `cd backend && pytest -q`
+- `cd frontend && npm run build`
+
+### Known Limitations
+- Deployment smoke script checks endpoint health/state only; it does not perform synthetic business transactions.
+
 
 ## v0.9.0-rc (2026-05-20)
 

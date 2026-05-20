@@ -1,5 +1,18 @@
 # Security Baseline
 
+## Security QA checklist (v0.9.1-rc)
+
+- [ ] `SECRET_KEY` changed from any default/dev value
+- [ ] `COOKIE_SECURE=true` when running behind HTTPS
+- [ ] `COOKIE_SAMESITE` is plausible (`lax` recommended, `none` only with `COOKIE_SECURE=true`)
+- [ ] `CORS_ORIGINS` is explicit and not `*`
+- [ ] Admin password is strong and unique
+- [ ] Demo mode is disabled for production usage
+- [ ] Backup exists and restore procedure is tested
+- [ ] Alembic is current (`alembic current == alembic heads`)
+- [ ] Watch Mode external cron/triggering is access-restricted and authenticated
+- [ ] No public write-endpoints exist to RIPE/RPKI/router systems
+
 ## Read-only safety model
 
 RouteForge is read-only by design. It validates routing state and preflight conditions but does not push configuration changes to external systems.
@@ -14,13 +27,12 @@ Use RouteForge behind a reverse proxy with TLS termination in production (for ex
 - Never commit `.env` files to git.
 - Change `POSTGRES_PASSWORD` from the example default.
 
-## Default password warning
+## HTTPS cookie and CORS guidance
 
-`/api/system/status` exposes `security_warnings` when a risky default is detected (currently: `POSTGRES_PASSWORD=change-me`). No secret values are returned.
-
-## CORS guidance
-
-In the standard Docker setup, frontend and API are same-origin via nginx (`/api` proxy). CORS is mainly relevant for split deployments where frontend and backend are served from different origins.
+- `COOKIE_SECURE=true` for HTTPS deployments.
+- `COOKIE_SAMESITE=lax` is the recommended default.
+- `COOKIE_SAMESITE=none` requires `COOKIE_SECURE=true`.
+- In split-origin deployments set explicit `CORS_ORIGINS` to frontend domains.
 
 ## Security headers
 
@@ -32,39 +44,8 @@ Frontend nginx sets baseline headers:
 - `Permissions-Policy: geolocation=(), microphone=(), camera=()`
 - A conservative initial Content-Security-Policy for SPA usage
 
-## Container hardening
-
-- Backend container starts through an entrypoint as root only long enough to normalize `/app/data` ownership, then drops privileges to non-root user `routeforge` for runtime.
-
-- Backend container runs as non-root user `routeforge`.
-- Backend image keeps only runtime-relevant files.
-- Frontend image is multi-stage (build + runtime).
-- Nginx container still runs with default upstream behavior; strict non-root nginx runtime can be added later as a dedicated hardening step.
-
-## SQLite volume permissions (Docker Compose)
-
-In the standard `docker-compose.yml` setup with SQLite, the database file is stored at `/app/data/routeforge.db` via the named volume mount `routeforge_data:/app/data`.
-
-The backend entrypoint ensures `/app/data` is writable for the non-root runtime user `routeforge` on container start. This prevents SQLite write failures such as `sqlite3.OperationalError: attempt to write a readonly database` when a mounted volume is root-owned.
-
 ## What RouteForge does not do
 
 - no ROA creation
 - no RIPE DB writes
 - no router deployment
-
-## Current limitations
-
-- Role model: admin/operator/viewer
-- Admin-only user management
-- Inactive users cannot log in
-- Password reset is admin-driven (set new password in user management)
-- No external auth/SSO in this version
-
-
-## v0.9.0-rc baseline
-
-- Session cookies use `HttpOnly`, configurable `COOKIE_SAMESITE` (default `lax`) and `COOKIE_SECURE` policy.
-- Password hashing uses `pbkdf2_sha256` with legacy `sha256` verify compatibility for existing users.
-- Viewer role remains strictly read-only for checks and watch execution/mutation endpoints.
-- RouteForge remains read-only to external systems (no write operations to RIPE DB/RPKI/router APIs).
