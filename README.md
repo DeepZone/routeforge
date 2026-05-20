@@ -2,7 +2,7 @@
 
 RouteForge is a read-only routing preflight and explainability tool for BGP, RPKI, Registry/IRR and Routing Visibility checks.
 
-Current user-facing version: **v0.5.2-beta**.
+Current user-facing version: **v0.5.3-beta**.
 
 <!-- Screenshot gallery placeholder:
 - docs/screenshots/dashboard.png
@@ -32,7 +32,7 @@ Routing changes often require fast but traceable checks across multiple external
 
 ## Current Alpha Status
 
-RouteForge is a **functional alpha** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.5.2-beta**.
+RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.5.3-beta**.
 
 ## Quickstart with Docker Compose
 
@@ -182,6 +182,8 @@ docker compose up --build
 ```bash
 cp .env.example .env
 # edit .env (especially POSTGRES_PASSWORD, DATABASE_URL, CORS_ORIGINS)
+docker compose -f docker-compose.prod.yml up -d postgres
+docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
@@ -198,9 +200,9 @@ In the standard setup, RouteForge does **not** require a hardcoded host IP in th
 
 ### Database
 - Recommended production path: PostgreSQL via `docker-compose.prod.yml`.
-- Backend initializes tables on startup using SQLAlchemy `create_all`.
-- Alembic exists, but migration workflows are still beta-grade.
-- Database migrations are currently simple/alpha-grade and will be hardened before v1.0.
+- Production/PostgreSQL lifecycle is managed with Alembic migrations.
+- SQLite/dev mode keeps lightweight startup initialization (`create_all`) for local/demo compatibility.
+- Run migrations manually before production upgrades (`alembic upgrade head`).
 
 ### Operations docs
 - Backup/Restore: `docs/operations/backup-restore.md`

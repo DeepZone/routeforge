@@ -157,7 +157,7 @@ def test_system_status_endpoint() -> None:
     response = client.get('/api/system/status')
     assert response.status_code == 200
     payload = response.json()
-    assert payload.get('version') == 'v0.5.2-beta'
+    assert payload.get('version') == 'v0.5.3-beta'
     assert payload.get('read_only') is True
     assert payload.get('database', {}).get('status')
     assert payload.get('ripestat', {}).get('cache_ttl_seconds') is not None
@@ -168,3 +168,25 @@ def test_safe_database_url() -> None:
     assert safe_database_url('postgresql+psycopg://routeforge:secret@postgres:5432/routeforge') == 'postgresql://routeforge@postgres:5432/routeforge'
     assert safe_database_url('sqlite:////app/data/routeforge.db') == 'sqlite:////app/data/routeforge.db'
     assert safe_database_url('not a url') == 'configured'
+
+
+def test_system_status_includes_migration_fields() -> None:
+    client = _client()
+    response = client.get('/api/system/status')
+    assert response.status_code == 200
+    database = response.json().get('database', {})
+    assert 'schema_version' in database
+    assert 'migration_status' in database
+    assert 'migration_head' in database
+
+
+def test_migration_status_unknown_does_not_crash() -> None:
+    from app.core import system_status as ss
+
+    class FakeBrokenEngine:
+        def connect(self):
+            raise RuntimeError('db down')
+
+    payload = ss.get_database_status(FakeBrokenEngine())
+    assert payload.get('status') == 'error'
+    assert payload.get('migration_status') == 'error'

@@ -74,7 +74,7 @@ export type SystemInfo = {
   data_sources: string[]
 }
 
-export type DatabaseStatus = { status?: string; type?: string; url_safe?: string; error_message?: string }
+export type DatabaseStatus = { status?: string; type?: string; url_safe?: string; error_message?: string; schema_version?: string; migration_status?: string; migration_head?: string }
 export type ApiProxyStatus = { status?: string; mode?: string; frontend_proxy_expected?: boolean }
 export type RipestatRuntimeSettings = { cache_ttl_seconds?: number; timeout_seconds?: number; max_retries?: number; retry_backoff_seconds?: number; use_stale_cache_on_error?: boolean }
 export type SystemFeatures = { asn_check?: boolean; prefix_check?: boolean; preflight?: boolean; reports?: boolean; exports?: boolean; data_source_diagnostics?: boolean; cache_freshness?: boolean; retry_resilience?: boolean }

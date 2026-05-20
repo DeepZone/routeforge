@@ -30,3 +30,15 @@ curl http://localhost:8000/health
 ```
 - Open UI and verify report history is present.
 - If using demo/SQLite setups, back up the SQLite file separately.
+
+
+## Migration safety
+- Always create a backup before running `alembic upgrade head`.
+- After restore, verify migration state before opening to users:
+
+```bash
+docker compose -f docker-compose.prod.yml run --rm backend alembic current
+curl http://localhost:3000/api/system/status
+```
+
+- Test restore in non-production first, then apply in production.
