@@ -8,7 +8,7 @@ from app.api.routes_system import router as system_router
 from app.config import settings
 from app.database import Base, engine
 
-app = FastAPI(title="RouteForge", version="0.5.2")
+app = FastAPI(title="RouteForge", version="0.5.3")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,7 +21,8 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup() -> None:
-    Base.metadata.create_all(bind=engine)
+    if settings.database_url.startswith("sqlite"):
+        Base.metadata.create_all(bind=engine)
 
 
 app.include_router(health_router)

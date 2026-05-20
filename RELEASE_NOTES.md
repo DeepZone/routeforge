@@ -1,5 +1,26 @@
 # Release Notes
 
+## v0.5.3-beta
+
+**Database Lifecycle & Migrations**
+
+### Highlights
+
+- Alembic migration baseline for backend schema lifecycle
+- Initial schema migration `0001_initial_schema`
+- Migration status visibility in `/api/system/status`
+- Database schema version visibility in GUI System view
+- Upgrade process updated with explicit migration steps
+- Backup/restore documentation updated for migration-safe operations
+
+### Known limitations
+
+- Existing alpha databases may need manual baseline handling (`alembic stamp 0001_initial_schema`)
+- No advanced rollback automation yet
+- Authentication is not implemented yet
+
+---
+
 ## v0.5.2-beta
 
 **System Status & Operational Checks**
