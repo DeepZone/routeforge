@@ -177,7 +177,7 @@ def test_system_status_endpoint() -> None:
     response = client.get('/api/system/status')
     assert response.status_code == 200
     payload = response.json()
-    assert payload.get('version') == 'v0.6.6-beta'
+    assert payload.get('version') == 'v0.7.0-beta'
     assert payload.get('read_only') is True
     assert payload.get('database', {}).get('status')
     assert payload.get('ripestat', {}).get('cache_ttl_seconds') is not None
@@ -369,3 +369,36 @@ def test_cookie_name_and_logout_cookie_settings() -> None:
     assert out.status_code == 200
     logout_cookie = out.headers.get('set-cookie', '')
     assert 'rf_cookie_test=' in logout_cookie
+
+def test_change_case_crud_and_roles() -> None:
+    client = _client()
+    _setup_and_login(client)
+    create = client.post('/api/change-cases', json={'title': 'Case 1', 'description': 'desc'})
+    assert create.status_code == 200
+    cid = create.json()['id']
+    assert client.get('/api/change-cases').status_code == 200
+    patch = client.patch(f'/api/change-cases/{cid}', json={'status': 'in_review'})
+    assert patch.status_code == 200
+
+    client.post('/api/users', json={'username': 'viewer2', 'email': 'viewer2@example.org', 'password': 'ViewerPass123!', 'role': 'viewer'})
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'viewer2', 'password': 'ViewerPass123!'}).status_code == 200
+    assert client.get('/api/change-cases').status_code == 200
+    assert client.post('/api/change-cases', json={'title': 'Nope'}).status_code == 403
+
+
+def test_change_case_invalid_status_and_check_attach_and_audit() -> None:
+    client = _client()
+    _setup_and_login(client)
+    cid = client.post('/api/change-cases', json={'title': 'Case 2', 'description': ''}).json()['id']
+    bad = client.patch(f'/api/change-cases/{cid}', json={'status': 'invalid'})
+    assert bad.status_code == 400
+    check = client.post('/api/check/asn', json={'asn': 'AS3320', 'change_case_id': cid})
+    assert check.status_code == 200
+    reports = client.get(f'/api/change-cases/{cid}/reports')
+    assert reports.status_code == 200
+    assert isinstance(reports.json(), list)
+    audit = client.get('/api/audit-log')
+    actions = [i.get('action') for i in audit.json().get('items', [])]
+    assert 'check_attached_to_change_case' in actions
+    assert 'report_attached_to_change_case' in actions

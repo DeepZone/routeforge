@@ -6,7 +6,29 @@ from pydantic import BaseModel, Field, field_validator
 from app.core.normalize import normalize_asn, validate_prefix
 
 
+class ChangeCaseCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None = None
+
+
+class ChangeCaseUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    description: str | None = None
+    status: str | None = None
+
+
+class ChangeCaseRead(BaseModel):
+    id: int
+    title: str
+    description: str | None
+    status: str
+    created_by_user_id: int | None
+    created_at: datetime
+    updated_at: datetime
+
+
 class AsnCheckRequest(BaseModel):
+    change_case_id: int | None = None
     asn: str
 
     @field_validator("asn")
@@ -19,6 +41,7 @@ class AsnCheckRequest(BaseModel):
 
 
 class AsnRpkiBatchRequest(BaseModel):
+    change_case_id: int | None = None
     asn: str
     limit: int = Field(default=25, ge=1, le=100)
 
@@ -30,6 +53,7 @@ class AsnRpkiBatchRequest(BaseModel):
 
 
 class PrefixCheckRequest(BaseModel):
+    change_case_id: int | None = None
     prefix: str
     origin_as: str | None = None
 
@@ -49,6 +73,7 @@ class PrefixCheckRequest(BaseModel):
 
 
 class PreflightCheckRequest(BaseModel):
+    change_case_id: int | None = None
     prefix: str
     planned_origin_as: str
 

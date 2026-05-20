@@ -19,6 +19,18 @@ class User(Base):
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
+class ChangeCase(Base):
+    __tablename__ = "change_cases"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft")
+    created_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    checks: Mapped[list["Check"]] = relationship(back_populates="change_case")
+
+
 class Check(Base):
     __tablename__ = "checks"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -29,6 +41,8 @@ class Check(Base):
     summary: Mapped[str] = mapped_column(Text, nullable=False)
     created_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    change_case_id: Mapped[int | None] = mapped_column(ForeignKey("change_cases.id"), nullable=True)
+    change_case: Mapped["ChangeCase | None"] = relationship(back_populates="checks")
     report: Mapped["Report"] = relationship(back_populates="check", uselist=False)
 
 

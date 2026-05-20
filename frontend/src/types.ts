@@ -132,3 +132,6 @@ export type AuditLogEntry = {
   user_agent?: string | null
   details_json?: Record<string, unknown> | null
 }
+
+export type ChangeCaseStatus = 'draft' | 'in_review' | 'approved' | 'closed'
+export type ChangeCaseItem = { id:number; title:string; description?:string|null; status:ChangeCaseStatus; created_by_user_id?:number|null; created_at:string; updated_at:string }

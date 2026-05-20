@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.auth import require_operator_or_admin
 from app.core.audit import write_audit_log
 from app.database import get_db
-from app.models import Check, Report
+from app.models import ChangeCase, Check, Report
 from app.schemas import AsnCheckRequest, AsnRpkiBatchRequest, CheckResponse, PrefixCheckRequest, PreflightCheckRequest
 from app.services.asn_checker import AsnChecker
 from app.services.prefix_checker import PrefixChecker
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/check", tags=["checks"])
 def check_asn(payload: AsnCheckRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
     try:
         result = AsnChecker(RipeStatClient(db)).check(payload.asn)
-        return _store_and_respond(db, "asn", payload.asn, None, result, user.id)
+        return _store_and_respond(db, "asn", payload.asn, None, result, user.id, payload.change_case_id)
     except HTTPException:
         raise
     except Exception as exc:
@@ -31,7 +31,7 @@ def check_asn(payload: AsnCheckRequest, db: Session = Depends(get_db), user=Depe
 def check_asn_rpki(payload: AsnRpkiBatchRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
     try:
         result = AsnChecker(RipeStatClient(db)).check_rpki_batch(payload.asn, payload.limit)
-        return _store_and_respond(db, "asn-rpki", payload.asn, None, result, user.id)
+        return _store_and_respond(db, "asn-rpki", payload.asn, None, result, user.id, payload.change_case_id)
     except HTTPException:
         raise
     except Exception as exc:
@@ -42,7 +42,7 @@ def check_asn_rpki(payload: AsnRpkiBatchRequest, db: Session = Depends(get_db), 
 def check_prefix(payload: PrefixCheckRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
     try:
         result = PrefixChecker(RipeStatClient(db)).check(payload.prefix, payload.origin_as)
-        return _store_and_respond(db, "prefix", payload.prefix, payload.origin_as, result, user.id)
+        return _store_and_respond(db, "prefix", payload.prefix, payload.origin_as, result, user.id, payload.change_case_id)
     except HTTPException:
         raise
     except Exception as exc:
@@ -54,16 +54,21 @@ def check_prefix(payload: PrefixCheckRequest, db: Session = Depends(get_db), use
 def check_preflight(payload: PreflightCheckRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
     try:
         result = PreflightChecker(RipeStatClient(db)).check(payload.prefix, payload.planned_origin_as)
-        return _store_and_respond(db, "preflight", payload.prefix, payload.planned_origin_as, result, user.id)
+        return _store_and_respond(db, "preflight", payload.prefix, payload.planned_origin_as, result, user.id, payload.change_case_id)
     except HTTPException:
         raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Preflight-Prüfung fehlgeschlagen: {exc}") from exc
 
 
-def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | None, result: dict, user_id: int | None = None) -> CheckResponse:
+def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | None, result: dict, user_id: int | None = None, change_case_id: int | None = None) -> CheckResponse:
     try:
-        check = Check(check_type=ctype, input_resource=resource, origin_as=origin_as, status=result["status"], summary=result["summary"], created_by_user_id=user_id)
+        change_case = None
+        if change_case_id is not None:
+            change_case = db.query(ChangeCase).filter(ChangeCase.id == change_case_id).first()
+            if not change_case:
+                raise HTTPException(status_code=404, detail="Change Case not found")
+        check = Check(check_type=ctype, input_resource=resource, origin_as=origin_as, status=result["status"], summary=result["summary"], created_by_user_id=user_id, change_case_id=change_case_id)
         db.add(check)
         db.commit()
         db.refresh(check)
@@ -74,6 +79,9 @@ def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | 
         db.refresh(report)
         write_audit_log(db, user_id=user_id, action='check_executed', target_type='check', target_id=str(check.id), details_json={'check_type': ctype, 'input_resource': resource, 'status': result.get('status')})
         write_audit_log(db, user_id=user_id, action='report_generated', target_type='report', target_id=str(report.id), details_json={'check_id': check.id, 'check_type': ctype})
+        if change_case_id is not None:
+            write_audit_log(db, user_id=user_id, action='check_attached_to_change_case', target_type='change_case', target_id=str(change_case_id), details_json={'check_id': check.id})
+            write_audit_log(db, user_id=user_id, action='report_attached_to_change_case', target_type='change_case', target_id=str(change_case_id), details_json={'report_id': report.id})
         return CheckResponse(report_id=report.id, status=result["status"], summary=result["summary"], explanation=result.get("explanation"), risk=result.get("risk"), recommendations=result["recommendations"], input=result.get("input"), checks=result.get("checks"), details=result["details"], markdown=md, html=html)
     except OperationalError as exc:
         db.rollback()
