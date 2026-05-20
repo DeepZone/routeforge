@@ -22,14 +22,14 @@ export default function App() {
     getSystemStatus().then((payload) => { setSystemStatus(payload); setSystemStatusError('') }).catch(() => setSystemStatusError('System status could not be loaded.'))
   }, [])
 
-  const systemLine = useMemo(() => system ? `${system.name} ${system.version} · mode=${system.demo_mode ? 'DEMO' : 'LIVE'} · read_only=${String(system.read_only)}` : 'RouteForge v0.5.4-beta · read-only preflight checks', [system])
+  const systemLine = useMemo(() => system ? `${system.name} ${system.version} · mode=${system.demo_mode ? 'DEMO' : 'LIVE'} · read_only=${String(system.read_only)}` : 'RouteForge v0.5.5-beta · read-only preflight checks', [system])
   const title = { dashboard: 'Dashboard', asn: 'ASN Check', prefix: 'Prefix Check', preflight: 'Preflight Check', reports: 'Reports', system: 'System Status', about: 'About RouteForge' }[active]
   const proxyStatus = systemStatusError ? 'ERROR' : 'OK'
   const migrationStatus = systemStatus?.database?.migration_status || 'unknown'
 
   return <Layout active={active} onNav={setActive} systemLine={systemLine} title={title} demoMode={Boolean(system?.demo_mode)}>
     {active === 'dashboard' && <section className='space-y-4'>
-      <article className='rf-card p-6'><h1 className='text-2xl font-bold'>RouteForge v0.5.4-beta</h1><p className='mt-2 text-slate-600'>Modernes read-only Operator-Tool für Preflight Checks von ASN, Prefix, RPKI und Registry/IRR.</p></article>
+      <article className='rf-card p-6'><h1 className='text-2xl font-bold'>RouteForge v0.5.5-beta</h1><p className='mt-2 text-slate-600'>Modernes read-only Operator-Tool für Preflight Checks von ASN, Prefix, RPKI und Registry/IRR.</p></article>
       <article className='rf-card p-4'><h3 className='font-semibold'>System Health</h3>{systemStatusError ? <p className='text-sm text-rose-700 mt-2'>{systemStatusError}</p> : <div className='mt-2 grid gap-2 text-sm md:grid-cols-4'><div>Status: <b>{systemStatus?.status || 'unknown'}</b></div><div>Mode: <b>{systemStatus?.mode || 'unknown'}</b></div><div>Database: <b>{systemStatus?.database?.status || 'unknown'}</b></div><div>Version: <b>{systemStatus?.version || 'unknown'}</b></div></div>}</article>
     </section>}
     {active === 'asn' && <AsnCheckForm />}
@@ -49,6 +49,6 @@ export default function App() {
         <article className='rf-card p-4 text-sm'><h3 className='font-semibold mb-2'>Features</h3><pre>{JSON.stringify(systemStatus.features, null, 2)}</pre></article>
       </>}
     </section>}
-    {active === 'about' && <section className='rf-card p-5 space-y-2 text-sm text-slate-700'><p>RouteForge liefert nachvollziehbare Routing-Preflightchecks für technische Operator-Workflows.</p><p><b>Version:</b> v0.5.4-beta</p></section>}
+    {active === 'about' && <section className='rf-card p-5 space-y-2 text-sm text-slate-700'><p>RouteForge liefert nachvollziehbare Routing-Preflightchecks für technische Operator-Workflows.</p><p><b>Version:</b> v0.5.5-beta</p></section>}
   </Layout>
 }

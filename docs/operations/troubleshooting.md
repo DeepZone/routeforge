@@ -1,0 +1,20 @@
+# Troubleshooting
+
+## sqlite3.OperationalError: attempt to write a readonly database
+
+### Ursache
+
+Bei SQLite-Deployments liegt die Datenbank häufig unter `/app/data/routeforge.db`.
+Wenn das Docker-Volume auf `/app/data` root-owned ist, kann der non-root Runtime-User `routeforge` nicht in die SQLite-Datei schreiben. Dadurch schlagen Check-Speicherungen mit `sqlite3.OperationalError: attempt to write a readonly database` fehl.
+
+### Fix ab v0.5.5-beta
+
+Ab `v0.5.5-beta` setzt der Backend-Entrypoint beim Containerstart die Ownership für `/app/data` auf `routeforge:routeforge` und startet danach den Prozess weiterhin als non-root User `routeforge`.
+
+### Workaround für ältere Versionen
+
+```bash
+docker compose down
+docker compose run --rm --user root backend sh -c "mkdir -p /app/data && chown -R routeforge:routeforge /app/data && chmod -R u+rwX /app/data"
+docker compose up -d --build
+```
