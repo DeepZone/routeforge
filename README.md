@@ -1,6 +1,16 @@
-# RouteForge
+<p align="center">
+  <img src="https://img.shields.io/badge/version-v0.5.2--beta-blue" alt="Version">
+  <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-orange" alt="License">
+  <img src="https://img.shields.io/badge/status-beta-yellow" alt="Status">
+  <img src="https://img.shields.io/badge/selfhosted-ready-success" alt="Selfhosted">
+  <img src="https://img.shields.io/badge/read--only-routing%20safe-informational" alt="Read-only">
+</p>
 
-RouteForge is a read-only routing preflight and explainability tool for BGP, RPKI, Registry/IRR and Routing Visibility checks.
+<h1 align="center">RouteForge</h1>
+
+<p align="center">
+  Read-only routing preflight and explainability for BGP, RPKI, Registry/IRR and Routing Visibility.
+</p>
 
 Current user-facing version: **v0.5.3-beta**.
 
