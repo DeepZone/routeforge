@@ -29,6 +29,34 @@ KNOWN_SOURCE_STATUSES = {
 }
 
 
+def make_cache_metadata(
+    cached: bool | None,
+    cache_age_seconds: int | None = None,
+    cache_ttl_seconds: int | None = None,
+    fetched_at: str | None = None,
+    expires_at: str | None = None,
+) -> dict[str, Any]:
+    freshness = "UNKNOWN"
+    if cached is False:
+        freshness = "LIVE"
+    elif cached is True and cache_age_seconds is not None and cache_ttl_seconds is not None:
+        if cache_age_seconds <= cache_ttl_seconds * 0.75:
+            freshness = "FRESH"
+        elif cache_age_seconds <= cache_ttl_seconds:
+            freshness = "EXPIRING_SOON"
+        else:
+            freshness = "STALE"
+
+    return {
+        "cached": cached,
+        "cache_age_seconds": cache_age_seconds,
+        "cache_ttl_seconds": cache_ttl_seconds,
+        "fetched_at": fetched_at,
+        "expires_at": expires_at,
+        "freshness": freshness,
+    }
+
+
 def make_source_diagnostic(
     name: str,
     endpoint: str,
@@ -37,6 +65,10 @@ def make_source_diagnostic(
     duration_ms: int | None = None,
     cached: bool | None = None,
     cache_age_seconds: int | None = None,
+    cache_ttl_seconds: int | None = None,
+    fetched_at: str | None = None,
+    expires_at: str | None = None,
+    freshness: str | None = None,
     http_status: int | None = None,
     error_type: str | None = None,
     details: dict[str, Any] | None = None,
@@ -49,6 +81,10 @@ def make_source_diagnostic(
         "duration_ms": duration_ms,
         "cached": cached,
         "cache_age_seconds": cache_age_seconds,
+        "cache_ttl_seconds": cache_ttl_seconds,
+        "fetched_at": fetched_at,
+        "expires_at": expires_at,
+        "freshness": freshness,
         "http_status": http_status,
         "error_type": error_type,
         "details": details or {},

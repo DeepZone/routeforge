@@ -1,9 +1,10 @@
 import time
+from datetime import UTC, datetime, timedelta
 
 import httpx
 from sqlalchemy.orm import Session
 
-from app.config import settings
+import app.config as config
 from app.core.source_diagnostics import (
     EMPTY_RESPONSE,
     ERROR,
@@ -12,9 +13,10 @@ from app.core.source_diagnostics import (
     PARSE_ERROR,
     RATE_LIMITED,
     TIMEOUT,
+    make_cache_metadata,
     make_source_diagnostic,
 )
-from app.services.cache import get_cached, set_cached
+from app.services.cache import _cache_key, get_cached, set_cached
 
 
 class RipeStatClient:
@@ -25,65 +27,86 @@ class RipeStatClient:
         payload, _diagnostic = self.get_with_diagnostics(endpoint, params)
         return payload or {"error": "empty response", "endpoint": endpoint, "params": params}
 
-    def get_with_diagnostics(self, endpoint: str, params: dict) -> tuple[dict | None, dict]:
+    def get_with_diagnostics(self, endpoint: str, params: dict, force_refresh: bool = False) -> tuple[dict | None, dict]:
         started = time.perf_counter()
-        if settings.demo_mode:
+        cache_key = _cache_key(endpoint, params)
+        if config.settings.demo_mode:
             payload = self._get_demo_data(endpoint, params)
+            cache_meta = make_cache_metadata(cached=False)
             return payload, make_source_diagnostic(
                 name=f"RIPEstat {endpoint}",
                 endpoint=endpoint,
                 status=OK,
                 message="Demo data returned",
                 duration_ms=int((time.perf_counter() - started) * 1000),
-                cached=False,
-                details={"demo_mode": True},
+                **cache_meta,
+                details={"demo_mode": True, "force_refresh": force_refresh, "cache_key": cache_key},
             )
 
-        cached_payload = get_cached(self.db, endpoint, params)
-        if cached_payload:
-            return cached_payload, make_source_diagnostic(
-                name=f"RIPEstat {endpoint}",
-                endpoint=endpoint,
-                status=OK,
-                message="RIPEstat response returned from cache",
-                duration_ms=int((time.perf_counter() - started) * 1000),
-                cached=True,
-            )
+        if not force_refresh:
+            cached_payload = get_cached(self.db, endpoint, params)
+            if cached_payload:
+                payload = cached_payload if isinstance(cached_payload, dict) else {"payload": cached_payload}
+                # backward compatibility: older cache may store raw payload
+                if "payload" in payload and "fetched_at" in payload:
+                    wrapped = payload
+                else:
+                    wrapped = {"payload": payload, "fetched_at": datetime.now(UTC).isoformat(), "ttl_seconds": config.settings.cache_ttl_seconds, "cache_key": cache_key}
 
-        url = f"{settings.ripestat_base_url.rstrip('/')}/{endpoint}/data.json"
+                fetched_dt = datetime.fromisoformat(wrapped["fetched_at"]).replace(tzinfo=UTC)
+                age_seconds = max(0, int((datetime.now(UTC) - fetched_dt).total_seconds()))
+                ttl = int(wrapped.get("ttl_seconds") or config.settings.cache_ttl_seconds)
+                expires_at = (fetched_dt + timedelta(seconds=ttl)).isoformat()
+                cache_meta = make_cache_metadata(True, age_seconds, ttl, wrapped["fetched_at"], expires_at)
+                return wrapped.get("payload"), make_source_diagnostic(
+                    name=f"RIPEstat {endpoint}",
+                    endpoint=endpoint,
+                    status=OK,
+                    message="RIPEstat response served from cache",
+                    duration_ms=int((time.perf_counter() - started) * 1000),
+                    **cache_meta,
+                    details={"cache_key": cache_key, "fetched_at": wrapped["fetched_at"], "expires_at": expires_at, "force_refresh": False},
+                )
+
+        url = f"{config.settings.ripestat_base_url.rstrip('/')}/{endpoint}/data.json"
         try:
-            with httpx.Client(timeout=settings.http_timeout_seconds) as client:
+            with httpx.Client(timeout=config.settings.http_timeout_seconds) as client:
                 resp = client.get(url, params=params)
                 if resp.status_code == 429:
                     return {"error": "rate limited", "endpoint": endpoint, "params": params}, make_source_diagnostic(
-                        name=f"RIPEstat {endpoint}", endpoint=endpoint, status=RATE_LIMITED, message="RIPEstat rate limit reached", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, http_status=resp.status_code, error_type="http_429"
+                        name=f"RIPEstat {endpoint}", endpoint=endpoint, status=RATE_LIMITED, message="RIPEstat rate limit reached", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, freshness="LIVE", http_status=resp.status_code, error_type="http_429", details={"cache_key": cache_key, "force_refresh": force_refresh}
                     )
                 resp.raise_for_status()
                 data = resp.json()
         except httpx.TimeoutException as exc:
             return {"error": str(exc), "endpoint": endpoint, "params": params}, make_source_diagnostic(
-                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=TIMEOUT, message="RIPEstat did not respond before timeout", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, error_type=type(exc).__name__
+                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=TIMEOUT, message="RIPEstat did not respond before timeout", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, freshness="LIVE", error_type=type(exc).__name__, details={"cache_key": cache_key, "force_refresh": force_refresh}
             )
         except httpx.HTTPStatusError as exc:
             return {"error": str(exc), "endpoint": endpoint, "params": params}, make_source_diagnostic(
-                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=HTTP_ERROR, message="RIPEstat responded with HTTP error", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, http_status=exc.response.status_code, error_type=type(exc).__name__
+                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=HTTP_ERROR, message="RIPEstat responded with HTTP error", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, freshness="LIVE", http_status=exc.response.status_code, error_type=type(exc).__name__, details={"cache_key": cache_key, "force_refresh": force_refresh}
             )
         except ValueError as exc:
             return {"error": str(exc), "endpoint": endpoint, "params": params}, make_source_diagnostic(
-                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=PARSE_ERROR, message="RIPEstat response could not be parsed as JSON", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, error_type=type(exc).__name__
+                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=PARSE_ERROR, message="RIPEstat response could not be parsed as JSON", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, freshness="LIVE", error_type=type(exc).__name__, details={"cache_key": cache_key, "force_refresh": force_refresh}
             )
         except Exception as exc:
             return {"error": str(exc), "endpoint": endpoint, "params": params}, make_source_diagnostic(
-                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=ERROR, message="RIPEstat request failed", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, error_type=type(exc).__name__
+                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=ERROR, message="RIPEstat request failed", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, freshness="LIVE", error_type=type(exc).__name__, details={"cache_key": cache_key, "force_refresh": force_refresh}
             )
 
         if not data:
             return data, make_source_diagnostic(
-                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=EMPTY_RESPONSE, message="RIPEstat returned an empty response", duration_ms=int((time.perf_counter() - started) * 1000), cached=False
+                name=f"RIPEstat {endpoint}", endpoint=endpoint, status=EMPTY_RESPONSE, message="RIPEstat returned an empty response", duration_ms=int((time.perf_counter() - started) * 1000), cached=False, freshness="LIVE", details={"cache_key": cache_key, "force_refresh": force_refresh}
             )
-        set_cached(self.db, endpoint, params, data)
+
+        fetched_at = datetime.now(UTC).isoformat()
+        ttl = config.settings.cache_ttl_seconds
+        expires_at = (datetime.now(UTC) + timedelta(seconds=ttl)).isoformat()
+        set_cached(self.db, endpoint, params, {"payload": data, "fetched_at": fetched_at, "ttl_seconds": ttl, "cache_key": cache_key})
+        cache_meta = make_cache_metadata(False, None, ttl, fetched_at, expires_at)
         return data, make_source_diagnostic(
-            name=f"RIPEstat {endpoint}", endpoint=endpoint, status=OK, message="RIPEstat response received", duration_ms=int((time.perf_counter() - started) * 1000), cached=False
+            name=f"RIPEstat {endpoint}", endpoint=endpoint, status=OK, message="RIPEstat response received", duration_ms=int((time.perf_counter() - started) * 1000), **cache_meta, details={"cache_key": cache_key, "fetched_at": fetched_at, "expires_at": expires_at, "force_refresh": force_refresh}
         )
 
     def _get_demo_data(self, endpoint: str, params: dict) -> dict:

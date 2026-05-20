@@ -1,5 +1,16 @@
 # Release Notes
 
+## v0.4.1-alpha
+
+### Highlights
+
+- Cache & Freshness Transparency
+- Cache age and TTL shown in diagnostics
+- Freshness classification LIVE/FRESH/EXPIRING_SOON/STALE/UNKNOWN
+- Force Refresh support prepared internally
+
+---
+
 ## v0.4.0-alpha
 
 **Product Demo & Release Readiness**
