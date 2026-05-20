@@ -74,7 +74,7 @@ export default function App() {
   if (authMode === 'login') return <LoginView onSubmit={onLoginSubmit} error={authError} />
   if (authMode === 'error') return <div className='p-8 text-center text-rose-700'>{authError}</div>
 
-  const systemLine = system ? `${system.name} ${system.version} · mode=${system.demo_mode ? 'DEMO' : 'LIVE'} · read_only=${String(system.read_only)}` : 'RouteForge v0.8.1-beta · read-only preflight checks'
+  const systemLine = system ? `${system.name} ${system.version} · mode=${system.demo_mode ? 'DEMO' : 'LIVE'} · read_only=${String(system.read_only)}` : 'RouteForge v0.9.1-rc · read-only preflight checks'
   const title = { dashboard: 'Dashboard', asn: 'ASN Check', prefix: 'Prefix Check', preflight: 'Preflight Check', 'roa-planner': 'ROA Planner', 'bgp-visibility': 'BGP Visibility', reports: 'Reports', 'watch-mode': 'Watch Mode', 'change-cases': 'Change Cases', system: 'System Status', users: 'User Management', audit: 'Audit Log', about: 'About RouteForge' }[active]
   const proxyStatus = systemStatusError ? 'ERROR' : 'OK'
   const migrationStatus = systemStatus?.database?.migration_status || 'unknown'
@@ -89,7 +89,7 @@ export default function App() {
   const allowedActions = role === 'admin' ? 'You can run checks, manage users, view reports and system status.' : role === 'operator' ? 'You can run checks and view reports.' : 'You can view reports and change cases.'
 
   return <Layout active={active} onNav={setActive} systemLine={systemLine} title={title} demoMode={Boolean(system?.demo_mode)} currentUser={currentUser} onLogout={handleLogout}>
-    {active === 'dashboard' && <section className='space-y-4'><article className='rf-card p-6'><h1 className='text-2xl font-bold'>RouteForge v0.8.1-beta</h1><p className='mt-2 text-slate-600'>Modernes read-only Operator-Tool für Preflight Checks von ASN, Prefix, RPKI und Registry/IRR.</p></article><article className='rf-card p-4 text-sm'><div><b>Logged in as:</b> {currentUser?.username}</div><div><b>Role:</b> {currentUser?.role}</div><div><b>Allowed actions:</b> {allowedActions}</div></article>{migrationsBlocked && <article className='rf-card border border-amber-300 bg-amber-50 p-4 text-amber-900'>Database migrations are required before using RouteForge. Run: <code>alembic current</code>, <code>alembic heads</code>, <code>alembic upgrade head</code>.</article>}</section>}
+    {active === 'dashboard' && <section className='space-y-4'><article className='rf-card p-6'><h1 className='text-2xl font-bold'>RouteForge v0.9.1-rc</h1><p className='mt-2 text-slate-600'>Modernes read-only Operator-Tool für Preflight Checks von ASN, Prefix, RPKI und Registry/IRR.</p></article><article className='rf-card p-4 text-sm'><div><b>Logged in as:</b> {currentUser?.username}</div><div><b>Role:</b> {currentUser?.role}</div><div><b>Allowed actions:</b> {allowedActions}</div></article>{migrationsBlocked && <article className='rf-card border border-amber-300 bg-amber-50 p-4 text-amber-900'>Database migrations are required before using RouteForge. Run: <code>alembic current</code>, <code>alembic heads</code>, <code>alembic upgrade head</code>.</article>}</section>}
     {!canAccess(active) && <article className='rf-card p-4 text-amber-800 bg-amber-50 border border-amber-200'>You do not have permission to access this section.</article>}
     {active === 'asn' && canAccess('asn') && <AsnCheckForm />}
     {active === 'prefix' && canAccess('prefix') && <PrefixCheckForm />}

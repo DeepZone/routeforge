@@ -1,26 +1,58 @@
 # Release Checklist
 
-## Before release
+## v0.9.1-rc: Deployment QA & UX Validation
+
+### 1) Pre-release validation
 
 - `git pull`
 - Run backend tests (`cd backend && pytest -q`)
 - Run frontend production build (`cd frontend && npm run build`)
 - Validate Compose (`docker compose config` and production config)
-- Check system status endpoint (`/api/system/status`)
-- Check migration status visibility (`database.schema_version`, `migration_head`, `migration_status`)
 
-## Tagging
+### 2) Deployment smoke check
 
-- `git tag -a vX.Y.Z[-beta] -m "RouteForge vX.Y.Z[-beta]"`
-- `git push origin vX.Y.Z[-beta]`
+Run after backend/frontend are up and frontend artifacts were built:
 
-## GitHub Release
+```bash
+python backend/scripts/check_deployment_health.py --base-url http://localhost:8000 --check-setup
+```
 
-- Use release title matching the version and sprint scope
-- Enable **prerelease** checkbox for beta versions
-- Include structured release notes with highlights and known limitations
+The script validates:
+- Backend reachable (`/health`)
+- `/api/system/status` reachable
+- `version` present
+- `read_only=true`
+- `database.status`, `schema_version`, `migration_head` present
+- `migration_status` is not `behind`
+- Frontend build artifacts exist (`frontend/dist/index.html`)
+- Optional `/api/setup/required` reachability
 
-## Post-release smoke test
+### 3) UX QA checklist
+
+- [ ] Setup Flow works and initial admin creation succeeds
+- [ ] Login/Logout works end-to-end
+- [ ] User Management roles behave correctly (admin/operator/viewer)
+- [ ] Audit Log is visible only for admin users
+- [ ] Change Case create/edit/delete works for authorized roles
+- [ ] BGP Visibility check works and stores report
+- [ ] ROA Planner check works and stores report
+- [ ] Watch Target create/edit/run-due works for authorized roles
+- [ ] Report export works for Markdown/HTML/Summary
+- [ ] Viewer can read data but cannot execute checks/watch/change operations
+- [ ] Operator can execute checks/watch/change cases, but cannot access user/audit admin-only features
+
+### 4) Tagging
+
+- `git tag -a v0.9.1-rc -m "RouteForge v0.9.1-rc"`
+- `git push origin v0.9.1-rc`
+
+### 5) GitHub Release
+
+- Release title aligned with `v0.9.1-rc`
+- Mark as prerelease
+- Include deployment, upgrade, and security QA notes
+
+### 6) Post-release smoke test
 
 - `GET /health`
 - `GET /api/system/info`
