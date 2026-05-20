@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/routeforge.png" alt="RouteForge Logo" width="420">
+  <img src="frontend/public/routeforge.png" alt="RouteForge Logo" width="420">
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/version-v0.5.3--beta-blue" alt="Version">
