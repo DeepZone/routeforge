@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="docs/assets/routeforge.png" alt="RouteForge Logo" width="420">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/version-v0.5.2--beta-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-orange" alt="License">
   <img src="https://img.shields.io/badge/status-beta-yellow" alt="Status">
