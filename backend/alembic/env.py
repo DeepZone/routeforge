@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from logging.config import fileConfig
+from pathlib import Path
+import configparser
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
@@ -12,8 +14,20 @@ from app import models  # noqa: F401
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
 
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+def _configure_logging() -> None:
+    if not config.config_file_name:
+        return
+    config_path = Path(config.config_file_name)
+    if not config_path.exists():
+        return
+    parser = configparser.ConfigParser()
+    parser.read(config_path)
+    required = {"loggers", "handlers", "formatters"}
+    if required.issubset(set(parser.sections())):
+        fileConfig(config_path)
+
+
+_configure_logging()
 
 target_metadata = Base.metadata
 

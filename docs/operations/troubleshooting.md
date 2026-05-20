@@ -18,3 +18,18 @@ docker compose down
 docker compose run --rm --user root backend sh -c "mkdir -p /app/data && chown -R routeforge:routeforge /app/data && chmod -R u+rwX /app/data"
 docker compose up -d --build
 ```
+
+
+## KeyError: 'formatters' (Alembic)
+
+### Ursache
+
+Ältere Versionen hatten eine minimale `backend/alembic.ini` ohne Logging-Sektionen, während `backend/alembic/env.py` `fileConfig(...)` aufgerufen hat.
+
+### Fix
+
+Update auf `v0.6.4-beta` oder neuer, dann:
+
+```bash
+docker compose exec backend alembic upgrade head
+```

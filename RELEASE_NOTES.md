@@ -1,5 +1,18 @@
 # Release Notes
 
+## v0.6.4-beta
+
+**Alembic Logging Config Hotfix**
+
+### Highlights
+
+- Fixed Alembic CLI crash with `KeyError: "formatters"`.
+- Alembic `env.py` now handles minimal `alembic.ini` files safely.
+- Database migration commands now work in Docker selfhosting setups.
+- Migration troubleshooting documentation updated.
+
+---
+
 ## v0.6.2-beta
 
 **Frontend Auth Render Hotfix**
@@ -192,7 +205,7 @@ Key capabilities in v0.2.x:
 - ASN-RPKI batch availability explanations
 - Demo mode and CI-backed test workflows
 
-## v0.6.3-beta
+## v0.6.4-beta
 
 **Migration UX & Auth Visibility Hotfix**
 
