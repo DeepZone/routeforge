@@ -1,4 +1,4 @@
-## v0.7.2-beta: BGP Visibility Details
+## v0.8.0-beta: BGP Visibility Details
 
 ### Motivation
 Improve prefix visibility checks with explicit BGP origin visibility details while preserving RouteForge's strict read-only model.

@@ -1,4 +1,4 @@
-import type { AuditLogEntry, ChangeCaseItem, CheckResponse, ReportListItem, SystemInfo, SystemStatus, User, UserCreatePayload, UserUpdatePayload } from './types'
+import type { AuditLogEntry, ChangeCaseItem, CheckResponse, ReportListItem, SystemInfo, SystemStatus, User, UserCreatePayload, UserUpdatePayload, WatchRun, WatchTarget } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
@@ -88,3 +88,11 @@ export const runPreflightCheck = (prefix: string, planned_origin_as: string, cha
 export const runBgpVisibilityCheck = (prefix: string, expected_origin_as?: string, change_case_id?: number) => requestJson<CheckResponse>(apiUrl('/api/check/bgp-visibility'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, expected_origin_as: expected_origin_as || null, change_case_id: change_case_id ?? null }) })
 
 export const runRoaPreflightCheck = (prefix: string, origin_as: string, max_length?: number, change_case_id?: number) => requestJson<CheckResponse>(apiUrl('/api/check/roa-preflight'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, origin_as, max_length: max_length ?? null, change_case_id: change_case_id ?? null }) })
+
+export const listWatchTargets = () => requestJson<WatchTarget[]>(apiUrl('/api/watch-targets'), { method: 'GET' })
+export const createWatchTarget = (payload: any) => requestJson<WatchTarget>(apiUrl('/api/watch-targets'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+export const updateWatchTarget = (id: number, payload: any) => requestJson<WatchTarget>(apiUrl(`/api/watch-targets/${id}`), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+export const deleteWatchTarget = (id: number) => requestJson<{ok:boolean}>(apiUrl(`/api/watch-targets/${id}`), { method: 'DELETE' })
+export const getWatchTargetRuns = (id: number) => requestJson<WatchRun[]>(apiUrl(`/api/watch-targets/${id}/runs`), { method: 'GET' })
+export const runWatchTarget = (id: number) => requestJson<WatchRun>(apiUrl(`/api/watch-targets/${id}/run`), { method: 'POST' })
+export const runDueWatchTargets = () => requestJson<any>(apiUrl('/api/watch-targets/run-due'), { method: 'POST' })
