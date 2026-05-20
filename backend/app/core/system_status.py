@@ -104,8 +104,12 @@ def get_database_status(engine: Engine | None) -> dict:
 
 def _security_warnings() -> list[str]:
     warnings: list[str] = []
+    if settings.secret_key == "change-me":
+        warnings.append("SECRET_KEY uses the default example value. Change it before production use.")
     if settings.postgres_password == "change-me":
         warnings.append("POSTGRES_PASSWORD uses the default example value. Change it before production use.")
+    if not settings.cookie_secure:
+        warnings.append("COOKIE_SECURE is false. Use true behind HTTPS in production.")
     return warnings
 
 
@@ -113,7 +117,7 @@ def build_system_status(engine: Engine | None) -> dict:
     return {
         "status": "ok",
         "name": settings.app_name,
-        "version": "v0.5.5-beta",
+        "version": "v0.6.0-beta",
         "read_only": True,
         "mode": "demo" if settings.demo_mode else "live",
         "demo_mode": settings.demo_mode,

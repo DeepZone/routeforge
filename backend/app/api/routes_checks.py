@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.auth import require_operator_or_admin
 from app.database import get_db
 from app.models import Check, Report
 from app.schemas import AsnCheckRequest, AsnRpkiBatchRequest, CheckResponse, PrefixCheckRequest, PreflightCheckRequest
@@ -14,10 +15,10 @@ router = APIRouter(prefix="/api/check", tags=["checks"])
 
 
 @router.post('/asn', response_model=CheckResponse)
-def check_asn(payload: AsnCheckRequest, db: Session = Depends(get_db)) -> CheckResponse:
+def check_asn(payload: AsnCheckRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
     try:
         result = AsnChecker(RipeStatClient(db)).check(payload.asn)
-        return _store_and_respond(db, "asn", payload.asn, None, result)
+        return _store_and_respond(db, "asn", payload.asn, None, result, user.id)
     except HTTPException:
         raise
     except Exception as exc:
@@ -25,10 +26,10 @@ def check_asn(payload: AsnCheckRequest, db: Session = Depends(get_db)) -> CheckR
 
 
 @router.post('/asn-rpki', response_model=CheckResponse)
-def check_asn_rpki(payload: AsnRpkiBatchRequest, db: Session = Depends(get_db)) -> CheckResponse:
+def check_asn_rpki(payload: AsnRpkiBatchRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
     try:
         result = AsnChecker(RipeStatClient(db)).check_rpki_batch(payload.asn, payload.limit)
-        return _store_and_respond(db, "asn-rpki", payload.asn, None, result)
+        return _store_and_respond(db, "asn-rpki", payload.asn, None, result, user.id)
     except HTTPException:
         raise
     except Exception as exc:
@@ -36,10 +37,10 @@ def check_asn_rpki(payload: AsnRpkiBatchRequest, db: Session = Depends(get_db)) 
 
 
 @router.post('/prefix', response_model=CheckResponse)
-def check_prefix(payload: PrefixCheckRequest, db: Session = Depends(get_db)) -> CheckResponse:
+def check_prefix(payload: PrefixCheckRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
     try:
         result = PrefixChecker(RipeStatClient(db)).check(payload.prefix, payload.origin_as)
-        return _store_and_respond(db, "prefix", payload.prefix, payload.origin_as, result)
+        return _store_and_respond(db, "prefix", payload.prefix, payload.origin_as, result, user.id)
     except HTTPException:
         raise
     except Exception as exc:
@@ -48,23 +49,23 @@ def check_prefix(payload: PrefixCheckRequest, db: Session = Depends(get_db)) -> 
 
 
 @router.post('/preflight', response_model=CheckResponse)
-def check_preflight(payload: PreflightCheckRequest, db: Session = Depends(get_db)) -> CheckResponse:
+def check_preflight(payload: PreflightCheckRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
     try:
         result = PreflightChecker(RipeStatClient(db)).check(payload.prefix, payload.planned_origin_as)
-        return _store_and_respond(db, "preflight", payload.prefix, payload.planned_origin_as, result)
+        return _store_and_respond(db, "preflight", payload.prefix, payload.planned_origin_as, result, user.id)
     except HTTPException:
         raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Preflight-Prüfung fehlgeschlagen: {exc}") from exc
 
 
-def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | None, result: dict) -> CheckResponse:
-    check = Check(check_type=ctype, input_resource=resource, origin_as=origin_as, status=result["status"], summary=result["summary"])
+def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | None, result: dict, user_id: int | None = None) -> CheckResponse:
+    check = Check(check_type=ctype, input_resource=resource, origin_as=origin_as, status=result["status"], summary=result["summary"], created_by_user_id=user_id)
     db.add(check)
     db.commit()
     db.refresh(check)
     report_json, md, html = render_report({"check_id": check.id, "input_check_type": ctype, **result})
-    report = Report(check_id=check.id, json_data=report_json, markdown=md, html=html)
+    report = Report(check_id=check.id, created_by_user_id=user_id, json_data=report_json, markdown=md, html=html)
     db.add(report)
     db.commit()
     db.refresh(report)

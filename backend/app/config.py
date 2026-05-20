@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     demo_mode: bool = Field(default=False, validation_alias="ROUTEFORGE_DEMO_MODE")
     log_level: str = "INFO"
     postgres_password: str = Field(default="", validation_alias="POSTGRES_PASSWORD")
+    secret_key: str = Field(default="change-me", validation_alias="SECRET_KEY")
+    session_cookie_name: str = Field(default="routeforge_session", validation_alias="SESSION_COOKIE_NAME")
+    session_expire_hours: int = Field(default=12, validation_alias="SESSION_EXPIRE_HOURS")
+    cookie_secure: bool = Field(default=False, validation_alias="COOKIE_SECURE")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
