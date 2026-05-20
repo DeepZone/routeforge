@@ -41,12 +41,23 @@ class RipeStatClient:
             return {
                 "data": {
                     "resource": "AS3320",
+                    "organisation": "Demo Networks Ltd.",
+                    "as-name": "DEMO-AS",
                     "prefixes": [
                         {"prefix": "192.0.2.0/24"},
                         {"prefix": "198.51.100.0/24"},
                         {"prefix": "203.0.113.0/24"},
                         {"prefix": "2001:db8::/32"},
                     ],
+                },
+                "demo_mode": True,
+            }
+        if endpoint == "whois":
+            return {
+                "data": {
+                    "resource": resource,
+                    "records": [{"key": "organisation", "value": "Demo Networks Ltd."}, {"key": "netname", "value": "DEMO-NET"}],
+                    "holder": "Demo Networks Ltd.",
                 },
                 "demo_mode": True,
             }

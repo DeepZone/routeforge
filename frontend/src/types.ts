@@ -52,6 +52,7 @@ export type ReportListItem = {
   origin_as?: string | null
   status: string
   summary: string
+  holder?: string | null
   created_at: string
 }
 

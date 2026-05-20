@@ -5,14 +5,19 @@
 
 <h2>Eingabe</h2>
 <ul>
+  <li><strong>Check-Typ:</strong> {{ report.input_check_type or '-' }}</li>
   <li><strong>Prefix:</strong> {{ report.input.prefix if report.input else '-' }}</li>
   <li><strong>Origin-AS:</strong> {{ report.input.origin_as if report.input and report.input.origin_as else '-' }}</li>
+  <li><strong>Planned Origin-AS:</strong> {{ report.input.planned_origin_as if report.input and report.input.planned_origin_as else '-' }}</li>
+  <li><strong>ASN:</strong> {{ report.input.asn if report.input and report.input.asn else '-' }}</li>
+  <li><strong>Holder:</strong> {{ report.details.resource_holder.holder if report.details and report.details.resource_holder else 'Unknown' }}</li>
 </ul>
 
 <h2>Gesamtbewertung</h2>
 <ul>
   <li><strong>Status:</strong> {{ report.status }}</li>
   <li><strong>Kurzfassung:</strong> {{ report.summary }}</li>
+  <li><strong>Preflight Decision:</strong> {{ report.details.preflight_decision if report.details and report.details.preflight_decision else '-' }}</li>
   <li><strong>Erklärung:</strong> {{ report.explanation or '-' }}</li>
   <li><strong>Risiko:</strong> {{ report.risk or '-' }}</li>
 </ul>

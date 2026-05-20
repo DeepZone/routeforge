@@ -148,3 +148,9 @@ curl -X POST http://localhost:8000/api/check/preflight \
   -H "Content-Type: application/json" \
   -d '{"prefix":"203.0.113.0/24","planned_origin_as":"AS64500"}'
 ```
+
+## Result clarity and holder display
+
+RouteForge stellt Ergebnisse mit klarer Ergebnis-Zusammenfassung dar und versucht den Holder (Ressource-Inhaber) aus vorhandenen AS-/Prefix-/Whois-/Registry-Daten abzuleiten.
+Wenn keine belastbare Quelle vorhanden ist, zeigt RouteForge **"Unknown"** an.
+Die Holder-Erkennung ist **read-only**, rein informativ und führt keine Schreiboperationen (keine ROA-Erstellung, keine RIPE-DB-Änderungen, kein Deployment) aus.
