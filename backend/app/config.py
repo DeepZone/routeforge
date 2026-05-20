@@ -13,8 +13,10 @@ class Settings(BaseSettings):
     ripestat_retry_backoff_seconds: float = 0.5
     ripestat_use_stale_cache_on_error: bool = True
     cache_ttl_seconds: int = Field(default=900, validation_alias="RIPESTAT_CACHE_TTL_SECONDS")
-    cors_origins: str = "http://192.168.58.167:3000,http://127.0.0.1:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     demo_mode: bool = Field(default=False, validation_alias="ROUTEFORGE_DEMO_MODE")
+    log_level: str = "INFO"
+    postgres_password: str = Field(default="", validation_alias="POSTGRES_PASSWORD")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

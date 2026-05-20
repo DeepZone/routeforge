@@ -1,5 +1,29 @@
 # Release Notes
 
+## v0.5.4-beta
+
+**Production Polish & Security Baseline**
+
+### Highlights
+
+- Security headers for frontend Nginx
+- Improved same-origin proxy security guidance
+- Container hardening review
+- Safer environment and secrets documentation
+- Logging baseline improvements
+- Security operations documentation
+- Release checklist documentation
+- Optional security warnings in system status
+
+### Known limitations
+
+- No authentication yet
+- No multi-user support yet
+- No advanced RBAC yet
+- No automated release pipeline yet
+
+---
+
 
 ## Licensing
 

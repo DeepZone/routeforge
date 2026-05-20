@@ -4,5 +4,10 @@ __pycache__/
 .pytest_cache/
 .venv/
 node_modules/
+dist/
 frontend/dist/
 backend/.pytest_cache/
+coverage/
+.env
+.env.*
+!.env.example
