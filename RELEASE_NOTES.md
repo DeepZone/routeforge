@@ -1,5 +1,18 @@
 # Release Notes
 
+## v0.6.2-beta
+
+**Frontend Auth Render Hotfix**
+
+### Highlights
+
+- Fixed white screen after initial admin setup/login.
+- Fixed React hook ordering issue in `App.tsx`.
+- Auth bootstrap flow now renders setup/login/app states without hook crashes.
+- No backend routing/check logic changed.
+
+---
+
 ## v0.6.1-beta
 
 **Auth Bootstrap Fix**
