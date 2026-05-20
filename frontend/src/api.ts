@@ -34,7 +34,7 @@ async function requestText(url: string, options: RequestInit): Promise<string> {
   const response = await fetch(url, options)
   const text = await response.text()
   if (!response.ok) {
-    throw new ApiError(`HTTP ${response.status}: ${response.statusText || 'Request failed'}`, response.status, text)
+    throw new ApiError(`HTTP ${response.status}: ${text || response.statusText || 'Request failed'}`, response.status, text)
   }
   return text
 }

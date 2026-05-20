@@ -165,3 +165,9 @@ curl http://localhost:8000/api/reports/1/summary
 curl http://localhost:8000/api/reports/1/markdown -o routeforge-report.md
 curl http://localhost:8000/api/reports/1/html -o routeforge-report.html
 ```
+
+## Warum ist ASN-RPKI-Batch manchmal nicht verfügbar?
+
+Die ASN-RPKI-Batchprüfung benötigt sichtbare, auswertbare Prefixe aus `announced-prefixes`.
+Wenn keine Prefixe vorliegen, die ASN aktuell nichts announced, die Datenstruktur nicht interpretierbar ist oder RIPEstat temporär fehlschlägt, kann RouteForge keinen Batch starten.
+In diesem Fall zeigt RouteForge den konkreten Grund direkt im ASN-Ergebnis (`details.rpki_batch.message` und `reason_code`) an.
