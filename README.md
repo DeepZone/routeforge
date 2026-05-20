@@ -43,7 +43,7 @@ Routing changes often require fast but traceable checks across multiple external
 
 ## Current Alpha Status
 
-RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.7.2-beta**.
+RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.8.0-beta**.
 
 ## Quickstart with Docker Compose
 
@@ -276,6 +276,6 @@ In the standard Docker setup, API calls are same-origin via frontend nginx (`/ap
 - Keep `SECRET_KEY` stable; changing it invalidates existing sessions.
 
 
-## BGP Visibility Details (v0.7.2-beta)
+## BGP Visibility Details (v0.8.0-beta)
 - Read-only BGP visibility validation for prefix and optional expected origin AS.
 - Uses external RIPEstat visibility data; results are momentary snapshots and do not replace continuous monitoring.

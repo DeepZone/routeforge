@@ -78,3 +78,36 @@ class AuditLog(Base):
     user_agent: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     details_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+
+class WatchTarget(Base):
+    __tablename__ = "watch_targets"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    watch_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    prefix: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    asn: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    origin_as: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    expected_origin_as: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    max_length: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    interval_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    change_case_id: Mapped[int | None] = mapped_column(ForeignKey("change_cases.id"), nullable=True)
+    created_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    next_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    last_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class WatchRun(Base):
+    __tablename__ = "watch_runs"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    watch_target_id: Mapped[int] = mapped_column(ForeignKey("watch_targets.id"), nullable=False)
+    report_id: Mapped[int | None] = mapped_column(ForeignKey("reports.id"), nullable=True)
+    previous_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    changed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
