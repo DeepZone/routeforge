@@ -118,3 +118,17 @@ export type UserUpdatePayload = {
   is_active?: boolean
   password?: string
 }
+
+
+export type AuditLogEntry = {
+  id: number
+  created_at: string
+  user_id?: number | null
+  username?: string | null
+  action: string
+  target_type?: string | null
+  target_id?: string | null
+  ip_address?: string | null
+  user_agent?: string | null
+  details_json?: Record<string, unknown> | null
+}

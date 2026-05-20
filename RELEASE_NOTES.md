@@ -1,5 +1,26 @@
 # Release Notes
 
+## v0.6.6-beta
+
+**Audit Log UI & Session Hardening**
+
+### Highlights
+
+- Added centralized backend audit logging service and audit events for setup/auth/user/check/report actions.
+- Added admin-only `GET /api/audit-log` API with basic filters and newest-first sorting.
+- Added admin-only Audit Log UI with table, loading/error/empty states and filters.
+- Session cookie handling now consistently uses `SESSION_COOKIE_NAME` and `COOKIE_SECURE` settings for set/delete.
+- Added backend tests for audit permissions/events and session cookie hardening behavior.
+
+### Security notes
+
+- Audit events exclude passwords, password hashes, session tokens and secrets.
+- `login_failed` entries store only username/reason and request metadata.
+- RouteForge remains read-only against RIPE DB, RPKI and routers; no write paths were introduced.
+- Audit logging is local to RouteForge storage only.
+
+---
+
 ## v0.6.5-beta
 
 **Auth UX & Admin Console Polish**
