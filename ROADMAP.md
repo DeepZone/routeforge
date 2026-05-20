@@ -1,13 +1,13 @@
 # RouteForge Roadmap
 
 ## Current Status
-v0.7.1-beta, BGP Visibility Details completed, read-only
+v0.7.2-beta, BGP Visibility Details completed, read-only
 
-## v0.7.1-beta
+## v0.7.2-beta
 - projects/change cases
 - grouped preflight reports
 
-## v0.7.1-beta
+## v0.7.2-beta
 - bgp visibility details
 
 ## v0.7.2-beta
