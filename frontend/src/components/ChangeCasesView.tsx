@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ApiError, createChangeCase, deleteChangeCase, getChangeCaseReports, getReportHtml, getReportMarkdown, getReportSummary, listChangeCases, runAsnCheck, runBgpVisibilityCheck, runPrefixCheck, runPreflightCheck, runRoaPreflightCheck, updateChangeCase } from '../api'
 import type { ChangeCaseItem, UserRole } from '../types'
+import { StatusBadge } from './StatusBadge'
 
 type ChangeCaseReport = { report_id:number; check_id:number; check_type:string; summary:string; status:string; created_at:string }
 
@@ -62,7 +63,7 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
       </div>
     </article>}
 
-    {loading ? <div>Loading…</div> : items.length===0 ? <div className='text-sm text-slate-500'>No change cases yet.</div> : <table className='w-full text-sm'><thead><tr><th>Title</th><th>Status</th><th>Owner</th><th>Created</th><th>Updated</th></tr></thead><tbody>{items.map(i=><tr key={i.id} className='border-t cursor-pointer' onClick={()=>setSelected(i)}><td>{i.title}</td><td>{i.status}</td><td>{i.created_by_user_id ?? '—'}</td><td>{new Date(i.created_at).toLocaleString()}</td><td>{new Date(i.updated_at).toLocaleString()}</td></tr>)}</tbody></table>}
+    {loading ? <div className='text-sm text-slate-500'>Loading change cases…</div> : items.length===0 ? <div className='rounded border border-dashed p-3 text-sm text-slate-500'>No change cases yet. Create one to attach checks and reports.</div> : <table className='w-full text-sm'><thead><tr><th>Title</th><th>Status</th><th>Owner</th><th>Created</th><th>Updated</th></tr></thead><tbody>{items.map(i=><tr key={i.id} className='border-t cursor-pointer' onClick={()=>setSelected(i)}><td>{i.title}</td><td><StatusBadge status={i.status === 'approved' ? 'OK' : i.status === 'in_review' ? 'WARNING' : i.status === 'closed' ? 'UNKNOWN' : 'UNKNOWN'} /></td><td>{i.created_by_user_id ?? '—'}</td><td>{new Date(i.created_at).toLocaleString()}</td><td>{new Date(i.updated_at).toLocaleString()}</td></tr>)}</tbody></table>}
 
     {selected && <article className='border rounded p-3 space-y-3'>
       <div className='flex justify-between items-center'>

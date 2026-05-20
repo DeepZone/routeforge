@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createWatchTarget, deleteWatchTarget, getWatchTargetRuns, listWatchTargets, runWatchTarget, updateWatchTarget } from '../api'
+import { createWatchTarget, deleteWatchTarget, getWatchTargetRuns, listWatchTargets, runDueWatchTargets, runWatchTarget, updateWatchTarget } from '../api'
 import type { UserRole, WatchRun, WatchTarget } from '../types'
 
 type WatchType = 'asn' | 'prefix' | 'bgp_visibility' | 'roa_preflight'
@@ -49,6 +49,7 @@ export function WatchModeView({ role }: { role: UserRole }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [runDueSummary, setRunDueSummary] = useState<string | null>(null)
 
   const canEdit = role !== 'viewer'
 
@@ -70,7 +71,7 @@ export function WatchModeView({ role }: { role: UserRole }) {
   useEffect(() => { loadTargets() }, [])
   useEffect(() => {
     if (!selected) return
-    getWatchTargetRuns(selected.id).then(setRuns).catch((e) => setError(e instanceof Error ? e.message : 'Failed to load runs'))
+    getWatchTargetRuns(selected.id).then((data)=>setRuns([...data].sort((a,b)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime()))).catch((e) => setError(e instanceof Error ? e.message : 'Failed to load runs'))
   }, [selected?.id])
 
   const typeHints = useMemo(() => ({
@@ -115,12 +116,15 @@ export function WatchModeView({ role }: { role: UserRole }) {
   return <section className='rf-card p-4 space-y-3'>
     <h2 className='text-xl font-semibold'>Watch Mode</h2>
     {!canEdit && <div className='rounded border border-amber-300 bg-amber-50 p-2 text-sm'>Viewer role: read-only access. Create/Edit/Delete/Run actions are disabled.</div>}
+    {canEdit && <button className='rf-btn-secondary' disabled={submitting} onClick={async()=>{setSubmitting(true); setError(null); setRunDueSummary(null); try { const r=await runDueWatchTargets(); setRunDueSummary(`Executed: ${r.executed}, Changed: ${r.changed}, Failed: ${r.failed}`); await loadTargets(selected?.id) } catch (e) { setError(e instanceof Error ? e.message : 'Run due failed') } finally { setSubmitting(false) }}}>Run Due Watches</button>}
+    {runDueSummary && <div className='text-sm text-emerald-700'>{runDueSummary}</div>}
     {loading && <div className='text-sm'>Loading targets…</div>}
     {error && <div className='text-sm text-red-700'>{error}</div>}
     {success && <div className='text-sm text-green-700'>{success}</div>}
 
     <div className='grid md:grid-cols-2 gap-3'>
       <div className='space-y-2'>
+        {targets.length === 0 && <div className='rounded border border-dashed p-3 text-sm text-slate-500'>No watch targets yet. Create one to start scheduled monitoring.</div>}
         {targets.map(t => <button key={t.id} className='block w-full text-left border rounded p-2' onClick={()=>setSelected(t)}>{t.name} · {t.watch_type} · {t.last_status || 'n/a'}</button>)}
       </div>
       <div>{selected && <div className='space-y-2 border rounded p-3'>
@@ -150,7 +154,7 @@ export function WatchModeView({ role }: { role: UserRole }) {
         </div>}
 
         <h4 className='font-medium pt-2'>Runs History</h4>
-        <table className='w-full text-xs'><thead><tr><th>created_at</th><th>previous_status</th><th>status</th><th>changed</th><th>summary</th><th>report_id</th></tr></thead><tbody>{runs.map(r=><tr key={r.id}><td>{r.created_at}</td><td>{r.previous_status ?? 'n/a'}</td><td>{r.status}</td><td>{String(r.changed)}</td><td>{r.summary}</td><td>{r.report_id ?? 'n/a'}</td></tr>)}</tbody></table>
+        {runs.length === 0 ? <div className='text-xs text-slate-500'>No runs yet for this watch target.</div> : <table className='w-full text-xs'><thead><tr><th>created_at</th><th>previous_status</th><th>status</th><th>changed</th><th>summary</th><th>report_id</th></tr></thead><tbody>{runs.map(r=><tr key={r.id} className={r.changed ? 'bg-amber-50' : ''}><td>{r.created_at}</td><td>{r.previous_status ?? 'n/a'}</td><td>{r.status}</td><td>{String(r.changed)}</td><td>{r.summary}</td><td>{r.report_id ? <a className='text-blue-700 underline' href={`/api/reports/${r.report_id}/summary`} target='_blank' rel='noreferrer'>{r.report_id}</a> : 'n/a'}</td></tr>)}</tbody></table>}
       </div>}</div>
     </div>
 

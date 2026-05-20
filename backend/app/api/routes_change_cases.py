@@ -68,5 +68,11 @@ def delete_change_case(change_case_id: int, db: Session = Depends(get_db), user=
 def list_change_case_reports(change_case_id: int, db: Session = Depends(get_db), _=Depends(require_role('viewer','operator','admin'))):
     cc = db.query(ChangeCase).filter(ChangeCase.id == change_case_id).first()
     if not cc: raise HTTPException(status_code=404, detail='Change Case not found')
-    rows = db.query(Report, Check).join(Check, Report.check_id == Check.id).filter(Check.change_case_id == change_case_id).all()
+    rows = (
+        db.query(Report, Check)
+        .join(Check, Report.check_id == Check.id)
+        .filter(Check.change_case_id == change_case_id)
+        .order_by(Report.created_at.desc())
+        .all()
+    )
     return [{'report_id': r.id, 'check_id': c.id, 'check_type': c.check_type, 'summary': c.summary, 'status': c.status, 'created_at': r.created_at.isoformat()} for r, c in rows]

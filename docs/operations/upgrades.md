@@ -36,3 +36,11 @@ docker compose -f docker-compose.prod.yml run --rm backend alembic stamp 0001_in
 ```
 
 - Then run normal upgrades (`alembic upgrade head`).
+
+## SQLite / dev mode note
+- In SQLite dev mode, `Base.metadata.create_all()` can create tables before Alembic revision stamping.
+- If `/api/system/status` shows tables but unknown/behind migration state, first verify schema, then use `alembic stamp <revision>` only when schema and migration baseline match.
+- Recommended diagnostics sequence:
+  - `alembic current`
+  - `alembic heads`
+  - `alembic upgrade head`

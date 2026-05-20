@@ -1,4 +1,4 @@
-## v0.8.0-beta hotfix: Watch Mode UX
+## v0.8.1-beta hotfix: Watch Mode UX
 
 ### Motivation
 Make Watch Mode usable in production by replacing placeholder target creation with full create/edit UX.
@@ -16,7 +16,7 @@ Make Watch Mode usable in production by replacing placeholder target creation wi
 ### Known Limitations
 - Form validation remains primarily API-driven; frontend currently forwards server-side validation errors.
 
-## v0.8.0-beta: BGP Visibility Details
+## v0.8.1-beta: BGP Visibility Details
 
 ### Motivation
 Improve prefix visibility checks with explicit BGP origin visibility details while preserving RouteForge's strict read-only model.
@@ -52,6 +52,34 @@ BGP visibility checks remain read-only and do not modify RIPE DB, RPKI objects, 
 - Security: Change Cases are local workflow metadata only; no writes to RIPE DB, RPKI, or routers are performed.
 
 # Release Notes
+
+## v0.8.1-beta
+
+**Stabilization, UX Polish & Upgrade Safety**
+
+### Motivation
+- Harden end-to-end operator workflows without introducing major new features.
+- Improve UI clarity for loading/error/empty states and watch/change-case day-2 operations.
+- Improve migration visibility and upgrade safety for selfhosted environments.
+
+### Implemented Changes
+- Added backend E2E workflow test coverage for Change Case → BGP Visibility → ROA Preflight → Watch Run → Report/Audit validation.
+- Improved Change Case report ordering to newest-first.
+- Improved Watch Mode UX with run-due action, summary feedback, newest-first run history, changed-run highlighting, and report links.
+- Improved system migration guidance to show actionable Alembic command hints.
+- Bumped versions and docs to `v0.8.1-beta` / `0.8.1`.
+
+### Upgrade Safety Notes
+- System status now emphasizes migration command sequence when DB revisions are behind.
+- Added explicit SQLite/dev-mode note about `create_all` vs Alembic stamping order in upgrade operations docs.
+
+### Testing
+- `cd backend && pytest -q`
+- `cd frontend && npm run build`
+
+### Known Limitations
+- `Base.metadata.create_all()` remains intentionally active only for SQLite/dev compatibility.
+- Some UI areas still use free-form filter fields where predefined presets may be added later.
 
 ## v0.7.0-beta
 
