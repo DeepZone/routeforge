@@ -4,10 +4,12 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.routes_auth import router as auth_router
 from app.api.routes_checks import router as checks_router
 from app.api.routes_health import router as health_router
 from app.api.routes_reports import router as reports_router
 from app.api.routes_system import router as system_router
+from app.api.routes_users import router as users_router
 from app.config import settings
 from app.core.system_status import database_type_from_url
 from app.database import Base, engine
@@ -15,7 +17,7 @@ from app.database import Base, engine
 logging.basicConfig(level=getattr(logging, settings.log_level.upper(), logging.INFO))
 logger = logging.getLogger("routeforge")
 
-app = FastAPI(title="RouteForge", version="0.5.5")
+app = FastAPI(title="RouteForge", version="0.6.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,3 +50,5 @@ app.include_router(checks_router)
 app.include_router(reports_router)
 
 app.include_router(system_router)
+app.include_router(auth_router)
+app.include_router(users_router)

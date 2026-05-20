@@ -1,6 +1,6 @@
 # Release Notes
 
-## v0.5.5-beta
+## v0.6.0-beta
 
 **SQLite Volume Permission Hotfix**
 

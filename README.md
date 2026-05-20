@@ -43,7 +43,7 @@ Routing changes often require fast but traceable checks across multiple external
 
 ## Current Alpha Status
 
-RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.5.5-beta**.
+RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.6.0-beta**.
 
 ## Quickstart with Docker Compose
 
