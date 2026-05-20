@@ -402,3 +402,56 @@ def test_change_case_invalid_status_and_check_attach_and_audit() -> None:
     actions = [i.get('action') for i in audit.json().get('items', [])]
     assert 'check_attached_to_change_case' in actions
     assert 'report_attached_to_change_case' in actions
+
+def test_change_case_delete_admin_detaches_checks_and_audit() -> None:
+    client = _client()
+    _setup_and_login(client)
+    cid = client.post('/api/change-cases', json={'title': 'Delete Me', 'description': 'desc'}).json()['id']
+    check = client.post('/api/check/asn', json={'asn': 'AS3320', 'change_case_id': cid})
+    assert check.status_code == 200
+
+    before_reports = client.get('/api/reports')
+    assert before_reports.status_code == 200
+    report_count_before = len(before_reports.json())
+
+    deleted = client.delete(f'/api/change-cases/{cid}')
+    assert deleted.status_code == 200
+    assert deleted.json().get('ok') is True
+    assert deleted.json().get('detached_checks') == 1
+
+    assert client.get(f'/api/change-cases/{cid}').status_code == 404
+
+    after_reports = client.get('/api/reports')
+    assert after_reports.status_code == 200
+    assert len(after_reports.json()) == report_count_before
+
+    reports_for_case = client.get(f'/api/change-cases/{cid}/reports')
+    assert reports_for_case.status_code == 404
+
+    audit = client.get('/api/audit-log')
+    events = [i for i in audit.json().get('items', []) if i.get('action') == 'change_case_deleted']
+    assert events
+    details = events[0].get('details_json', {})
+    assert details.get('title') == 'Delete Me'
+    assert details.get('status') == 'draft'
+    assert details.get('detached_checks') == 1
+
+
+def test_change_case_delete_operator_allowed_viewer_forbidden() -> None:
+    client = _client()
+    _setup_and_login(client)
+    client.post('/api/users', json={'username': 'op3', 'email': 'op3@example.org', 'password': 'OperatorPass123!', 'role': 'operator'})
+    client.post('/api/users', json={'username': 'vw4', 'email': 'vw4@example.org', 'password': 'ViewerPass123!', 'role': 'viewer'})
+    cid = client.post('/api/change-cases', json={'title': 'Role Delete', 'description': ''}).json()['id']
+
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'op3', 'password': 'OperatorPass123!'}).status_code == 200
+    assert client.delete(f'/api/change-cases/{cid}').status_code == 200
+
+    cid2 = client.post('/api/change-cases', json={'title': 'Role Delete 2', 'description': ''})
+    assert cid2.status_code == 200
+    cid2v = cid2.json()['id']
+
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'vw4', 'password': 'ViewerPass123!'}).status_code == 200
+    assert client.delete(f'/api/change-cases/{cid2v}').status_code == 403
