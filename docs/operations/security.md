@@ -34,10 +34,18 @@ Frontend nginx sets baseline headers:
 
 ## Container hardening
 
+- Backend container starts through an entrypoint as root only long enough to normalize `/app/data` ownership, then drops privileges to non-root user `routeforge` for runtime.
+
 - Backend container runs as non-root user `routeforge`.
 - Backend image keeps only runtime-relevant files.
 - Frontend image is multi-stage (build + runtime).
 - Nginx container still runs with default upstream behavior; strict non-root nginx runtime can be added later as a dedicated hardening step.
+
+## SQLite volume permissions (Docker Compose)
+
+In the standard `docker-compose.yml` setup with SQLite, the database file is stored at `/app/data/routeforge.db` via the named volume mount `routeforge_data:/app/data`.
+
+The backend entrypoint ensures `/app/data` is writable for the non-root runtime user `routeforge` on container start. This prevents SQLite write failures such as `sqlite3.OperationalError: attempt to write a readonly database` when a mounted volume is root-owned.
 
 ## What RouteForge does not do
 

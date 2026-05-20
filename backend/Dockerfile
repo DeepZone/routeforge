@@ -2,18 +2,23 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN useradd --create-home --shell /usr/sbin/nologin routeforge
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --shell /usr/sbin/nologin routeforge
 
 COPY pyproject.toml ./
 COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini ./alembic.ini
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN pip install --no-cache-dir . \
     && mkdir -p /app/data \
-    && chown -R routeforge:routeforge /app
+    && chown -R routeforge:routeforge /app \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
 
-USER routeforge
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 8000
 

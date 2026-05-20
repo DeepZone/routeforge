@@ -24,3 +24,4 @@ docker compose -f docker-compose.prod.yml logs -f postgres
 - Check Postgres health and credentials (`DATABASE_URL`).
 - Validate `CORS_ORIGINS` and `VITE_API_URL` alignment.
 - Inspect retry/fallback diagnostics for upstream RIPEstat outages.
+- If you see `sqlite3.OperationalError: attempt to write a readonly database` in dev/compose mode, check volume ownership on `/app/data` and rebuild/restart with the fixed backend image that normalizes volume permissions at startup.
