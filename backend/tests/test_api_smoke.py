@@ -111,6 +111,7 @@ def test_preflight_check() -> None:
     assert 'registry' in checks
     assert 'routing_visibility' in checks
     assert payload.get('details', {}).get('preflight_mode') is True
+    assert isinstance(payload.get('details', {}).get('source_diagnostics'), list)
     assert payload.get('details', {}).get('resource_holder')
     assert payload.get('details', {}).get('preflight_decision') in {'GO', 'CAUTION', 'NO-GO', 'UNKNOWN'}
 

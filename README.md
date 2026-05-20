@@ -2,7 +2,7 @@
 
 RouteForge is a read-only routing preflight and explainability tool for BGP, RPKI, Registry/IRR and Routing Visibility checks.
 
-Current user-facing version: **v0.3.0-alpha**.
+Current user-facing version: **v0.4.0-alpha**.
 
 <!-- Screenshot gallery placeholder:
 - docs/screenshots/dashboard.png
@@ -32,7 +32,7 @@ Routing changes often require fast but traceable checks across multiple external
 
 ## Current Alpha Status
 
-RouteForge is a **functional alpha** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.3.0-alpha**.
+RouteForge is a **functional alpha** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.4.0-alpha**.
 
 ## Quickstart with Docker Compose
 

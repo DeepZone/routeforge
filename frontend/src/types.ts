@@ -18,6 +18,20 @@ export type RpkiBatchResult = {
   raw?: Record<string, unknown>
 }
 
+
+export type SourceDiagnostic = {
+  name?: string
+  endpoint?: string
+  status?: string
+  message?: string
+  duration_ms?: number | null
+  cached?: boolean | null
+  cache_age_seconds?: number | null
+  http_status?: number | null
+  error_type?: string | null
+  details?: Record<string, unknown>
+}
+
 export type CheckResponse = {
   report_id: number
   status: string
@@ -45,6 +59,7 @@ export type CheckResponse = {
     demo_mode?: boolean
     source_errors?: unknown
     warnings?: unknown
+    source_diagnostics?: SourceDiagnostic[]
     [key: string]: unknown
   }
   markdown: string

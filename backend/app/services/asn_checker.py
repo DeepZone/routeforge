@@ -39,8 +39,10 @@ class AsnChecker:
     def check(self, asn_input: str) -> dict:
         asn = normalize_asn(asn_input)
         resource = format_asn(asn)
-        overview = self.client.get("as-overview", {"resource": resource})
-        prefixes = self.client.get("announced-prefixes", {"resource": resource})
+        overview, overview_diag = self.client.get_with_diagnostics("as-overview", {"resource": resource})
+        prefixes, prefixes_diag = self.client.get_with_diagnostics("announced-prefixes", {"resource": resource})
+        overview = overview or {}
+        prefixes = prefixes or {}
         announced_data = prefixes.get("data", {}) if isinstance(prefixes, dict) else {}
         extracted_prefixes = self._extract_prefixes(announced_data if isinstance(announced_data, dict) else {})
         rpki_batch = self._build_rpki_batch_metadata(prefixes, announced_data, extracted_prefixes)
@@ -77,6 +79,7 @@ class AsnChecker:
                     "as_overview": overview.get("error") if isinstance(overview, dict) else None,
                     "announced_prefixes": prefixes.get("error") if isinstance(prefixes, dict) else None,
                 },
+                "source_diagnostics": [overview_diag, prefixes_diag],
                 "demo_mode": settings.demo_mode,
             },
             "sources": ["RIPEstat as-overview", "RIPEstat announced-prefixes"],
@@ -85,7 +88,8 @@ class AsnChecker:
     def check_rpki_batch(self, asn_input: str, limit: int) -> dict:
         asn = normalize_asn(asn_input)
         resource = format_asn(asn)
-        prefixes_payload = self.client.get("announced-prefixes", {"resource": resource})
+        prefixes_payload, prefixes_diag = self.client.get_with_diagnostics("announced-prefixes", {"resource": resource})
+        prefixes_payload = prefixes_payload or {}
         announced_data = prefixes_payload.get("data", {}) if isinstance(prefixes_payload, dict) else {}
         extracted = self._extract_prefixes(announced_data if isinstance(announced_data, dict) else {})
         rpki_batch = self._build_rpki_batch_metadata(prefixes_payload, announced_data, extracted)
@@ -97,9 +101,18 @@ class AsnChecker:
         has_critical = False
         has_warning = False
 
+        diag_agg = {"total_requests": 0, "ok": 0, "errors": 0, "timeouts": 0, "rate_limited": 0, "unknown_structure": 0}
         for prefix in selected:
             try:
                 rpki = rpki_checker.check(prefix, resource)
+                diag = rpki.get("source_diagnostic") or {}
+                diag_agg["total_requests"] += 1
+                st = diag.get("status")
+                if st == "OK": diag_agg["ok"] += 1
+                elif st == "TIMEOUT": diag_agg["timeouts"] += 1
+                elif st == "RATE_LIMITED": diag_agg["rate_limited"] += 1
+                elif st == "UNKNOWN_STRUCTURE": diag_agg["unknown_structure"] += 1
+                else: diag_agg["errors"] += 1 if st and st != "OK" else 0
                 raw_status = (rpki.get("raw_status") or "").strip().lower().replace("-", "_")
                 if raw_status in summary:
                     summary[raw_status] += 1
@@ -160,6 +173,7 @@ class AsnChecker:
                 "results": results,
                 "rpki_batch": rpki_batch,
                 "announced_prefixes": announced_data if isinstance(announced_data, dict) else {},
+                "source_diagnostics": [prefixes_diag, {"name": "RIPEstat rpki-validation (batch)", "endpoint": "rpki-validation", "status": "OK" if diag_agg["errors"] == 0 and diag_agg["timeouts"] == 0 and diag_agg["rate_limited"] == 0 else "ERROR", "message": "Aggregated RPKI batch diagnostics", "details": diag_agg}],
                 "demo_mode": settings.demo_mode,
             },
         }

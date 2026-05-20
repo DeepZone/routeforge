@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { getReportHtml, getReportMarkdown, getReportSummary } from '../api'
-import type { CheckResponse, RpkiBatchResult } from '../types'
+import type { CheckResponse, RpkiBatchResult, SourceDiagnostic } from '../types'
 import { RawDataPanel } from './RawDataPanel'
 import { StatusBadge } from './StatusBadge'
 
@@ -21,6 +21,7 @@ export function ReportView({ report }: { report: CheckResponse }) {
   const reportId = Number((report as { report_id?: number; id?: number; details?: { report_id?: number } }).report_id ?? (report as { id?: number }).id ?? (report.details as { report_id?: number } | undefined)?.report_id)
   const hasReportId = Number.isFinite(reportId) && reportId > 0
   const rpkiBatch = details.rpki_batch as { message?: string } | undefined
+  const sourceDiagnostics = (Array.isArray(details.source_diagnostics) ? details.source_diagnostics : []) as SourceDiagnostic[]
 
   const notify = (message: string) => {
     setCopyMessage(message)
@@ -73,6 +74,9 @@ export function ReportView({ report }: { report: CheckResponse }) {
     <section className='grid gap-4 md:grid-cols-2'>
       {[['RPKI', rpki], ['Registry/IRR', registry], ['Routing Visibility', routingVisibility] as const].map(([title, item]) => item && <article key={title} className='rf-card p-4'><div className='mb-2 flex items-center gap-2'><h4 className='font-semibold'>{title}</h4><StatusBadge status={item.status || 'UNKNOWN'} /></div><p className='text-sm'>{item.summary || '-'}</p></article>)}
     </section>
+
+
+    {sourceDiagnostics.length > 0 && <section className='rf-card p-4 space-y-2'><h4 className='font-semibold'>Data Source Diagnostics</h4><div className='overflow-x-auto'><table className='w-full text-sm'><thead><tr className='border-b text-left'><th className='py-2'>Source</th><th>Endpoint</th><th>Status</th><th>Duration</th><th>Cache</th><th>Message</th></tr></thead><tbody>{sourceDiagnostics.map((d, idx) => <tr key={`${d.name}-${idx}`} className='border-b border-slate-100'><td>{d.name || '-'}</td><td className='font-mono'>{d.endpoint || '-'}</td><td><StatusBadge status={d.status || 'UNKNOWN'} /></td><td>{typeof d.duration_ms === 'number' ? `${d.duration_ms} ms` : '-'}</td><td>{d.cached === true ? 'HIT' : d.cached === false ? 'MISS' : '-'}</td><td>{d.message || '-'}</td></tr>)}</tbody></table></div></section>}
 
     <details className='rf-card p-4'><summary className='cursor-pointer text-sm font-semibold'>Technische Details</summary><pre className='mt-3 overflow-auto rounded-xl bg-slate-50 p-3 text-xs'>{JSON.stringify({ input: report.input, holder: details.resource_holder, warnings: details.warnings, source_errors: details.source_errors }, null, 2)}</pre></details>
     {sortedResults.length > 0 && <section className='rf-card p-4'><h4 className='mb-2 font-semibold'>Batch Results</h4><div className='overflow-x-auto'><table className='w-full text-sm'><thead><tr className='border-b text-left'><th className='py-2'>Status</th><th>Prefix</th><th>Summary</th></tr></thead><tbody>{sortedResults.map((item, idx) => <tr key={`${item.prefix}-${idx}`} className='border-b border-slate-100'><td className='py-2'><StatusBadge status={item.status || 'UNKNOWN'} /></td><td className='font-mono'>{item.prefix}</td><td>{item.summary || '-'}</td></tr>)}</tbody></table></div></section>}
