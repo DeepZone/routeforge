@@ -1,4 +1,4 @@
-import type { CheckResponse, ReportListItem, SystemInfo } from './types'
+import type { CheckResponse, ReportListItem, SystemInfo, SystemStatus } from './types'
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
@@ -51,3 +51,5 @@ export const getReportHtml = (reportId: number) => requestText(apiUrl(`/api/repo
 export const getReportSummary = (reportId: number) => requestText(apiUrl(`/api/reports/${reportId}/summary`), { method: 'GET' })
 
 export const checkPreflight = (prefix: string, planned_origin_as: string) => requestJson<CheckResponse>(apiUrl('/api/check/preflight'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, planned_origin_as }) })
+
+export const getSystemStatus = () => requestJson<SystemStatus>(apiUrl('/api/system/status'), { method: 'GET' })

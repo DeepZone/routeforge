@@ -18,7 +18,6 @@ export type RpkiBatchResult = {
   raw?: Record<string, unknown>
 }
 
-
 export type SourceDiagnostic = {
   name?: string
   endpoint?: string
@@ -50,27 +49,7 @@ export type CheckResponse = {
   recommendations: string[]
   input?: { prefix?: string; origin_as?: string | null; planned_origin_as?: string | null; asn?: string; limit?: number }
   checks?: { rpki?: CheckSection; registry?: CheckSection; routing_visibility?: CheckSection } | null
-  details?: {
-    rpki_explanation?: string
-    extracted_prefixes?: string[]
-    rpki_summary?: Record<string, number>
-    results?: RpkiBatchResult[]
-    checked_prefixes?: number
-    total_prefixes_seen?: number
-    rpki_batch?: {
-      available?: boolean
-      reason_code?: string
-      message?: string
-      prefix_count?: number
-      can_retry?: boolean
-    }
-    limited?: boolean
-    demo_mode?: boolean
-    source_errors?: unknown
-    warnings?: unknown
-    source_diagnostics?: SourceDiagnostic[]
-    [key: string]: unknown
-  }
+  details?: Record<string, unknown>
   markdown: string
   html: string
 }
@@ -93,4 +72,21 @@ export type SystemInfo = {
   demo_mode: boolean
   read_only: boolean
   data_sources: string[]
+}
+
+export type DatabaseStatus = { status?: string; type?: string; url_safe?: string; error_message?: string }
+export type ApiProxyStatus = { status?: string; mode?: string; frontend_proxy_expected?: boolean }
+export type RipestatRuntimeSettings = { cache_ttl_seconds?: number; timeout_seconds?: number; max_retries?: number; retry_backoff_seconds?: number; use_stale_cache_on_error?: boolean }
+export type SystemFeatures = { asn_check?: boolean; prefix_check?: boolean; preflight?: boolean; reports?: boolean; exports?: boolean; data_source_diagnostics?: boolean; cache_freshness?: boolean; retry_resilience?: boolean }
+export type SystemStatus = {
+  status?: string
+  name?: string
+  version?: string
+  read_only?: boolean
+  mode?: string
+  demo_mode?: boolean
+  database?: DatabaseStatus
+  api_proxy?: ApiProxyStatus
+  ripestat?: RipestatRuntimeSettings
+  features?: SystemFeatures
 }

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-type NavKey = 'dashboard' | 'asn' | 'prefix' | 'preflight' | 'reports' | 'about'
+type NavKey = 'dashboard' | 'asn' | 'prefix' | 'preflight' | 'reports' | 'system' | 'about'
 
 const nav: { key: NavKey; label: string; desc: string }[] = [
   { key: 'dashboard', label: 'Dashboard', desc: 'Overview & quick actions' },
@@ -8,6 +8,7 @@ const nav: { key: NavKey; label: string; desc: string }[] = [
   { key: 'prefix', label: 'Prefix Check', desc: 'Prefix + origin validation' },
   { key: 'preflight', label: 'Preflight', desc: 'Planned prefix-origin validation' },
   { key: 'reports', label: 'Reports', desc: 'History and outcomes' },
+  { key: 'system', label: 'System', desc: 'Operational checks' },
   { key: 'about', label: 'About', desc: 'Data sources and limits' },
 ]
 
@@ -27,7 +28,7 @@ export function Layout({ children, active, onNav, systemLine, title, demoMode }:
           <div className='flex flex-wrap gap-2 text-xs font-semibold'>
             <span className={`rounded-full border px-3 py-1 ${demoMode ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700'}`}>{demoMode ? 'DEMO' : 'LIVE'}</span>
             <span className='rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700'>READ-ONLY</span>
-            <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>v0.5.0-beta</span>
+            <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>v0.5.2-beta</span>
           </div>
         </header>
         <main className='space-y-4'>{children}</main>

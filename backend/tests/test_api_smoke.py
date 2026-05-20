@@ -1,3 +1,6 @@
+import app.config as config
+from app.core.system_status import safe_database_url
+
 import importlib
 
 from fastapi.testclient import TestClient
@@ -147,3 +150,21 @@ def test_report_export_not_found() -> None:
         response = client.get(f'/api/reports/999999/{endpoint}')
         assert response.status_code == 404
         assert response.json().get('detail') == 'Report not found'
+
+
+def test_system_status_endpoint() -> None:
+    client = _client()
+    response = client.get('/api/system/status')
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload.get('version') == 'v0.5.2-beta'
+    assert payload.get('read_only') is True
+    assert payload.get('database', {}).get('status')
+    assert payload.get('ripestat', {}).get('cache_ttl_seconds') is not None
+    assert payload.get('features', {}).get('preflight') is True
+
+
+def test_safe_database_url() -> None:
+    assert safe_database_url('postgresql+psycopg://routeforge:secret@postgres:5432/routeforge') == 'postgresql://routeforge@postgres:5432/routeforge'
+    assert safe_database_url('sqlite:////app/data/routeforge.db') == 'sqlite:////app/data/routeforge.db'
+    assert safe_database_url('not a url') == 'configured'

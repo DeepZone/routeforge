@@ -1,8 +1,11 @@
 from fastapi import APIRouter
 
+from app.core.system_status import get_database_status
+from app.database import engine
+
 router = APIRouter()
 
 
 @router.get('/health')
 def health() -> dict:
-    return {"status": "ok", "version": "v0.5.0-beta"}
+    return {"status": "ok", "version": "v0.5.2-beta", "database": get_database_status(engine).get("status", "unknown")}
