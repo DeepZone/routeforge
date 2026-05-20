@@ -52,6 +52,23 @@ class RipeStatClient:
                 },
                 "demo_mode": True,
             }
+        if endpoint == "as-overview" and resource == "AS4491":
+            return {
+                "data": {
+                    "resource": "AS4491",
+                    "holder": "DEMO: CNC Group CHINA169 Backbone",
+                    "announced": False,
+                },
+                "demo_mode": True,
+            }
+        if endpoint == "announced-prefixes" and resource == "AS4491":
+            return {
+                "data": {
+                    "resource": "AS4491",
+                    "prefixes": [],
+                },
+                "demo_mode": True,
+            }
         if endpoint == "whois":
             return {
                 "data": {

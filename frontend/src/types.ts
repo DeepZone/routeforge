@@ -34,6 +34,13 @@ export type CheckResponse = {
     results?: RpkiBatchResult[]
     checked_prefixes?: number
     total_prefixes_seen?: number
+    rpki_batch?: {
+      available?: boolean
+      reason_code?: string
+      message?: string
+      prefix_count?: number
+      can_retry?: boolean
+    }
     limited?: boolean
     demo_mode?: boolean
     source_errors?: unknown

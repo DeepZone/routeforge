@@ -43,6 +43,7 @@ class AsnChecker:
         prefixes = self.client.get("announced-prefixes", {"resource": resource})
         announced_data = prefixes.get("data", {}) if isinstance(prefixes, dict) else {}
         extracted_prefixes = self._extract_prefixes(announced_data if isinstance(announced_data, dict) else {})
+        rpki_batch = self._build_rpki_batch_metadata(prefixes, announced_data, extracted_prefixes)
 
         errors = []
         if "error" in overview:
@@ -67,6 +68,7 @@ class AsnChecker:
                     {"_source": "prefix-overview", **(announced_data if isinstance(announced_data, dict) else {})},
                 ),
                 "extracted_prefixes": extracted_prefixes,
+                "rpki_batch": rpki_batch,
                 "rpki_applicable": False,
                 "rpki_explanation": "RPKI validation requires a concrete prefix-origin pair. An ASN alone cannot be classified as RPKI-valid or invalid.",
                 "rpki_next_step": "Validate announced prefixes for this ASN against the ASN as origin.",
@@ -86,6 +88,7 @@ class AsnChecker:
         prefixes_payload = self.client.get("announced-prefixes", {"resource": resource})
         announced_data = prefixes_payload.get("data", {}) if isinstance(prefixes_payload, dict) else {}
         extracted = self._extract_prefixes(announced_data if isinstance(announced_data, dict) else {})
+        rpki_batch = self._build_rpki_batch_metadata(prefixes_payload, announced_data, extracted)
         selected = extracted[:limit]
 
         rpki_checker = RpkiChecker(self.client)
@@ -128,12 +131,24 @@ class AsnChecker:
         else:
             status = CheckStatus.OK.value
 
+        summary_text = f"RPKI-Batchprüfung für {resource}: {len(selected)} Prefixe geprüft."
+        explanation = "RPKI wurde für sichtbare Prefix-Origin-Paare der ASN geprüft."
+        recommendations = ["Kritische Ergebnisse priorisiert prüfen.", "Warnungen auf fehlende ROA-Abdeckung untersuchen."]
+        if not selected:
+            summary_text = f"RPKI-Batchprüfung für {resource} nicht möglich."
+            explanation = "Für diese ASN konnten keine auswertbaren Prefixe gefunden werden."
+            recommendations = [
+                "Prüfe, ob die ASN aktuell Prefixe announced.",
+                "Wiederhole die Abfrage später.",
+                "Prüfe die Rohdaten der announced-prefixes Antwort.",
+            ]
+
         return {
             "status": status,
-            "summary": f"RPKI-Batchprüfung für {resource}: {len(selected)} Prefixe geprüft.",
-            "explanation": "RPKI wurde für sichtbare Prefix-Origin-Paare der ASN geprüft.",
+            "summary": summary_text,
+            "explanation": explanation,
             "risk": "Kritische oder warnende Einzelresultate können auf Routing-Risiken hinweisen.",
-            "recommendations": ["Kritische Ergebnisse priorisiert prüfen.", "Warnungen auf fehlende ROA-Abdeckung untersuchen."],
+            "recommendations": recommendations,
             "input": {"asn": resource, "limit": limit},
             "checks": None,
             "details": {
@@ -143,7 +158,41 @@ class AsnChecker:
                 "limited": len(extracted) > limit,
                 "rpki_summary": summary,
                 "results": results,
+                "rpki_batch": rpki_batch,
                 "announced_prefixes": announced_data if isinstance(announced_data, dict) else {},
                 "demo_mode": settings.demo_mode,
             },
+        }
+
+    def _build_rpki_batch_metadata(self, prefixes_payload: dict, announced_data: dict, extracted_prefixes: list[str]) -> dict:
+        if extracted_prefixes:
+            return {
+                "available": True,
+                "reason_code": "prefixes_available",
+                "message": f"RPKI-Batchprüfung ist möglich. Es wurden {len(extracted_prefixes)} sichtbare Prefixe gefunden.",
+                "prefix_count": len(extracted_prefixes),
+                "can_retry": False,
+            }
+        if isinstance(prefixes_payload, dict) and prefixes_payload.get("error"):
+            return {
+                "available": False,
+                "reason_code": "announced_prefixes_error",
+                "message": "Die angekündigten Prefixe konnten über RIPEstat nicht geladen werden. Eine RPKI-Batchprüfung ist deshalb aktuell nicht möglich.",
+                "prefix_count": 0,
+                "can_retry": True,
+            }
+        if isinstance(announced_data, dict) and announced_data:
+            return {
+                "available": False,
+                "reason_code": "no_prefixes_extracted",
+                "message": "Für diese ASN wurden in der RIPEstat-Antwort keine auswertbaren Prefixe gefunden. Entweder announced die ASN aktuell keine Prefixe in dieser Quelle oder die Datenstruktur konnte nicht interpretiert werden.",
+                "prefix_count": 0,
+                "can_retry": True,
+            }
+        return {
+            "available": False,
+            "reason_code": "no_announced_prefixes",
+            "message": "Für diese ASN wurden keine sichtbaren Prefixe gefunden. Ohne Prefixe kann RouteForge keine RPKI-Batchprüfung durchführen.",
+            "prefix_count": 0,
+            "can_retry": True,
         }

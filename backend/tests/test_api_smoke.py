@@ -45,7 +45,19 @@ def test_asn_check() -> None:
     details = payload.get('details', {})
     assert details.get('rpki_applicable') is False or details.get('rpki_explanation')
     assert 'extracted_prefixes' in details
+    assert details.get('rpki_batch', {}).get('available') is True
     assert details.get('resource_holder')
+
+
+def test_asn_check_without_prefixes_has_batch_reason() -> None:
+    client = _client()
+    response = client.post('/api/check/asn', json={'asn': 'AS4491'})
+    assert response.status_code == 200
+    details = response.json().get('details', {})
+    rpki_batch = details.get('rpki_batch', {})
+    assert rpki_batch.get('available') is False
+    assert rpki_batch.get('reason_code')
+    assert rpki_batch.get('message')
 
 
 def test_asn_rpki_batch() -> None:
@@ -58,6 +70,17 @@ def test_asn_rpki_batch() -> None:
     assert isinstance(details.get('rpki_summary'), dict)
     assert isinstance(details.get('results'), list)
     assert int(details.get('checked_prefixes', 0)) <= 3
+
+
+def test_asn_rpki_batch_without_prefixes() -> None:
+    client = _client()
+    response = client.post('/api/check/asn-rpki', json={'asn': 'AS4491', 'limit': 25})
+    assert response.status_code == 200
+    payload = response.json()
+    details = payload.get('details', {})
+    assert payload.get('status') in {'UNKNOWN', 'WARNING'}
+    assert details.get('checked_prefixes') == 0
+    assert details.get('rpki_batch', {}).get('message')
 
 
 def test_system_info() -> None:
@@ -112,3 +135,11 @@ def test_report_export_endpoints() -> None:
     html_response = client.get(f'/api/reports/{report_id}/html')
     assert html_response.status_code == 200
     assert 'text/html' in html_response.headers.get('content-type', '')
+
+
+def test_report_export_not_found() -> None:
+    client = _client()
+    for endpoint in ('summary', 'markdown', 'html'):
+        response = client.get(f'/api/reports/999999/{endpoint}')
+        assert response.status_code == 404
+        assert response.json().get('detail') == 'Report not found'

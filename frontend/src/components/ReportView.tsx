@@ -18,17 +18,32 @@ export function ReportView({ report }: { report: CheckResponse }) {
   const routingVisibility = report.checks?.routing_visibility
   const sortedResults = ([...(Array.isArray(details.results) ? details.results : [])] as RpkiBatchResult[]).sort((a, b) => (order[a.status as keyof typeof order] ?? 99) - (order[b.status as keyof typeof order] ?? 99))
   const recommendationsTitle = report.status === 'CRITICAL' ? 'Sofort prüfen' : report.status === 'WARNING' ? 'Empfohlen' : report.status === 'OK' ? 'Hinweis' : 'Datenlage prüfen'
-  const reportId = report.report_id
+  const reportId = Number((report as { report_id?: number; id?: number; details?: { report_id?: number } }).report_id ?? (report as { id?: number }).id ?? (report.details as { report_id?: number } | undefined)?.report_id)
+  const hasReportId = Number.isFinite(reportId) && reportId > 0
+  const rpkiBatch = details.rpki_batch as { message?: string } | undefined
 
   const notify = (message: string) => {
     setCopyMessage(message)
     window.setTimeout(() => setCopyMessage(''), 2000)
   }
-  const copyText = async (text: string, success: string) => {
-    if (!navigator.clipboard?.writeText) return notify('Copy failed')
-    try { await navigator.clipboard.writeText(text); notify(success) } catch { notify('Copy failed') }
+  const copyTextToClipboard = async (text: string): Promise<void> => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      return
+    }
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(textarea)
+    if (!ok) throw new Error('Clipboard fallback unavailable')
   }
-  const downloadText = (filename: string, text: string, mimeType: string) => {
+  const downloadText = async (filename: string, text: string, mimeType: string) => {
     const blob = new Blob([text], { type: mimeType })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -61,13 +76,16 @@ export function ReportView({ report }: { report: CheckResponse }) {
 
     <details className='rf-card p-4'><summary className='cursor-pointer text-sm font-semibold'>Technische Details</summary><pre className='mt-3 overflow-auto rounded-xl bg-slate-50 p-3 text-xs'>{JSON.stringify({ input: report.input, holder: details.resource_holder, warnings: details.warnings, source_errors: details.source_errors }, null, 2)}</pre></details>
     {sortedResults.length > 0 && <section className='rf-card p-4'><h4 className='mb-2 font-semibold'>Batch Results</h4><div className='overflow-x-auto'><table className='w-full text-sm'><thead><tr className='border-b text-left'><th className='py-2'>Status</th><th>Prefix</th><th>Summary</th></tr></thead><tbody>{sortedResults.map((item, idx) => <tr key={`${item.prefix}-${idx}`} className='border-b border-slate-100'><td className='py-2'><StatusBadge status={item.status || 'UNKNOWN'} /></td><td className='font-mono'>{item.prefix}</td><td>{item.summary || '-'}</td></tr>)}</tbody></table></div></section>}
+    {sortedResults.length === 0 && ((details.checked_prefixes as number | undefined) === 0 || rpkiBatch?.message) && <section className='rf-card p-4'><h4 className='mb-2 font-semibold'>Keine Prefixe geprüft</h4><p className='text-sm text-slate-700'>{rpkiBatch?.message || report.explanation || 'Keine Daten verfügbar.'}</p></section>}
+    {rpkiBatch?.message && <section className='rf-card p-4 border-l-4 border-l-amber-500'><h4 className='font-semibold'>RPKI-Batch Hinweis</h4><p className='text-sm'>{rpkiBatch.message}</p></section>}
     <section className='rf-card p-4 space-y-2'>
       <h4 className='font-semibold'>Export</h4>
+      {!hasReportId && <p className='text-sm text-slate-600'>Export ist erst verfügbar, nachdem der Report gespeichert wurde.</p>}
       <div className='flex flex-wrap gap-2'>
-        <button className='rf-btn-secondary' disabled={!reportId} onClick={async () => reportId && copyText(await getReportSummary(reportId), 'Summary copied')}>Copy Summary</button>
-        <button className='rf-btn-secondary' disabled={!reportId} onClick={async () => reportId && copyText(await getReportMarkdown(reportId), 'Markdown copied')}>Copy Markdown</button>
-        <button className='rf-btn-secondary' disabled={!reportId} onClick={async () => reportId && downloadText(`routeforge-report-${reportId}.md`, await getReportMarkdown(reportId), 'text/markdown;charset=utf-8')}>Download Markdown</button>
-        <button className='rf-btn-secondary' disabled={!reportId} onClick={async () => reportId && downloadText(`routeforge-report-${reportId}.html`, await getReportHtml(reportId), 'text/html;charset=utf-8')}>Download HTML</button>
+        <button title={!hasReportId ? 'Export ist erst verfügbar, nachdem der Report gespeichert wurde.' : ''} className='rf-btn-secondary' disabled={!hasReportId} onClick={async () => { try { if (!hasReportId) return; await copyTextToClipboard(await getReportSummary(reportId)); notify('Summary copied') } catch (e) { notify(`Copy failed: ${e instanceof Error ? e.message : 'unknown error'}`) } }}>Copy Summary</button>
+        <button title={!hasReportId ? 'Export ist erst verfügbar, nachdem der Report gespeichert wurde.' : ''} className='rf-btn-secondary' disabled={!hasReportId} onClick={async () => { try { if (!hasReportId) return; await copyTextToClipboard(await getReportMarkdown(reportId)); notify('Markdown copied') } catch (e) { notify(`Copy failed: ${e instanceof Error ? e.message : 'unknown error'}`) } }}>Copy Markdown</button>
+        <button className='rf-btn-secondary' disabled={!hasReportId} onClick={async () => hasReportId && downloadText(`routeforge-report-${reportId}.md`, await getReportMarkdown(reportId), 'text/markdown;charset=utf-8')}>Download Markdown</button>
+        <button className='rf-btn-secondary' disabled={!hasReportId} onClick={async () => hasReportId && downloadText(`routeforge-report-${reportId}.html`, await getReportHtml(reportId), 'text/html;charset=utf-8')}>Download HTML</button>
       </div>
       {copyMessage && <p className='text-sm text-slate-600'>{copyMessage}</p>}
     </section>
