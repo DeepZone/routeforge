@@ -57,3 +57,5 @@
 {% if report.details and report.details.rpki_summary %}<h2>RPKI Batch Summary</h2><pre>{{ report.details.rpki_summary | tojson(indent=2) }}</pre>{% endif %}
 {% if report.details and report.details.results %}<h2>RPKI Batch Ergebnisse</h2><pre>{{ report.details.results | tojson(indent=2) }}</pre>{% endif %}
 </body></html>
+
+{% if report.details and report.details.preflight_mode %}<h2>Preflight Assessment</h2><ul><li><strong>Planned Prefix:</strong> {{ report.input.prefix if report.input else '-' }}</li><li><strong>Planned Origin-AS:</strong> {{ report.input.planned_origin_as if report.input and report.input.planned_origin_as else '-' }}</li><li><strong>Overall Status:</strong> {{ report.status }}</li><li><strong>Summary:</strong> {{ report.summary }}</li><li><strong>Explanation:</strong> {{ report.explanation or '-' }}</li><li><strong>Risk:</strong> {{ report.risk or '-' }}</li></ul>{% endif %}

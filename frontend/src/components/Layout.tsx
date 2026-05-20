@@ -1,11 +1,12 @@
 import { ReactNode } from 'react'
 
-type NavKey = 'dashboard' | 'asn' | 'prefix' | 'reports' | 'about'
+type NavKey = 'dashboard' | 'asn' | 'prefix' | 'preflight' | 'reports' | 'about'
 
 const nav: { key: NavKey; label: string; desc: string }[] = [
   { key: 'dashboard', label: 'Dashboard', desc: 'Overview & quick actions' },
   { key: 'asn', label: 'ASN Check', desc: 'Read-only ASN preflight' },
   { key: 'prefix', label: 'Prefix Check', desc: 'Prefix + origin validation' },
+  { key: 'preflight', label: 'Preflight', desc: 'Planned prefix-origin validation' },
   { key: 'reports', label: 'Reports', desc: 'History and outcomes' },
   { key: 'about', label: 'About', desc: 'Data sources and limits' },
 ]

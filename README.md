@@ -138,3 +138,13 @@ routeforge report 1 --format markdown
 
 ## Security Hinweis
 RouteForge v0.1.1-alpha ist vollständig read-only.
+
+
+## Change Preflight Mode
+RouteForge kann geplante Prefix-Origin-Announcements read-only prüfen. Es erzeugt keine ROAs, ändert keine Registry-Daten und deployt keine Router-Konfiguration.
+
+```bash
+curl -X POST http://localhost:8000/api/check/preflight \
+  -H "Content-Type: application/json" \
+  -d '{"prefix":"203.0.113.0/24","planned_origin_as":"AS64500"}'
+```

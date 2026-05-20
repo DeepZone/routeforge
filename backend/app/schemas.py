@@ -47,6 +47,24 @@ class PrefixCheckRequest(BaseModel):
         return v
 
 
+
+class PreflightCheckRequest(BaseModel):
+    prefix: str
+    planned_origin_as: str
+
+    @field_validator("prefix")
+    @classmethod
+    def valid_prefix(cls, v: str) -> str:
+        validate_prefix(v)
+        return v
+
+    @field_validator("planned_origin_as")
+    @classmethod
+    def valid_planned_origin(cls, v: str) -> str:
+        normalize_asn(v)
+        return v
+
+
 class CheckResponse(BaseModel):
     report_id: int
     status: str

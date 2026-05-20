@@ -70,3 +70,18 @@
 {{ report.details.results | tojson(indent=2) }}
 ```
 {% endif %}
+
+
+{% if report.details and report.details.preflight_mode %}
+## Preflight Assessment
+- Planned Prefix: {{ report.input.prefix if report.input else '-' }}
+- Planned Origin-AS: {{ report.input.planned_origin_as if report.input and report.input.planned_origin_as else '-' }}
+- Overall Status: **{{ report.status }}**
+- Summary: {{ report.summary }}
+- Explanation: {{ report.explanation or '-' }}
+- Risk: {{ report.risk or '-' }}
+
+### Recommendations
+{% for item in report.recommendations %}- {{ item }}
+{% endfor %}
+{% endif %}

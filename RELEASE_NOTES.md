@@ -62,3 +62,5 @@ Mit `ROUTEFORGE_DEMO_MODE=true` nutzt RouteForge feste Beispieldaten für reprod
 - UI-Microcopy für technische Zielgruppen weiter vereinfachen.
 - Weitere Beispielreports für typische Warn-/Unknown-Szenarien ergänzen.
 - Stabilität, Testabdeckung und Präsentationsreife vor breiterem Alpha-Feedback erhöhen.
+
+- Added Change Preflight Mode (alpha): read-only planned Prefix-Origin assessment with no ROA creation, no registry writes, and no router deployment.
