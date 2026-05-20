@@ -6,8 +6,9 @@ from app.core.auth import require_operator_or_admin
 from app.core.audit import write_audit_log
 from app.database import get_db
 from app.models import ChangeCase, Check, Report
-from app.schemas import AsnCheckRequest, AsnRpkiBatchRequest, CheckResponse, PrefixCheckRequest, PreflightCheckRequest
+from app.schemas import AsnCheckRequest, AsnRpkiBatchRequest, BgpVisibilityCheckRequest, CheckResponse, PrefixCheckRequest, PreflightCheckRequest
 from app.services.asn_checker import AsnChecker
+from app.services.bgp_visibility_service import BgpVisibilityService
 from app.services.prefix_checker import PrefixChecker
 from app.services.preflight_checker import PreflightChecker
 from app.services.report_renderer import render_report
@@ -49,6 +50,20 @@ def check_prefix(payload: PrefixCheckRequest, db: Session = Depends(get_db), use
         raise HTTPException(status_code=500, detail=f"Prefix-Prüfung fehlgeschlagen: {exc}") from exc
 
 
+
+
+
+@router.post('/bgp-visibility', response_model=CheckResponse)
+def check_bgp_visibility(payload: BgpVisibilityCheckRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
+    try:
+        result = BgpVisibilityService(RipeStatClient(db)).check(payload.prefix, payload.expected_origin_as)
+        response = _store_and_respond(db, "bgp-visibility", payload.prefix, payload.expected_origin_as, result, user.id, payload.change_case_id)
+        write_audit_log(db, user_id=user.id, action='bgp_visibility_checked', target_type='check', target_id=str(response.report_id), details_json={'prefix': payload.prefix, 'expected_origin_as': payload.expected_origin_as, 'change_case_id': payload.change_case_id})
+        return response
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"BGP-Visibility-Prüfung fehlgeschlagen: {exc}") from exc
 
 @router.post('/preflight', response_model=CheckResponse)
 def check_preflight(payload: PreflightCheckRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:

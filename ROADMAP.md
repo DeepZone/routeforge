@@ -1,9 +1,9 @@
 # RouteForge Roadmap
 
 ## Current Status
-v0.7.0-beta, audit log UI/API and session hardening completed, read-only
+v0.7.1-beta, BGP Visibility Details completed, read-only
 
-## v0.7.0-beta
+## v0.7.1-beta
 - projects/change cases
 - grouped preflight reports
 

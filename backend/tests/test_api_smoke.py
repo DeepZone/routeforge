@@ -177,7 +177,7 @@ def test_system_status_endpoint() -> None:
     response = client.get('/api/system/status')
     assert response.status_code == 200
     payload = response.json()
-    assert payload.get('version') == 'v0.7.0-beta'
+    assert payload.get('version') == 'v0.7.1-beta'
     assert payload.get('read_only') is True
     assert payload.get('database', {}).get('status')
     assert payload.get('ripestat', {}).get('cache_ttl_seconds') is not None
@@ -455,3 +455,50 @@ def test_change_case_delete_operator_allowed_viewer_forbidden() -> None:
     client.post('/api/auth/logout')
     assert client.post('/api/auth/login', json={'username': 'vw4', 'password': 'ViewerPass123!'}).status_code == 200
     assert client.delete(f'/api/change-cases/{cid2v}').status_code == 403
+
+def test_bgp_visibility_roles_status_change_case_and_audit(monkeypatch) -> None:
+    client = _client()
+    _setup_and_login(client)
+
+    from app.services import bgp_visibility_service as svc
+
+    def fake_ok(self, prefix: str, expected_origin_as: str | None):
+        return {
+            'status': 'OK', 'summary': 'ok', 'explanation': 'x', 'risk': 'r', 'recommendations': ['a'],
+            'input': {'prefix': prefix, 'expected_origin_as': expected_origin_as}, 'checks': None,
+            'details': {'prefix': prefix, 'visible': True, 'origins': ['AS3320'], 'expected_origin_as': expected_origin_as, 'expected_origin_seen': True, 'multiple_origins': False, 'peer_count': 10, 'more_specifics': [], 'less_specifics': [], 'source_diagnostics': []}
+        }
+
+    monkeypatch.setattr(svc.BgpVisibilityService, 'check', fake_ok)
+
+    cid = client.post('/api/change-cases', json={'title': 'BGP Case', 'description': ''}).json()['id']
+    ok = client.post('/api/check/bgp-visibility', json={'prefix': '192.0.2.0/24', 'expected_origin_as': 'AS3320', 'change_case_id': cid})
+    assert ok.status_code == 200
+    assert ok.json().get('status') == 'OK'
+
+    missing = client.post('/api/check/bgp-visibility', json={'prefix': '192.0.2.0/24', 'change_case_id': 999999})
+    assert missing.status_code == 404
+
+    client.post('/api/users', json={'username': 'opbgp', 'email': 'opbgp@example.org', 'password': 'OperatorPass123!', 'role': 'operator'})
+    client.post('/api/users', json={'username': 'vwbgp', 'email': 'vwbgp@example.org', 'password': 'ViewerPass123!', 'role': 'viewer'})
+
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'opbgp', 'password': 'OperatorPass123!'}).status_code == 200
+    assert client.post('/api/check/bgp-visibility', json={'prefix': '192.0.2.0/24'}).status_code == 200
+
+    client.post('/api/auth/logout')
+    assert client.post('/api/auth/login', json={'username': 'vwbgp', 'password': 'ViewerPass123!'}).status_code == 200
+    assert client.post('/api/check/bgp-visibility', json={'prefix': '192.0.2.0/24'}).status_code == 403
+
+
+def test_bgp_visibility_status_mapping():
+    from app.services.bgp_visibility_service import BgpVisibilityService
+
+    class C:
+        def __init__(self, responses): self.responses = responses
+        def get_with_diagnostics(self, endpoint, _): return self.responses.get(endpoint, ({}, {}))
+
+    svc = BgpVisibilityService(C({'routing-status': ({'data': {'routes': [{'origin': 'AS64496'}]}}, {}), 'bgp-state': ({'data': {}}, {})}))
+    assert svc.check('198.51.100.0/24', 'AS3320')['status'] == 'CRITICAL'
+    svc2 = BgpVisibilityService(C({'routing-status': ({'data': {'routes': [{'origin': 'AS3320'}, {'origin': 'AS64496'}]}}, {}), 'bgp-state': ({'data': {}}, {})}))
+    assert svc2.check('198.51.100.0/24', None)['status'] == 'WARNING'

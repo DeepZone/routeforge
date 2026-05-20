@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ApiError, createChangeCase, deleteChangeCase, getChangeCaseReports, getReportHtml, getReportMarkdown, getReportSummary, listChangeCases, runAsnCheck, runPrefixCheck, runPreflightCheck, updateChangeCase } from '../api'
+import { ApiError, createChangeCase, deleteChangeCase, getChangeCaseReports, getReportHtml, getReportMarkdown, getReportSummary, listChangeCases, runAsnCheck, runBgpVisibilityCheck, runPrefixCheck, runPreflightCheck, updateChangeCase } from '../api'
 import type { ChangeCaseItem, UserRole } from '../types'
 
 type ChangeCaseReport = { report_id:number; check_id:number; check_type:string; summary:string; status:string; created_at:string }
@@ -30,6 +30,8 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
   const [originAs, setOriginAs] = useState('')
   const [preflightPrefix, setPreflightPrefix] = useState('')
   const [plannedOriginAs, setPlannedOriginAs] = useState('')
+  const [bgpPrefix, setBgpPrefix] = useState('')
+  const [bgpExpectedOriginAs, setBgpExpectedOriginAs] = useState('')
 
   const load = async () => { setLoading(true); setError(null); try { const next = await listChangeCases(); setItems(next); if (selected) { const found = next.find(i => i.id === selected.id) || null; setSelected(found) } } catch (e) { setError((e as Error).message) } finally { setLoading(false) } }
   const loadReports = async (id: number) => { try { setReports(await getChangeCaseReports(id)) } catch { setReports([]) } }
@@ -83,6 +85,7 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
       {canEdit && <div className='grid md:grid-cols-3 gap-3 border-t pt-3'>
         <div className='space-y-2'><h4 className='font-medium'>Run ASN Check</h4><input className='rf-input' placeholder='AS3320' value={asn} onChange={e=>setAsn(e.target.value)} /><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runAsnCheck(asn, selected.id); await loadReports(selected.id)}, 'ASN check started.')}>Run ASN Check</button></div>
         <div className='space-y-2'><h4 className='font-medium'>Run Prefix Check</h4><input className='rf-input' placeholder='203.0.113.0/24' value={prefix} onChange={e=>setPrefix(e.target.value)} /><input className='rf-input' placeholder='Origin AS (optional)' value={originAs} onChange={e=>setOriginAs(e.target.value)} /><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runPrefixCheck(prefix, originAs || undefined, selected.id); await loadReports(selected.id)}, 'Prefix check started.')}>Run Prefix Check</button></div>
+        <div className='space-y-2'><h4 className='font-medium'>Run BGP Visibility Check</h4><input className='rf-input' placeholder='203.0.113.0/24' value={bgpPrefix} onChange={e=>setBgpPrefix(e.target.value)} /><input className='rf-input' placeholder='Expected Origin AS (optional)' value={bgpExpectedOriginAs} onChange={e=>setBgpExpectedOriginAs(e.target.value)} /><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runBgpVisibilityCheck(bgpPrefix, bgpExpectedOriginAs || undefined, selected.id); await loadReports(selected.id)}, 'BGP visibility check started.')}>Run BGP Visibility Check</button></div>
         <div className='space-y-2'><h4 className='font-medium'>Run Preflight Check</h4><input className='rf-input' placeholder='203.0.113.0/24' value={preflightPrefix} onChange={e=>setPreflightPrefix(e.target.value)} /><input className='rf-input' placeholder='Planned Origin AS' value={plannedOriginAs} onChange={e=>setPlannedOriginAs(e.target.value)} /><button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runPreflightCheck(preflightPrefix, plannedOriginAs, selected.id); await loadReports(selected.id)}, 'Preflight check started.')}>Run Preflight Check</button></div>
       </div>}
 
