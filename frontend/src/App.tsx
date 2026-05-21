@@ -102,6 +102,6 @@ export default function App() {
     {active === 'system' && canAccess('system') && <section className='space-y-3'>{systemStatusError && <article className='rf-card p-4 text-rose-700'>{systemStatusError}</article>}{migrationsBlocked && <article className='rf-card border border-amber-300 bg-amber-50 p-4 text-amber-900'>Database migrations are required before using RouteForge. Run: <code>alembic current</code>, <code>alembic heads</code>, <code>alembic upgrade head</code>.</article>}{systemStatus && <article className='rf-card p-4 grid gap-2 md:grid-cols-2 text-sm'><div>Version: <b>{systemStatus.version}</b></div><div>Mode: <b>{systemStatus.mode}</b></div><div>API Proxy: <b>{proxyStatus}</b></div><div>Migration Status: <b>{migrationStatus}</b> <StatusBadge status={migrationStatus === 'up_to_date' ? 'OK' : migrationStatus === 'behind' ? 'WARNING' : migrationStatus === 'error' ? 'CRITICAL' : 'UNKNOWN'} /></div><div>DB Current Revision: <b>{systemStatus.database?.schema_version || 'unknown'}</b></div><div>DB Head Revision: <b>{systemStatus.database?.migration_head || 'unknown'}</b></div></article>}</section>}
     {active === 'users' && canAccess('users') && <UsersView />}
     {active === 'audit' && canAccess('audit') && <AuditLogView />}
-    {active === 'about' && <section className='rf-card p-5 space-y-2 text-sm text-slate-700'><p><b>Version:</b> v0.8.1-beta</p></section>}
+    {active === 'about' && <section className='rf-card p-5 space-y-2 text-sm text-slate-700'><p><b>Version:</b> v0.9.1</p></section>}
   </Layout>
 }
