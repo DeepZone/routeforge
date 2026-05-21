@@ -45,7 +45,7 @@ export function Layout({ children, active, onNav, systemLine, title, demoMode, c
         <header className='rf-card flex flex-wrap items-center justify-between gap-3 p-4'>
           <h2 className='text-xl font-semibold'>{title}</h2>
           <div className='flex flex-wrap items-center gap-2 text-xs font-semibold'>
-            {currentUser && <span className='rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-violet-700'>Angemeldet als {currentUser.username} · {currentUser.role}</span>}
+            {currentUser && <span className='rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-violet-700'>Signed in as {currentUser.username} · {currentUser.role}</span>}
             <span className={`rounded-full border px-3 py-1 ${demoMode ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700'}`}>{demoMode ? 'DEMO' : 'LIVE'}</span>
             <span className='rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700'>READ-ONLY</span>
             <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>v0.9.1</span>

@@ -30,7 +30,7 @@ export function AuditLogView() {
     </div>
     {loading && <div className='text-sm text-slate-500'>Loading audit log…</div>}
     {error && <div className='text-sm text-rose-700'>{error}</div>}
-    {!loading && !error && items.length === 0 && <div className='rounded-xl border border-dashed border-slate-300 p-6 text-sm text-slate-500'>No audit events yet.</div>}
+    {!loading && !error && items.length === 0 && <div className='rounded-xl border border-dashed border-slate-300 p-6 text-sm text-slate-500'>No audit entries found.</div>}
     {!loading && !error && items.length > 0 && <div className='overflow-x-auto'><table className='w-full text-xs'><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Target</th><th>IP</th><th>User Agent</th><th>Details</th></tr></thead><tbody>{items.map((a)=><tr key={a.id}><td>{a.created_at}</td><td>{a.username || a.user_id || '-'}</td><td>{a.action}</td><td>{a.target_type || '-'}:{a.target_id || '-'}</td><td>{a.ip_address || '-'}</td><td>{a.user_agent || '-'}</td><td><pre className='whitespace-pre-wrap'>{JSON.stringify(a.details_json || {}, null, 2)}</pre></td></tr>)}</tbody></table></div>}
   </section>
 }

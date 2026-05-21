@@ -154,7 +154,7 @@ export function WatchModeView({ role }: { role: UserRole }) {
         </div>}
 
         <h4 className='font-medium pt-2'>Runs History</h4>
-        {runs.length === 0 ? <div className='text-xs text-slate-500'>No runs yet for this watch target.</div> : <table className='w-full text-xs'><thead><tr><th>created_at</th><th>previous_status</th><th>status</th><th>changed</th><th>summary</th><th>report_id</th></tr></thead><tbody>{runs.map(r=><tr key={r.id} className={r.changed ? 'bg-amber-50' : ''}><td>{r.created_at}</td><td>{r.previous_status ?? 'n/a'}</td><td>{r.status}</td><td>{String(r.changed)}</td><td>{r.summary}</td><td>{r.report_id ? <a className='text-blue-700 underline' href={`/api/reports/${r.report_id}/summary`} target='_blank' rel='noreferrer'>{r.report_id}</a> : 'n/a'}</td></tr>)}</tbody></table>}
+        {runs.length === 0 ? <div className='text-xs text-slate-500'>No runs yet.</div> : <table className='w-full text-xs'><thead><tr><th>created_at</th><th>previous_status</th><th>status</th><th>changed</th><th>summary</th><th>report_id</th></tr></thead><tbody>{runs.map(r=><tr key={r.id} className={r.changed ? 'bg-amber-50' : ''}><td>{r.created_at}</td><td>{r.previous_status ?? 'n/a'}</td><td>{r.status}</td><td>{String(r.changed)}</td><td>{r.summary}</td><td>{r.report_id ? <a className='text-blue-700 underline' href={`/api/reports/${r.report_id}/summary`} target='_blank' rel='noreferrer'>{r.report_id}</a> : 'n/a'}</td></tr>)}</tbody></table>}
       </div>}</div>
     </div>
 

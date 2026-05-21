@@ -63,7 +63,7 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
       </div>
     </article>}
 
-    {loading ? <div className='text-sm text-slate-500'>Loading change cases…</div> : items.length===0 ? <div className='rounded border border-dashed p-3 text-sm text-slate-500'>No change cases yet. Create one to attach checks and reports.</div> : <table className='w-full text-sm'><thead><tr><th>Title</th><th>Status</th><th>Owner</th><th>Created</th><th>Updated</th></tr></thead><tbody>{items.map(i=><tr key={i.id} className='border-t cursor-pointer' onClick={()=>setSelected(i)}><td>{i.title}</td><td><StatusBadge status={i.status === 'approved' ? 'OK' : i.status === 'in_review' ? 'WARNING' : i.status === 'closed' ? 'UNKNOWN' : 'UNKNOWN'} /></td><td>{i.created_by_user_id ?? '—'}</td><td>{new Date(i.created_at).toLocaleString()}</td><td>{new Date(i.updated_at).toLocaleString()}</td></tr>)}</tbody></table>}
+    {loading ? <div className='text-sm text-slate-500'>Loading change cases…</div> : items.length===0 ? <div className='rounded border border-dashed p-3 text-sm text-slate-500'>No change cases yet.</div> : <table className='w-full text-sm'><thead><tr><th>Title</th><th>Status</th><th>Owner</th><th>Created</th><th>Updated</th></tr></thead><tbody>{items.map(i=><tr key={i.id} className='border-t cursor-pointer' onClick={()=>setSelected(i)}><td>{i.title}</td><td><StatusBadge status={i.status === 'approved' ? 'OK' : i.status === 'in_review' ? 'WARNING' : i.status === 'closed' ? 'UNKNOWN' : 'UNKNOWN'} /></td><td>{i.created_by_user_id ?? '—'}</td><td>{new Date(i.created_at).toLocaleString()}</td><td>{new Date(i.updated_at).toLocaleString()}</td></tr>)}</tbody></table>}
 
     {selected && <article className='border rounded p-3 space-y-3'>
       <div className='flex justify-between items-center'>
@@ -97,11 +97,11 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
 
       <div className='border-t pt-3'>
         <h4 className='font-medium mb-2'>Reports</h4>
-        {reports.length === 0 ? <p className='text-sm text-slate-500'>No reports for this Change Case yet.</p> : <table className='w-full text-sm'><thead><tr><th>Type</th><th>Status</th><th>Summary</th><th>Created</th><th>Open</th></tr></thead><tbody>{reports.map(r=><tr key={r.report_id} className='border-t'><td>{r.check_type}</td><td>{r.status}</td><td>{r.summary}</td><td>{new Date(r.created_at).toLocaleString()}</td><td className='space-x-1'><button className='rf-btn-secondary' onClick={()=>runAction(async()=>{await getReportSummary(r.report_id)}, 'Summary loaded.')}>Summary</button><button className='rf-btn-secondary' onClick={()=>runAction(async()=>{await getReportMarkdown(r.report_id)}, 'Markdown loaded.')}>Markdown</button><button className='rf-btn-secondary' onClick={()=>runAction(async()=>{await getReportHtml(r.report_id)}, 'HTML loaded.')}>HTML</button></td></tr>)}</tbody></table>}
+        {reports.length === 0 ? <p className='text-sm text-slate-500'>No reports yet.</p> : <table className='w-full text-sm'><thead><tr><th>Type</th><th>Status</th><th>Summary</th><th>Created</th><th>Open</th></tr></thead><tbody>{reports.map(r=><tr key={r.report_id} className='border-t'><td>{r.check_type}</td><td>{r.status}</td><td>{r.summary}</td><td>{new Date(r.created_at).toLocaleString()}</td><td className='space-x-1'><button className='rf-btn-secondary' onClick={()=>runAction(async()=>{await getReportSummary(r.report_id)}, 'Summary loaded.')}>Summary</button><button className='rf-btn-secondary' onClick={()=>runAction(async()=>{await getReportMarkdown(r.report_id)}, 'Markdown loaded.')}>Markdown</button><button className='rf-btn-secondary' onClick={()=>runAction(async()=>{await getReportHtml(r.report_id)}, 'HTML loaded.')}>HTML</button></td></tr>)}</tbody></table>}
       </div>
 
       {canEdit && <div className='border-t pt-3'>
-        <button className='rf-btn-secondary' onClick={()=>runAction(async()=>{if (!confirm('Delete this Change Case? Checks/Reports stay and will be detached.')) return; await deleteChangeCase(selected.id); setSelected(null); await load()}, 'Change Case deleted.')}>Delete Change Case</button>
+        <button className='rf-btn-secondary' onClick={()=>runAction(async()=>{await deleteChangeCase(selected.id); setSelected(null); await load()}, 'Change case deleted.')}>Delete Change Case</button>
       </div>}
     </article>}
   </section>
