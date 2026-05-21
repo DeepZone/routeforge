@@ -1,3 +1,7 @@
+## v0.9.1-rc (2026-05-21)
+
+- UI Cleanup & English-only polish
+
 ## v0.9.1-rc (2026-05-20)
 
 ### Motivation

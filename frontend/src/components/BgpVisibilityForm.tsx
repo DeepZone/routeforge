@@ -20,7 +20,7 @@ export function BgpVisibilityForm({ role }: { role: UserRole }) {
 
   return <section className='rf-card p-4 space-y-3'>
     <h3 className='text-lg font-semibold'>BGP Visibility</h3>
-    {!canRun && <p className='rf-alert border-amber-200 bg-amber-50 text-amber-800'>Viewer role: Seite ist sichtbar, aber Checks dürfen nicht ausgeführt werden.</p>}
+    {!canRun && <p className='rf-alert border-amber-200 bg-amber-50 text-amber-800'>Viewer role: this page is visible, but checks cannot be run.</p>}
     <input className='rf-input' placeholder='203.0.113.0/24' value={prefix} onChange={e=>setPrefix(e.target.value)} />
     <input className='rf-input' placeholder='Expected Origin AS (optional)' value={expectedOriginAs} onChange={e=>setExpectedOriginAs(e.target.value)} />
     <button className='rf-btn-primary' disabled={loading || !prefix.trim() || !canRun} onClick={onSubmit}>{loading ? 'Checking…' : 'Run BGP Visibility Check'}</button>

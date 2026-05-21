@@ -18,14 +18,14 @@ export function RoaPlannerForm({ role }: { role: UserRole }) {
   }
 
   return <section className='space-y-4'><article className='rf-card p-5 space-y-3'>
-    <h3 className='text-lg font-semibold'>ROA Planner / ROA Preflight</h3>
-    <p className='rf-alert border-blue-200 bg-blue-50 text-blue-700'>Read-only: RouteForge erstellt, ändert oder löscht keine ROAs.</p>
+    <h3 className='text-lg font-semibold'>ROA Planner</h3>
+    <p className='rf-alert border-blue-200 bg-blue-50 text-blue-700'>Read-only: RouteForge does not create, update, or delete ROAs.</p>
     <div><label className='mb-1 block text-sm font-medium'>Prefix</label><input className='rf-input' value={prefix} onChange={e => setPrefix(e.target.value)} placeholder='203.0.113.0/24' /></div>
     <div><label className='mb-1 block text-sm font-medium'>Origin AS</label><input className='rf-input' value={originAs} onChange={e => setOriginAs(e.target.value)} placeholder='AS64500' /></div>
     <div><label className='mb-1 block text-sm font-medium'>Max Length (optional)</label><input className='rf-input' value={maxLength} onChange={e => setMaxLength(e.target.value)} placeholder='24' /></div>
     <button onClick={onSubmit} disabled={loading || !canRun} className='rf-btn-primary'>Run ROA Preflight</button>
-    {!canRun && <p className='text-sm text-amber-700'>Viewer können Checks nicht ausführen.</p>}
-    {loading && <p className='text-sm text-blue-700'>Prüfung läuft…</p>}
+    {!canRun && <p className='text-sm text-amber-700'>Viewer role cannot run checks.</p>}
+    {loading && <p className='text-sm text-blue-700'>Running check…</p>}
     {error && <p className='rf-alert border-rose-200 bg-rose-50 text-rose-700'>{error.message}</p>}
   </article>{result && <ReportView report={result} />}</section>
 }

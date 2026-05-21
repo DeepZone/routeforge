@@ -22,7 +22,7 @@ export function PreflightCheckForm() {
       <div><label className='mb-1 block text-sm font-medium'>Prefix</label><input className='rf-input' placeholder='203.0.113.0/24' value={prefix} onChange={e => setPrefix(e.target.value)} /></div>
       <div><label className='mb-1 block text-sm font-medium'>Planned Origin-AS</label><input className='rf-input' placeholder='AS64500' value={plannedOriginAs} onChange={e => setPlannedOriginAs(e.target.value)} /></div>
       <button onClick={onSubmit} disabled={loading} className='rf-btn-primary'>Run Preflight Check</button>
-      {loading && <p className='text-sm text-blue-700'>Prüfung läuft…</p>}
+      {loading && <p className='text-sm text-blue-700'>Running check…</p>}
       {error && <p className='rf-alert border-rose-200 bg-rose-50 text-rose-700'>{error.message}</p>}
     </article>
     {result && <ReportView report={result} />}
