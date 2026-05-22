@@ -48,7 +48,7 @@ export function Layout({ children, active, onNav, systemLine, title, demoMode, c
             {currentUser && <span className='rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-violet-700'>Signed in as {currentUser.username} · {currentUser.role}</span>}
             <span className={`rounded-full border px-3 py-1 ${demoMode ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700'}`}>{demoMode ? 'DEMO' : 'LIVE'}</span>
             <span className='rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700'>READ-ONLY</span>
-            <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>v0.9.1</span>
+            <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>v0.9.2-rc</span>
             <button className='rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700 hover:bg-rose-100' onClick={onLogout}>Logout</button>
           </div>
         </header>
