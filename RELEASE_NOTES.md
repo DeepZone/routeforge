@@ -1,3 +1,11 @@
+## v1.0.2 (2026-05-22)
+
+- Final text polish and release metadata cleanup for the stable release line.
+- Updated backend/frontend/API-visible versions to v1.0.2 / 1.0.2.
+- Normalized dashboard role label display to Admin/Operator/Viewer while keeping API role values lowercase.
+- Corrected About maintainer line to "Built and maintained by Noisens."
+- README cleanup: SEO H1 added, release badge/status updated, and current release set to v1.0.2.
+
 ## v1.0.1 (2026-05-22)
 
 - Polished the global layout and removed redundant runtime badges from the live header.
