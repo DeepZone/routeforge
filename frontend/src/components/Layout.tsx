@@ -19,7 +19,7 @@ const nav: { key: NavKey; label: string; desc: string }[] = [
   { key: 'about', label: 'About', desc: 'Data sources and limits' },
 ]
 
-export function Layout({ children, active, onNav, systemLine, title, demoMode, currentUser, onLogout, appVersion }: { children: ReactNode; active: NavKey; onNav: (key: NavKey) => void; systemLine: string; title: string; demoMode: boolean; currentUser?: { username: string; role: UserRole } | null; onLogout: () => void; appVersion?: string }) {
+export function Layout({ children, active, onNav, systemLine, title, demoMode, currentUser, onLogout }: { children: ReactNode; active: NavKey; onNav: (key: NavKey) => void; systemLine: string; title: string; demoMode: boolean; currentUser?: { username: string; role: UserRole } | null; onLogout: () => void }) {
   const visibleNav = nav.filter((item) => {
     if (!currentUser) return ['dashboard', 'about'].includes(item.key)
     if (currentUser.role === 'admin') return true
@@ -29,12 +29,11 @@ export function Layout({ children, active, onNav, systemLine, title, demoMode, c
   return <div className='min-h-screen bg-slate-100 text-slate-900'>
     <div className='mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:grid lg:grid-cols-[260px_1fr]'>
       <aside className='rf-card p-4'>
-        <div className='mb-4 flex items-center gap-3'>
-          <img src='/routeforge.png' alt='RouteForge' className='h-11 w-11 rounded-xl object-contain' />
-          <div>
-            <p className='text-xs font-semibold uppercase tracking-wider text-blue-700'>RouteForge</p>
-            <h1 className='text-xl font-bold'>Operator Console</h1>
+        <div className='mb-5 flex flex-col items-center gap-3'>
+          <div className='rounded-2xl bg-slate-900 p-3 shadow-sm'>
+            <img src='/routeforge.png' alt='RouteForge' className='h-20 w-32 object-contain' />
           </div>
+          <h1 className='text-center text-xl font-bold'>Operator Console</h1>
         </div>
         <nav className='flex gap-2 overflow-auto lg:flex-col'>
           {visibleNav.map((n) => <button key={n.key} onClick={() => onNav(n.key)} className={`min-w-fit rounded-xl px-3 py-2 text-left text-sm transition lg:w-full ${active === n.key ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}><div className='font-semibold'>{n.label}</div><div className={`text-xs ${active === n.key ? 'text-slate-300' : 'text-slate-500'}`}>{n.desc}</div></button>)}
@@ -46,9 +45,7 @@ export function Layout({ children, active, onNav, systemLine, title, demoMode, c
           <h2 className='text-xl font-semibold'>{title}</h2>
           <div className='flex flex-wrap items-center gap-2 text-xs font-semibold'>
             {currentUser && <span className='rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-violet-700'>Signed in as {currentUser.username} · {currentUser.role}</span>}
-            <span className={`rounded-full border px-3 py-1 ${demoMode ? 'border-amber-300 bg-amber-50 text-amber-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700'}`}>{demoMode ? 'DEMO' : 'LIVE'}</span>
-            <span className='rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700'>READ-ONLY</span>
-            <span className='rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700'>{appVersion || 'v1.0.0'}</span>
+            {demoMode && <span className='rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-amber-700'>DEMO</span>}
             <button className='rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700 hover:bg-rose-100' onClick={onLogout}>Logout</button>
           </div>
         </header>

@@ -1,3 +1,11 @@
+## v1.0.1 (2026-05-22)
+
+- Polished the global layout and removed redundant runtime badges from the live header.
+- Improved sidebar branding with a cleaner logo presentation.
+- Improved User Management readability with formatted role labels and status badges.
+- Improved Audit Log readability with cleaner filters, compact details and a more structured table.
+- Kept the release read-only and without database migrations.
+
 ## v1.0.0 (2026-05-22)
 
 ### Summary

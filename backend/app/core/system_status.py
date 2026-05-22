@@ -153,7 +153,7 @@ def build_system_status(engine: Engine | None) -> dict:
     return {
         "status": "ok",
         "name": settings.app_name,
-        "version": "v1.0.0",
+        "version": "v1.0.1",
         "read_only": True,
         "mode": "demo" if settings.demo_mode else "live",
         "demo_mode": settings.demo_mode,
