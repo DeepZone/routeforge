@@ -22,11 +22,11 @@ class RpkiChecker:
             evaluation = {
                 "status": CheckStatus.UNKNOWN.value,
                 "summary": "RPKI status could not be determined",
-                "explanation": "Die RIPEstat-Quelle war nicht erreichbar oder lieferte unerwartete Daten.",
-                "risk": "Die Bewertung ist unvollständig.",
+                "explanation": "The RIPEstat source was unavailable or returned unexpected data.",
+                "risk": "The assessment is incomplete.",
                 "recommendations": [
-                    "Prüfe die API-Rohdaten.",
-                    "Wiederhole die Prüfung später.",
+                    "Review the API raw data.",
+                    "Repeat the check later.",
                     "Vergleiche bei Bedarf mit einer zweiten Quelle oder einem lokalen RPKI-Validator.",
                 ],
             }

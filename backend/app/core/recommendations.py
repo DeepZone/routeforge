@@ -3,12 +3,12 @@ from app.core.status import CheckStatus
 
 def default_recommendations(status: CheckStatus) -> list[str]:
     if status == CheckStatus.OK:
-        return ["Keine unmittelbare Aktion erforderlich. Monitoring fortsetzen."]
+        return ["No immediate action required. Continue monitoring."]
     if status == CheckStatus.WARNING:
-        return ["RPKI/Registry-Daten prüfen und Abdeckung verbessern."]
+        return ["Review RPKI/registry data and improve coverage."]
     if status == CheckStatus.CRITICAL:
         return ["Origin-AS und ROA sofort verifizieren, da Route verworfen werden kann."]
-    return ["Erneut prüfen; externe Datenquelle war unzuverlässig oder nicht erreichbar."]
+    return ["Check again; external data source was unreliable or unavailable."]
 
 
 def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | None) -> dict:
@@ -17,11 +17,11 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
         return {
             "status": CheckStatus.WARNING.value,
             "summary": "Origin-AS missing",
-            "explanation": "Für eine vollständige RPKI-Prüfung wird ein Origin-AS benötigt.",
-            "risk": "Ohne Origin-AS kann nicht geprüft werden, ob eine konkrete Route RPKI-valid wäre.",
+            "explanation": "A complete RPKI check requires an origin AS.",
+            "risk": "Without an origin AS, it cannot be verified whether a route would be RPKI valid.",
             "recommendations": [
-                "Ergänze das Origin-AS, zum Beispiel AS3333.",
-                "Nutze den ASN-Check, um mögliche Origin-AS-Informationen zu finden.",
+                "Provide the origin AS, for example AS3333.",
+                "Use the ASN check to find potential origin AS information.",
             ],
         }
 
@@ -31,8 +31,8 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
             "status": CheckStatus.OK.value,
             "summary": "RPKI validation successful",
             "explanation": "Das Prefix-Origin-Paar ist durch einen passenden ROA abgedeckt.",
-            "risk": "Kein akutes RPKI-Risiko erkennbar.",
-            "recommendations": ["Keine akute Maßnahme erforderlich."],
+            "risk": "No immediate RPKI risk detected.",
+            "recommendations": ["No urgent action required."],
         }
     if normalized == "invalid":
         return {
@@ -41,8 +41,8 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
             "explanation": "Das Prefix wird mit einem Origin-AS geprüft, das nicht durch einen passenden ROA gedeckt ist.",
             "risk": "Validierende Netze können diese Route verwerfen. Dadurch kann Erreichbarkeit verloren gehen.",
             "recommendations": [
-                "Prüfe, ob das Origin-AS korrekt ist.",
-                "Prüfe bestehende ROAs für das Prefix.",
+                "Check whether the origin AS is correct.",
+                "Review existing ROAs for the prefix.",
                 "Erstelle oder korrigiere den ROA nur, wenn du zur Verwaltung dieser Ressourcen berechtigt bist.",
             ],
         }
@@ -53,8 +53,8 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
             "explanation": "Für das Prefix existiert ein ROA, aber nicht für dieses Origin-AS.",
             "risk": "Validierende Netze können diese Route verwerfen, weil das Origin-AS nicht autorisiert ist.",
             "recommendations": [
-                "Origin-AS prüfen.",
-                "ROA prüfen.",
+                "Check the origin AS.",
+                "Review the ROA.",
                 "Nur korrigieren, wenn man zur Verwaltung der Ressource berechtigt ist.",
             ],
         }
@@ -65,9 +65,9 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
             "explanation": "Für das Prefix existiert ein ROA, aber die angekündigte Prefix-Länge ist länger als die erlaubte maxLength.",
             "risk": "Validierende Netze können diese Route verwerfen, obwohl das AS grundsätzlich passen kann.",
             "recommendations": [
-                "Angekündigte Prefix-Länge prüfen.",
-                "ROA maxLength prüfen.",
-                "Keine zu breite maxLength setzen, wenn sie nicht notwendig ist.",
+                "Check announced prefix length.",
+                "Check ROA maxLength.",
+                "Do not use an overly broad maxLength unless necessary.",
             ],
         }
     if normalized in {"unknown", "not_found", "unknown_roa", "notfound"}:
@@ -77,7 +77,7 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
             "explanation": "Für dieses Prefix-Origin-Paar wurde kein passender ROA gefunden.",
             "risk": "Das ist nicht automatisch ein Ausfall, schwächt aber die Routing-Sicherheit.",
             "recommendations": [
-                "Prüfen, ob ein ROA angelegt werden sollte.",
+                "Check whether a ROA should be created.",
                 "Nur anlegen, wenn man zur Verwaltung berechtigt ist.",
             ],
         }
@@ -85,11 +85,11 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
     return {
         "status": CheckStatus.UNKNOWN.value,
         "summary": "RPKI status could not be determined",
-        "explanation": "Der RPKI-Status konnte nicht zuverlässig ermittelt werden.",
-        "risk": "Die Bewertung ist unvollständig.",
+        "explanation": "The RPKI status could not be determined reliably.",
+        "risk": "The assessment is incomplete.",
         "recommendations": [
-            "Prüfe die API-Rohdaten.",
-            "Wiederhole die Prüfung später.",
+            "Review the API raw data.",
+            "Repeat the check later.",
             "Vergleiche bei Bedarf mit einer zweiten Quelle oder einem lokalen RPKI-Validator.",
         ],
     }

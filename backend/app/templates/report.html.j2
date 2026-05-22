@@ -18,35 +18,35 @@
   <li><strong>Status:</strong> {{ report.status }}</li>
   <li><strong>Kurzfassung:</strong> {{ report.summary }}</li>
   <li><strong>Preflight Decision:</strong> {{ report.details.preflight_decision if report.details and report.details.preflight_decision else '-' }}</li>
-  <li><strong>Erklärung:</strong> {{ report.explanation or '-' }}</li>
-  <li><strong>Risiko:</strong> {{ report.risk or '-' }}</li>
+  <li><strong>Explanation:</strong> {{ report.explanation or '-' }}</li>
+  <li><strong>Risk:</strong> {{ report.risk or '-' }}</li>
 </ul>
 
-<h2>Empfehlungen</h2><ul>{% for item in report.recommendations %}<li>{{ item }}</li>{% endfor %}</ul>
+<h2>Recommendations</h2><ul>{% for item in report.recommendations %}<li>{{ item }}</li>{% endfor %}</ul>
 
-<h2>Einzelprüfungen</h2>
+<h2>Individual checks</h2>
 <h3>RPKI</h3>
 <ul>
   <li><strong>Status:</strong> {{ report.checks.rpki.status if report.checks and report.checks.rpki else '-' }}</li>
   <li><strong>Summary:</strong> {{ report.checks.rpki.summary if report.checks and report.checks.rpki else '-' }}</li>
-  <li><strong>Erklärung:</strong> {{ report.checks.rpki.explanation if report.checks and report.checks.rpki else '-' }}</li>
-  <li><strong>Risiko:</strong> {{ report.checks.rpki.risk if report.checks and report.checks.rpki else '-' }}</li>
+  <li><strong>Explanation:</strong> {{ report.checks.rpki.explanation if report.checks and report.checks.rpki else '-' }}</li>
+  <li><strong>Risk:</strong> {{ report.checks.rpki.risk if report.checks and report.checks.rpki else '-' }}</li>
 </ul>
 
 <h3>Registry/IRR</h3>
 <ul>
   <li><strong>Status:</strong> {{ report.checks.registry.status if report.checks and report.checks.registry else '-' }}</li>
   <li><strong>Summary:</strong> {{ report.checks.registry.summary if report.checks and report.checks.registry else '-' }}</li>
-  <li><strong>Erklärung:</strong> {{ report.checks.registry.explanation if report.checks and report.checks.registry else '-' }}</li>
-  <li><strong>Risiko:</strong> {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}</li>
+  <li><strong>Explanation:</strong> {{ report.checks.registry.explanation if report.checks and report.checks.registry else '-' }}</li>
+  <li><strong>Risk:</strong> {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}</li>
 </ul>
 
 <h3>Routing Visibility</h3>
 <ul>
   <li><strong>Status:</strong> {{ report.checks.routing_visibility.status if report.checks and report.checks.routing_visibility else '-' }}</li>
   <li><strong>Summary:</strong> {{ report.checks.routing_visibility.summary if report.checks and report.checks.routing_visibility else '-' }}</li>
-  <li><strong>Erklärung:</strong> {{ report.checks.routing_visibility.explanation if report.checks and report.checks.routing_visibility else '-' }}</li>
-  <li><strong>Risiko:</strong> {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}</li>
+  <li><strong>Explanation:</strong> {{ report.checks.routing_visibility.explanation if report.checks and report.checks.routing_visibility else '-' }}</li>
+  <li><strong>Risk:</strong> {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}</li>
 </ul>
 
 <h2>Data Source Diagnostics</h2>

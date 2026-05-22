@@ -67,7 +67,7 @@ class RoaPlannerService:
 
         planned_validation_state = "not_found"
         status = "WARNING"
-        summary = "Keine passende ROA gefunden; ein read-only Vorschlag wurde erstellt."
+        summary = "No matching ROA found; a read-only proposal was created."
         max_length_risk = "none"
 
         if matching_roas:
@@ -86,7 +86,7 @@ class RoaPlannerService:
             max_length_risk = "broad"
             if status == "OK":
                 status = "WARNING"
-            recommendations.append("Max Length ist relativ breit gewählt; reduzieren Sie die Breite, um Hijack-Risiko zu senken.")
+            recommendations.append("Max Length ist relativ breit gewählt; reduzieren Sie die Breite, um Hijack-Risk zu senken.")
 
         suggested_roa = None if matching_roas else {"prefix": normalized_prefix, "origin_as": normalized_origin, "max_length": effective_max_length}
         if suggested_roa:
@@ -95,7 +95,7 @@ class RoaPlannerService:
         return {
             "status": status,
             "summary": summary,
-            "recommendations": recommendations or ["Keine zusätzlichen Empfehlungen."],
+            "recommendations": recommendations or ["No additional recommendations."],
             "details": {
                 "prefix": normalized_prefix,
                 "origin_as": normalized_origin,

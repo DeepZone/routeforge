@@ -9,10 +9,10 @@ class RegistryChecker:
                 "status": CheckStatus.UNKNOWN.value,
                 "summary": "Registry-/IRR-Daten konnten nicht bestimmt werden",
                 "explanation": "Die Whois-/Registry-Datenquelle war nicht erreichbar oder lieferte einen Fehler.",
-                "risk": "Die Bewertung ist unvollständig.",
+                "risk": "The assessment is incomplete.",
                 "recommendations": [
                     "Prüfe die Rohdaten der Registry-Quelle.",
-                    "Wiederhole die Abfrage später.",
+                    "Retry the query later.",
                     "Vergleiche das Ergebnis mit einer zweiten Registry-/IRR-Quelle.",
                 ],
                 "raw": whois_payload if isinstance(whois_payload, dict) else {},
@@ -76,7 +76,7 @@ class RegistryChecker:
             "status": CheckStatus.CRITICAL.value,
             "summary": "Route/route6-Origin widerspricht dem angegebenen Origin-AS",
             "explanation": f"Gefundene Origins: {', '.join(sorted(route_origins))}. Erwartet wurde {normalized_origin}.",
-            "risk": "Möglicher Konfigurations- oder Registry-Fehler mit Hijack-Risiko.",
+            "risk": "Möglicher Konfigurations- oder Registry-Fehler mit Hijack-Risk.",
             "recommendations": [
                 "Origin-AS und route/route6-Objekte in der zuständigen Registry abgleichen.",
                 "Fehlerhafte Registry-Einträge korrigieren.",
