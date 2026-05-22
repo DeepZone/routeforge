@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  Read-only routing preflight and explainability for BGP, RPKI, Registry/IRR and Routing Visibility.
+  Self-hosted read-only preflight validation for BGP, RPKI, ROA, RIPEstat, Registry/IRR and routing visibility workflows.
 </p>
 
 ___
@@ -28,22 +28,40 @@ ___
 See docs/screenshots/README.md for capture guidance.
 -->
 
-## What RouteForge does
+## BGP, RPKI and ROA Preflight Validation Tool
 
-RouteForge helps operators answer three practical questions before a routing change:
-- Is it authorized? (RPKI)
-- Is it documented? (Registry/IRR)
-- Is it visible? (Routing Visibility)
+## What this tool does
 
-It combines these checks into an explainable, read-only preflight workflow.
+This self-hosted, read-only platform helps network operators run preflight checks before planned routing changes. It combines BGP visibility, RPKI validation, ROA preflight, Registry/IRR context and RIPEstat data into one explainable workflow.
 
-## Why it exists
+It is designed for ROA planning and operational safety checks, including ASN checks, prefix-origin validation, routing visibility review, and early detection of signals that may indicate a route leak, origin mismatch, or invalid announcement.
 
-Routing changes often require fast but traceable checks across multiple external data views. RouteForge provides a single UI/API workflow so teams can run consistent preflight checks, share results, and keep a documented decision trail.
+## Why BGP and RPKI preflight validation matters
+
+Before announcing or changing origins, teams need fast evidence from multiple routing data sources. A structured preflight process helps reduce the risk of unintended exposure, catches inconsistencies early, and improves communication across operations and change management.
+
+Using read-only checks before execution helps teams validate assumptions without modifying routers, creating ROAs, or writing to external registries.
+
+## Key Features
+
+- Self-hosted and read-only by design
+- Unified BGP visibility and routing visibility checks
+- RPKI validation and ROA preflight support for safer ROA planning
+- Registry/IRR and RIPEstat enrichment in one workflow
+- ASN checks and prefix-origin validation with explainable outcomes
+- Change preflight summaries for review and documentation
+
+## Typical Use Cases
+
+- Validate planned origin changes before maintenance windows
+- Investigate suspected origin mismatch or invalid announcement scenarios
+- Improve route leak awareness during peer and transit change reviews
+- Standardize routing security preflight workflows across teams
+- Share repeatable evidence for audits and post-change analysis
 
 ## Current Release
 
-RouteForge is a **stable selfhosted** release for production-grade read-only validation workflows. Current release: **v1.0.0**.
+RouteForge is a **stable** self-hosted release for production-grade read-only validation workflows. Current release: **v1.0.0**.
 
 ## Quickstart with Docker Compose
 
@@ -281,6 +299,6 @@ In the standard Docker setup, API calls are same-origin via frontend nginx (`/ap
 - Keep `SECRET_KEY` stable; changing it invalidates existing sessions.
 
 
-## BGP Visibility Details (v0.8.1-beta)
+## BGP Visibility Details
 - Read-only BGP visibility validation for prefix and optional expected origin AS.
 - Uses external RIPEstat visibility data; results are momentary snapshots and do not replace continuous monitoring.
