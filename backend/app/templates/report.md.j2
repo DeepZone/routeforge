@@ -15,31 +15,31 @@
 - Status: **{{ report.status }}**
 - Kurzfassung: {{ report.summary }}
 - Preflight Decision: {{ report.details.preflight_decision if report.details and report.details.preflight_decision else '-' }}
-- Erklärung: {{ report.explanation or '-' }}
-- Risiko: {{ report.risk or '-' }}
+- Explanation: {{ report.explanation or '-' }}
+- Risk: {{ report.risk or '-' }}
 
-## Empfehlungen
+## Recommendations
 {% for item in report.recommendations %}- {{ item }}
 {% endfor %}
 
-## Einzelprüfungen
+## Individual checks
 ### RPKI
 - Status: **{{ report.checks.rpki.status if report.checks and report.checks.rpki else '-' }}**
 - Summary: {{ report.checks.rpki.summary if report.checks and report.checks.rpki else '-' }}
-- Erklärung: {{ report.checks.rpki.explanation if report.checks and report.checks.rpki else '-' }}
-- Risiko: {{ report.checks.rpki.risk if report.checks and report.checks.rpki else '-' }}
+- Explanation: {{ report.checks.rpki.explanation if report.checks and report.checks.rpki else '-' }}
+- Risk: {{ report.checks.rpki.risk if report.checks and report.checks.rpki else '-' }}
 
 ### Registry/IRR
 - Status: **{{ report.checks.registry.status if report.checks and report.checks.registry else '-' }}**
 - Summary: {{ report.checks.registry.summary if report.checks and report.checks.registry else '-' }}
-- Erklärung: {{ report.checks.registry.explanation if report.checks and report.checks.registry else '-' }}
-- Risiko: {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}
+- Explanation: {{ report.checks.registry.explanation if report.checks and report.checks.registry else '-' }}
+- Risk: {{ report.checks.registry.risk if report.checks and report.checks.registry else '-' }}
 
 ### Routing Visibility
 - Status: **{{ report.checks.routing_visibility.status if report.checks and report.checks.routing_visibility else '-' }}**
 - Summary: {{ report.checks.routing_visibility.summary if report.checks and report.checks.routing_visibility else '-' }}
-- Erklärung: {{ report.checks.routing_visibility.explanation if report.checks and report.checks.routing_visibility else '-' }}
-- Risiko: {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}
+- Explanation: {{ report.checks.routing_visibility.explanation if report.checks and report.checks.routing_visibility else '-' }}
+- Risk: {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}
 
 ## Data Source Diagnostics
 {% if report.details and report.details.source_diagnostics %}

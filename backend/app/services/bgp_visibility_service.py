@@ -31,30 +31,30 @@ class BgpVisibilityService:
 
         if data_unreliable:
             status = CheckStatus.UNKNOWN.value
-            summary = "Keine belastbaren BGP-Sichtbarkeitsdaten für das Prefix verfügbar."
-            recommendations = ["Später erneut prüfen und ein externes Monitoring zur Gegenprüfung verwenden."]
+            summary = "No reliable BGP visibility data is available for the prefix."
+            recommendations = ["Check again later and use external monitoring for cross-validation."]
         elif not visible:
             status = CheckStatus.CRITICAL.value if normalized_expected else CheckStatus.WARNING.value
-            summary = "Das Prefix ist aktuell nicht sichtbar."
-            recommendations = ["Ankündigungspfad und Upstream-Policy prüfen.", "Route-Propagation in mehreren Looking-Glasses validieren."]
+            summary = "The prefix is currently not visible."
+            recommendations = ["Check announcement path and upstream policy.", "Validate route propagation across multiple looking glasses."]
         elif normalized_expected and not expected_seen:
             status = CheckStatus.CRITICAL.value
-            summary = f"Das erwartete Origin {normalized_expected} ist für {normalized_prefix} nicht sichtbar."
-            recommendations = ["Origin-AS Konfiguration prüfen.", "Mögliche Route-Leaks/Hijacks gegenprüfen."]
+            summary = f"The expected origin {normalized_expected} is not visible for {normalized_prefix} ."
+            recommendations = ["Check origin-AS configuration.", "Investigate potential route leaks/hijacks."]
         elif multiple_origins:
             status = CheckStatus.WARNING.value
-            summary = "Prefix sichtbar, aber mit mehreren Origin-ASNs (MOAS)."
-            recommendations = ["Mehrfach-Origin fachlich bestätigen oder unbeabsichtigte Ankündigung beheben."]
+            summary = "Prefix is visible but has multiple origin ASNs (MOAS)."
+            recommendations = ["Confirm multi-origin behavior or fix unintended announcements."]
         else:
             status = CheckStatus.OK.value
-            summary = "Prefix sichtbar und erwartete Origin-AS (falls angegeben) wird gesehen."
-            recommendations = ["Weiter beobachten; Ergebnis ist eine Momentaufnahme externer Sichtbarkeitsdaten."]
+            summary = "Prefix is visible and the expected origin AS (if provided) is observed."
+            recommendations = ["Continue monitoring; this result is a point-in-time snapshot of external visibility data."]
 
         return {
             "status": status,
             "summary": summary,
             "explanation": "BGP Visibility basiert auf RIPEstat-Daten und ist read-only.",
-            "risk": "Externe Sichtbarkeitsdaten können zeitversetzt oder unvollständig sein.",
+            "risk": "External visibility data may be delayed or incomplete.",
             "recommendations": recommendations,
             "input": {"prefix": normalized_prefix, "expected_origin_as": normalized_expected},
             "checks": None,

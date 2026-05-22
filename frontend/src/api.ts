@@ -24,7 +24,7 @@ async function requestJson<T>(url: string, options: RequestInit): Promise<T> {
   if (!response.ok) {
     const detail = typeof parsedBody === 'object' && parsedBody !== null && 'detail' in parsedBody
       ? String((parsedBody as { detail: unknown }).detail)
-      : response.statusText || 'Unbekannter API-Fehler'
+      : response.statusText || 'Unknown API error'
     const friendly = detail.includes('Database schema is not up to date') ? 'Database migration required. Please run alembic upgrade head.' : detail
     throw new ApiError(`HTTP ${response.status}: ${friendly}`, response.status, parsedBody)
   }

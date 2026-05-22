@@ -53,13 +53,13 @@ class AsnChecker:
         if "error" in prefixes:
             errors.append("announced-prefixes nicht erreichbar")
         status = CheckStatus.UNKNOWN.value if errors else CheckStatus.OK.value
-        summary = f"ASN {resource} geprüft."
+        summary = f"ASN {resource} checked."
         return {
             "status": status,
             "summary": summary,
-            "explanation": "RPKI kann nicht für eine ASN allein bewertet werden. Für RPKI braucht RouteForge konkrete Prefix-Origin-Paare.",
-            "risk": "Ohne Prefix-Origin-Paar ist keine direkte RPKI-Gültigkeitsaussage möglich.",
-            "recommendations": ["Fehlende Datenquellen erneut abrufen."] if errors else ["Keine unmittelbare Aktion erforderlich."],
+            "explanation": "RPKI cannot be assessed for an ASN alone. RouteForge requires concrete prefix-origin pairs for RPKI.",
+            "risk": "Without a prefix-origin pair, no direct RPKI validity statement is possible.",
+            "recommendations": ["Retry unavailable data sources."] if errors else ["No immediate action required."],
             "details": {
                 "normalized_asn": asn,
                 "resource": resource,
@@ -144,23 +144,23 @@ class AsnChecker:
         else:
             status = CheckStatus.OK.value
 
-        summary_text = f"RPKI-Batchprüfung für {resource}: {len(selected)} Prefixe geprüft."
-        explanation = "RPKI wurde für sichtbare Prefix-Origin-Paare der ASN geprüft."
-        recommendations = ["Kritische Ergebnisse priorisiert prüfen.", "Warnungen auf fehlende ROA-Abdeckung untersuchen."]
+        summary_text = f"RPKI batch check for {resource}: {len(selected)} prefixes checked."
+        explanation = "RPKI was checked for visible prefix-origin pairs of the ASN."
+        recommendations = ["Prioritize review of critical results.", "Investigate warnings about missing ROA coverage."]
         if not selected:
-            summary_text = f"RPKI-Batchprüfung für {resource} nicht möglich."
-            explanation = "Für diese ASN konnten keine auswertbaren Prefixe gefunden werden."
+            summary_text = f"RPKI batch check for {resource} not possible."
+            explanation = "No analyzable prefixes were found for this ASN."
             recommendations = [
-                "Prüfe, ob die ASN aktuell Prefixe announced.",
-                "Wiederhole die Abfrage später.",
-                "Prüfe die Rohdaten der announced-prefixes Antwort.",
+                "Check whether the ASN is currently announcing prefixes.",
+                "Retry the query later.",
+                "Review raw data from the announced-prefixes response.",
             ]
 
         return {
             "status": status,
             "summary": summary_text,
             "explanation": explanation,
-            "risk": "Kritische oder warnende Einzelresultate können auf Routing-Risiken hinweisen.",
+            "risk": "Critical or warning-level individual results can indicate routing risks.",
             "recommendations": recommendations,
             "input": {"asn": resource, "limit": limit},
             "checks": None,
@@ -183,7 +183,7 @@ class AsnChecker:
             return {
                 "available": True,
                 "reason_code": "prefixes_available",
-                "message": f"RPKI-Batchprüfung ist möglich. Es wurden {len(extracted_prefixes)} sichtbare Prefixe gefunden.",
+                "message": f"RPKI batch checking is possible. Found {len(extracted_prefixes)} visible prefixes.",
                 "prefix_count": len(extracted_prefixes),
                 "can_retry": False,
             }
@@ -191,7 +191,7 @@ class AsnChecker:
             return {
                 "available": False,
                 "reason_code": "announced_prefixes_error",
-                "message": "Die angekündigten Prefixe konnten über RIPEstat nicht geladen werden. Eine RPKI-Batchprüfung ist deshalb aktuell nicht möglich.",
+                "message": "Announced prefixes could not be loaded from RIPEstat. RPKI batch checking is currently not possible.",
                 "prefix_count": 0,
                 "can_retry": True,
             }
@@ -199,14 +199,14 @@ class AsnChecker:
             return {
                 "available": False,
                 "reason_code": "no_prefixes_extracted",
-                "message": "Für diese ASN wurden in der RIPEstat-Antwort keine auswertbaren Prefixe gefunden. Entweder announced die ASN aktuell keine Prefixe in dieser Quelle oder die Datenstruktur konnte nicht interpretiert werden.",
+                "message": "No analyzable prefixes were found in the RIPEstat response for this ASN. The ASN may currently announce no prefixes in this source, or the data structure could not be interpreted.",
                 "prefix_count": 0,
                 "can_retry": True,
             }
         return {
             "available": False,
             "reason_code": "no_announced_prefixes",
-            "message": "Für diese ASN wurden keine sichtbaren Prefixe gefunden. Ohne Prefixe kann RouteForge keine RPKI-Batchprüfung durchführen.",
+            "message": "No visible prefixes were found for this ASN. Without prefixes, RouteForge cannot perform RPKI batch checks.",
             "prefix_count": 0,
             "can_retry": True,
         }

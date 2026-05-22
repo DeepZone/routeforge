@@ -41,11 +41,11 @@ class PrefixChecker:
 
         warnings: list[str] = []
         if whois.get("error") or routing_status.get("error"):
-            warnings.append("Mindestens eine zusätzliche Datenquelle war nicht erreichbar.")
+            warnings.append("At least one additional data source was unavailable.")
         if rpki_check.get("status") == CheckStatus.UNKNOWN.value and rpki_check.get("raw", {}).get("error"):
-            warnings.append("RPKI-Quelle nicht erreichbar oder unvollständig.")
+            warnings.append("RPKI source unavailable or incomplete.")
         if routing_visibility_check.get("status") == CheckStatus.UNKNOWN.value:
-            warnings.append("Routing-Sichtbarkeit konnte nicht belastbar bestimmt werden.")
+            warnings.append("Routing visibility could not be determined reliably.")
 
         overall = evaluate_prefix_overall(rpki_check, registry_check, routing_visibility_check, normalized_prefix, normalized_origin)
 

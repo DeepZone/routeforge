@@ -26,7 +26,7 @@ def check_asn(payload: AsnCheckRequest, db: Session = Depends(get_db), user=Depe
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"ASN-Prüfung fehlgeschlagen: {exc}") from exc
+        raise HTTPException(status_code=500, detail=f"ASN check failed: {exc}") from exc
 
 
 @router.post('/asn-rpki', response_model=CheckResponse)
@@ -37,7 +37,7 @@ def check_asn_rpki(payload: AsnRpkiBatchRequest, db: Session = Depends(get_db), 
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"ASN-RPKI-Batchprüfung fehlgeschlagen: {exc}") from exc
+        raise HTTPException(status_code=500, detail=f"ASN RPKI batch check failed: {exc}") from exc
 
 
 @router.post('/prefix', response_model=CheckResponse)
@@ -48,7 +48,7 @@ def check_prefix(payload: PrefixCheckRequest, db: Session = Depends(get_db), use
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Prefix-Prüfung fehlgeschlagen: {exc}") from exc
+        raise HTTPException(status_code=500, detail=f"Prefix check failed: {exc}") from exc
 
 
 
@@ -64,7 +64,7 @@ def check_bgp_visibility(payload: BgpVisibilityCheckRequest, db: Session = Depen
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"BGP-Visibility-Prüfung fehlgeschlagen: {exc}") from exc
+        raise HTTPException(status_code=500, detail=f"BGP visibility check failed: {exc}") from exc
 
 @router.post('/roa-preflight', response_model=CheckResponse)
 def check_roa_preflight(payload: RoaPreflightCheckRequest, db: Session = Depends(get_db), user=Depends(require_operator_or_admin)) -> CheckResponse:
@@ -76,7 +76,7 @@ def check_roa_preflight(payload: RoaPreflightCheckRequest, db: Session = Depends
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"ROA-Preflight-Prüfung fehlgeschlagen: {exc}") from exc
+        raise HTTPException(status_code=500, detail=f"ROA preflight check failed: {exc}") from exc
 
 
 @router.post('/preflight', response_model=CheckResponse)
@@ -87,7 +87,7 @@ def check_preflight(payload: PreflightCheckRequest, db: Session = Depends(get_db
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Preflight-Prüfung fehlgeschlagen: {exc}") from exc
+        raise HTTPException(status_code=500, detail=f"Preflight check failed: {exc}") from exc
 
 
 def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | None, result: dict, user_id: int | None = None, change_case_id: int | None = None) -> CheckResponse:

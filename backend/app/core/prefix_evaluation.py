@@ -16,7 +16,7 @@ def evaluate_prefix_overall(
     }
 
     if not origin_as:
-        return _warning("Keine vollständige Prefix-Origin-Prüfung möglich", "Ohne Origin-AS ist keine vollständige kombinierte Bewertung von RPKI, Registry/IRR und Routing Visibility möglich.")
+        return _warning("No complete prefix-origin check possible", "Without an origin AS, a complete combined assessment of RPKI, registry/IRR, and routing visibility is not possible.")
 
     if CheckStatus.CRITICAL in statuses.values():
         if statuses["routing"] == CheckStatus.CRITICAL:
@@ -26,7 +26,7 @@ def evaluate_prefix_overall(
         return _critical("Registry/IRR-Origin widerspricht dem angegebenen Origin-AS.", "Ein gefundenes route/route6-Origin weicht vom geprüften Origin-AS ab.")
 
     if statuses["rpki"] == statuses["registry"] == statuses["routing"] == CheckStatus.UNKNOWN:
-        return _unknown("Keine belastbare Gesamtbewertung möglich.", "RPKI, Registry/IRR und Routing Visibility liefern keine verlässliche Aussage.")
+        return _unknown("No reliable overall assessment possible.", "RPKI, Registry/IRR und Routing Visibility liefern keine verlässliche Aussage.")
 
     if statuses["rpki"] == CheckStatus.OK and statuses["registry"] == CheckStatus.OK and statuses["routing"] == CheckStatus.OK:
         return {
@@ -38,7 +38,7 @@ def evaluate_prefix_overall(
         }
 
     if statuses["rpki"] == CheckStatus.OK and statuses["registry"] == CheckStatus.OK and statuses["routing"] == CheckStatus.UNKNOWN:
-        return _warning("Routing-Sichtbarkeit konnte nicht belastbar bestimmt werden.", "RPKI und Registry/IRR sind plausibel, aber die Routing-Sichtbarkeit bleibt unklar.")
+        return _warning("Routing visibility could not be determined reliably.", "RPKI und Registry/IRR sind plausibel, aber die Routing-Sichtbarkeit bleibt unklar.")
 
     if CheckStatus.WARNING in statuses.values():
         return _warning("Kombinierte Prefix-Bewertung zeigt Warnhinweise.", "Mindestens eine Einzelprüfung meldet unvollständige oder unsichere Daten.")
@@ -55,7 +55,7 @@ def _warning(summary: str, explanation: str) -> dict:
         "summary": summary,
         "explanation": explanation,
         "risk": "Die Gesamtaussage bleibt eingeschränkt.",
-        "recommendations": ["Einzelprüfungen und Rohdaten gezielt nacharbeiten."],
+        "recommendations": ["Individual checks und Rohdaten gezielt nacharbeiten."],
     }
 
 
@@ -64,7 +64,7 @@ def _critical(summary: str, explanation: str) -> dict:
         "status": CheckStatus.CRITICAL.value,
         "summary": summary,
         "explanation": explanation,
-        "risk": "Erhöhtes Risiko für Fehlrouting, Erreichbarkeitsprobleme oder Sicherheitsvorfälle.",
+        "risk": "Erhöhtes Risk für Fehlrouting, Erreichbarkeitsprobleme oder Sicherheitsvorfälle.",
         "recommendations": ["Abweichung priorisiert prüfen und beheben."],
     }
 
