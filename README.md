@@ -207,6 +207,11 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 In the standard setup, RouteForge does **not** require a hardcoded host IP in the frontend build. The frontend nginx proxies `/api` internally to the backend service (`backend:8000`).
 
+For frontend Vite development proxying:
+- Docker Compose default: `VITE_API_PROXY_TARGET=http://backend:8000`
+- Local development outside Docker: `VITE_API_PROXY_TARGET=http://localhost:8000`
+- Do not commit local/private IP targets (for example `192.168.x.x`, `10.x.x.x`, `172.16-31.x.x`) to the repository.
+
 ### Environment
 - `.env.example` documents required production variables.
 - Keep RouteForge read-only (no write operations to RIPE DB, RPKI, or routers).
