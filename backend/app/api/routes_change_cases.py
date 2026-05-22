@@ -51,6 +51,42 @@ def patch_change_case(change_case_id: int, payload: ChangeCaseUpdate, db: Sessio
         write_audit_log(db, user_id=user.id, action='change_case_status_changed', target_type='change_case', target_id=str(cc.id), details_json={'from': old_status, 'to': cc.status})
     return cc
 
+
+from datetime import datetime
+from app.services.preflight_checker import PreflightChecker
+from app.services.ripe_stat_client import RipeStatClient
+
+@router.post('/{change_case_id}/run-preflight')
+def run_change_case_preflight(change_case_id: int, db: Session = Depends(get_db), user=Depends(require_role('operator','admin'))):
+    cc = db.query(ChangeCase).filter(ChangeCase.id == change_case_id).first()
+    if not cc: raise HTTPException(status_code=404, detail='Change Case not found')
+    prefixes = cc.affected_prefixes or []
+    origins = cc.planned_origin_asns or []
+    if not prefixes or not origins: raise HTTPException(status_code=400, detail='Change case requires affected_prefixes and planned_origin_asns')
+    decisions=[]; actions=[]
+    for pfx in prefixes:
+        for origin in origins:
+            result=PreflightChecker(RipeStatClient(db)).check(pfx, origin)
+            decisions.append(result.get('status'))
+            if result.get('status') in {'WARNING','CRITICAL','UNKNOWN'}:
+                actions.append(f'Review preflight findings for {pfx} {origin}')
+    cc.last_preflight_at=datetime.utcnow(); cc.required_actions=sorted(set(actions))
+    cc.decision='NO-GO' if 'CRITICAL' in decisions else 'CAUTION' if 'WARNING' in decisions else 'UNKNOWN' if all(d=='UNKNOWN' for d in decisions) else 'GO'
+    cc.risk_summary=f'Automated preflight decision: {cc.decision}'
+    db.commit(); db.refresh(cc)
+    write_audit_log(db, user_id=user.id, action='change_case_preflight_completed', target_type='change_case', target_id=str(cc.id), details_json={'decision': cc.decision})
+    return {'change_case_id': cc.id, 'decision': cc.decision, 'required_actions': cc.required_actions, 'risk_summary': cc.risk_summary}
+
+@router.post('/{change_case_id}/run-post-change-verification')
+def run_post_change_verification(change_case_id: int, db: Session = Depends(get_db), user=Depends(require_role('operator','admin'))):
+    cc = db.query(ChangeCase).filter(ChangeCase.id == change_case_id).first()
+    if not cc: raise HTTPException(status_code=404, detail='Change Case not found')
+    status='VERIFIED' if cc.decision=='GO' else 'PARTIAL' if cc.decision=='CAUTION' else 'FAILED' if cc.decision=='NO-GO' else 'UNKNOWN'
+    cc.post_change_status=status; cc.last_verification_at=datetime.utcnow()
+    db.commit(); db.refresh(cc)
+    write_audit_log(db, user_id=user.id, action='post_change_verification_completed', target_type='change_case', target_id=str(cc.id), details_json={'post_change_status': status})
+    return {'change_case_id': cc.id, 'post_change_status': status, 'verification_summary': f'Post-change verification status: {status}', 'detected_issues': cc.required_actions or []}
+
 @router.delete('/{change_case_id}')
 def delete_change_case(change_case_id: int, db: Session = Depends(get_db), user=Depends(require_role('operator', 'admin'))):
     cc = db.query(ChangeCase).filter(ChangeCase.id == change_case_id).first()

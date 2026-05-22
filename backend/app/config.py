@@ -24,6 +24,24 @@ class Settings(BaseSettings):
     cookie_samesite: str = Field(default="lax", validation_alias="COOKIE_SAMESITE")
     allow_sqlite_create_all: bool = Field(default=True, validation_alias="ALLOW_SQLITE_CREATE_ALL")
 
+    rpki_provider: str = Field(default="ripestat", validation_alias="RPKI_PROVIDER")
+    rpki_routinator_url: str = Field(default="http://routinator:8323", validation_alias="RPKI_ROUTINATOR_URL")
+    rpki_local_json_path: str = Field(default="", validation_alias="RPKI_LOCAL_JSON_PATH")
+    rpki_provider_timeout_seconds: float = Field(default=5, validation_alias="RPKI_PROVIDER_TIMEOUT_SECONDS")
+    rpki_fallback_to_ripestat: bool = Field(default=True, validation_alias="RPKI_FALLBACK_TO_RIPESTAT")
+    bgp_visibility_providers: str = Field(default="ripestat", validation_alias="BGP_VISIBILITY_PROVIDERS")
+    bgp_generic_url_template: str = Field(default="", validation_alias="BGP_GENERIC_URL_TEMPLATE")
+    bgp_provider_timeout_seconds: float = Field(default=5, validation_alias="BGP_PROVIDER_TIMEOUT_SECONDS")
+    bgp_visibility_require_source_agreement: bool = Field(default=False, validation_alias="BGP_VISIBILITY_REQUIRE_SOURCE_AGREEMENT")
+    bgp_visibility_min_confidence: int = Field(default=60, validation_alias="BGP_VISIBILITY_MIN_CONFIDENCE")
+    post_change_default_recheck_minutes: str = Field(default="15,30,60", validation_alias="POST_CHANGE_DEFAULT_RECHECK_MINUTES")
+    alert_webhook_enabled: bool = Field(default=False, validation_alias="ALERT_WEBHOOK_ENABLED")
+    alert_webhook_url: str = Field(default="", validation_alias="ALERT_WEBHOOK_URL")
+    alert_webhook_secret: str = Field(default="", validation_alias="ALERT_WEBHOOK_SECRET")
+    alert_on_status_change_only: bool = Field(default=True, validation_alias="ALERT_ON_STATUS_CHANGE_ONLY")
+    alert_webhook_timeout_seconds: float = Field(default=5, validation_alias="ALERT_WEBHOOK_TIMEOUT_SECONDS")
+    alert_webhook_max_retries: int = Field(default=1, validation_alias="ALERT_WEBHOOK_MAX_RETRIES")
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 

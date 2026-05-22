@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models import ChangeCase, Check, Report, WatchRun, WatchTarget
+from app.services.alerting import send_watch_webhook
 from app.services.asn_checker import AsnChecker
 from app.services.bgp_visibility_service import BgpVisibilityService
 from app.services.prefix_checker import PrefixChecker
@@ -30,7 +31,9 @@ class WatchService:
 
         prev = target.last_status
         changed = prev is not None and prev != result["status"]
-        run = WatchRun(watch_target_id=target.id, report_id=report.id, previous_status=prev, status=result["status"], changed=changed, summary=result["summary"])
+        payload = {"event": "watch_status_changed", "watch_target_id": target.id, "watch_target_name": target.name, "watch_type": target.watch_type, "previous_status": prev, "current_status": result["status"], "changed": changed, "summary": result["summary"], "report_id": report.id, "timestamp": datetime.utcnow().isoformat() + "Z"}
+        delivery_status, delivery_error = send_watch_webhook(payload)
+        run = WatchRun(watch_target_id=target.id, report_id=report.id, previous_status=prev, status=result["status"], changed=changed, summary=result["summary"], alert_delivery_status=delivery_status, alert_delivered_at=(datetime.utcnow() if delivery_status == "sent" else None), alert_error_message=delivery_error)
         self.db.add(run)
         target.last_status = result["status"]
         target.last_run_at = datetime.utcnow()

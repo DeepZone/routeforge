@@ -1,78 +1,45 @@
+import httpx
+from app.config import settings
 from app.core.normalize import format_asn, normalize_asn, validate_prefix
 from app.core.status import CheckStatus
-from app.services.ripe_stat_client import RipeStatClient
-
 
 class BgpVisibilityService:
-    def __init__(self, client: RipeStatClient):
-        self.client = client
+    def __init__(self, client): self.client=client
 
-    def check(self, prefix: str, expected_origin_as: str | None) -> dict:
-        normalized_prefix = validate_prefix(prefix)
-        normalized_expected = format_asn(normalize_asn(expected_origin_as)) if expected_origin_as else None
+    def _ripestat(self,prefix):
+        payload,diag=self.client.get_with_diagnostics('routing-status',{'resource':prefix})
+        data=(payload or {}).get('data',{}) if isinstance(payload,dict) else {}
+        origins=sorted({str(i.get('origin','')).upper() for i in data.get('routes',[]) if isinstance(i,dict) and i.get('origin')})
+        return {'source':'ripestat','origins':origins,'visible':bool(origins),'diagnostic':diag,'ok':not (payload or {}).get('error')}
 
-        routing_payload, routing_diag = self.client.get_with_diagnostics("routing-status", {"resource": normalized_prefix})
-        bgp_state_payload, bgp_state_diag = self.client.get_with_diagnostics("bgp-state", {"resource": normalized_prefix})
-        routing_payload = routing_payload or {}
-        bgp_state_payload = bgp_state_payload or {}
+    def _generic(self,prefix):
+        tpl=settings.bgp_generic_url_template
+        if not tpl: return {'source':'generic-http','origins':[],'visible':False,'diagnostic':{'source':'generic-http','status':'error','message':'template missing'},'ok':False}
+        try:
+            r=httpx.get(tpl.format(prefix=prefix),timeout=settings.bgp_provider_timeout_seconds); r.raise_for_status(); j=r.json()
+            origins=[str(x).upper() for x in (j.get('origins') or []) if x]
+            visible=bool(j.get('visible', bool(origins)))
+            return {'source':'generic-http','origins':origins,'visible':visible,'diagnostic':{'source':'generic-http','status':'ok'},'ok':True,'raw':j}
+        except Exception as exc:
+            return {'source':'generic-http','origins':[],'visible':False,'diagnostic':{'source':'generic-http','status':'error','message':str(exc)},'ok':False}
 
-        routing_data = routing_payload.get("data", {}) if isinstance(routing_payload, dict) else {}
-        bgp_data = bgp_state_payload.get("data", {}) if isinstance(bgp_state_payload, dict) else {}
-
-        origins = sorted({str(item.get("origin", "")).upper() for item in (routing_data.get("routes") or []) if isinstance(item, dict) and item.get("origin")})
-        visible = bool(origins or routing_data.get("visibility") or bgp_data.get("bgp_state"))
-        expected_seen = normalized_expected in origins if normalized_expected else None
-        multiple_origins = len(origins) > 1
-        peer_count = routing_data.get("num_peers_seeing") or bgp_data.get("num_peers_seeing")
-        more_specifics = routing_data.get("more_specifics") or bgp_data.get("more_specifics") or []
-        less_specifics = routing_data.get("less_specifics") or bgp_data.get("less_specifics") or []
-
-        data_unreliable = (not routing_data and not bgp_data) or (routing_payload.get("error") and bgp_state_payload.get("error"))
-
-        if data_unreliable:
-            status = CheckStatus.UNKNOWN.value
-            summary = "No reliable BGP visibility data is available for the prefix."
-            recommendations = ["Check again later and use external monitoring for cross-validation."]
-        elif not visible:
-            status = CheckStatus.CRITICAL.value if normalized_expected else CheckStatus.WARNING.value
-            summary = "The prefix is currently not visible."
-            recommendations = ["Check announcement path and upstream policy.", "Validate route propagation across multiple looking glasses."]
-        elif normalized_expected and not expected_seen:
-            status = CheckStatus.CRITICAL.value
-            summary = f"The expected origin {normalized_expected} is not visible for {normalized_prefix} ."
-            recommendations = ["Check origin-AS configuration.", "Investigate potential route leaks/hijacks."]
-        elif multiple_origins:
-            status = CheckStatus.WARNING.value
-            summary = "Prefix is visible but has multiple origin ASNs (MOAS)."
-            recommendations = ["Confirm multi-origin behavior or fix unintended announcements."]
-        else:
-            status = CheckStatus.OK.value
-            summary = "Prefix is visible and the expected origin AS (if provided) is observed."
-            recommendations = ["Continue monitoring; this result is a point-in-time snapshot of external visibility data."]
-
-        return {
-            "status": status,
-            "summary": summary,
-            "explanation": "BGP visibility is based on RIPEstat data and is read-only.",
-            "risk": "External visibility data may be delayed or incomplete.",
-            "recommendations": recommendations,
-            "input": {"prefix": normalized_prefix, "expected_origin_as": normalized_expected},
-            "checks": None,
-            "details": {
-                "prefix": normalized_prefix,
-                "visible": visible,
-                "origins": origins,
-                "expected_origin_as": normalized_expected,
-                "expected_origin_seen": expected_seen,
-                "multiple_origins": multiple_origins,
-                "peer_count": peer_count,
-                "more_specifics": more_specifics,
-                "less_specifics": less_specifics,
-                "source_diagnostics": [d for d in [routing_diag, bgp_state_diag] if isinstance(d, dict)],
-                "source_errors": {
-                    "routing_status": routing_payload.get("error") if isinstance(routing_payload, dict) else None,
-                    "bgp_state": bgp_state_payload.get("error") if isinstance(bgp_state_payload, dict) else None,
-                },
-            },
-            "sources": ["RIPEstat routing-status", "RIPEstat bgp-state"],
-        }
+    def check(self,prefix,expected_origin_as):
+        p=validate_prefix(prefix); exp=format_asn(normalize_asn(expected_origin_as)) if expected_origin_as else None
+        providers=[x.strip() for x in settings.bgp_visibility_providers.split(',') if x.strip()]
+        results=[]
+        for pr in providers:
+            if pr=='ripestat': results.append(self._ripestat(p))
+            elif pr=='generic-http': results.append(self._generic(p))
+        by={r['source']:r['origins'] for r in results}
+        all_orig=sorted({o for r in results for o in r['origins']})
+        exp_by={r['source']:(exp in r['origins'] if exp else None) for r in results}
+        miss=[s for s,v in exp_by.items() if v is False]
+        conflicting=sorted([o for o in all_orig if exp and o!=exp])
+        succ=sum(1 for r in results if r.get('ok')); fail=len(results)-succ
+        agreement=len(set(tuple(r['origins']) for r in results if r.get('ok')))<=1 if succ>1 else True
+        conf=100 if succ==0 else int((sum(1 for v in exp_by.values() if v is True)/max(1,succ))*100) if exp else int((succ/max(1,len(results)))*100)
+        if succ==0: status=CheckStatus.UNKNOWN.value; summary='No BGP visibility source returned usable data.'
+        elif exp and any(v is False for v in exp_by.values()): status=CheckStatus.CRITICAL.value if succ==1 else CheckStatus.WARNING.value; summary='Expected origin is missing on at least one source.'
+        elif conflicting or (not exp and len(all_orig)>1): status=CheckStatus.WARNING.value; summary='Conflicting origin ASNs observed across sources.'
+        else: status=CheckStatus.OK.value; summary='BGP visibility is consistent for expected origin.'
+        return {"status":status,"summary":summary,"explanation":"Aggregated multi-source BGP visibility.","risk":"External routing views can be delayed or partial.","recommendations":["Investigate source disagreements before change execution."],"input":{"prefix":p,"expected_origin_as":exp},"checks":None,"details":{"prefix":p,"visible_origins_by_source":by,"all_visible_origins":all_orig,"expected_origin_seen_by_source":exp_by,"conflicting_origins":conflicting,"missing_expected_origin_sources":miss,"source_agreement":agreement,"confidence_score":conf,"source_diagnostics":[r.get('diagnostic') for r in results],"provider_count":len(results),"successful_provider_count":succ,"failed_provider_count":fail},"sources":providers}
