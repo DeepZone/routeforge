@@ -3,6 +3,7 @@ import { ApiError, createUser, listUsers, updateUser } from '../api'
 import type { User, UserRole } from '../types'
 
 const ROLES: UserRole[] = ['admin', 'operator', 'viewer']
+const formatRole = (role: UserRole) => role.charAt(0).toUpperCase() + role.slice(1)
 
 export function UsersView() {
   const [users, setUsers] = useState<User[]>([])
@@ -48,10 +49,10 @@ export function UsersView() {
       <input className='rf-input' placeholder='Email (optional)' value={createForm.email} onChange={e => setCreateForm({ ...createForm, email: e.target.value })} />
       <input className='rf-input' placeholder='Password' type='password' value={createForm.password} onChange={e => setCreateForm({ ...createForm, password: e.target.value })} />
       <div className='flex gap-2'>
-        <select className='rf-input' value={createForm.role} onChange={e => setCreateForm({ ...createForm, role: e.target.value as UserRole })}>{ROLES.map(r => <option key={r}>{r}</option>)}</select>
+        <select className='rf-input' value={createForm.role} onChange={e => setCreateForm({ ...createForm, role: e.target.value as UserRole })}>{ROLES.map(r => <option key={r} value={r}>{formatRole(r)}</option>)}</select>
         <button className='rf-btn-primary' onClick={onCreate}>Create</button>
       </div>
     </div>
-    {loading ? <div className='text-sm text-slate-500'>Loading users…</div> : users.length === 0 ? <div className='rounded-xl border border-dashed border-slate-300 p-6 text-sm text-slate-500'>No users found.</div> : <div className='overflow-x-auto'><table className='w-full text-sm'><thead><tr className='text-left'><th>User</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>{users.map(u => <tr key={u.id} className='border-t'><td>{u.username}<div className='text-xs text-slate-500'>{u.email || '—'}</div></td><td><span className='rounded-full bg-violet-50 px-2 py-1 text-xs text-violet-700'>{u.role}</span></td><td>{u.is_active ? 'active' : 'inactive'}</td><td><div className='flex flex-wrap gap-2'><select className='rf-input' value={u.role} onChange={e => onPatch(u, { role: e.target.value as UserRole })}>{ROLES.map(r => <option key={r}>{r}</option>)}</select><button className='rf-btn-secondary' onClick={() => onPatch(u, { is_active: !u.is_active })}>{u.is_active ? 'Deactivate' : 'Activate'}</button><span className='text-xs text-slate-500'>Password resets via API/admin procedure only.</span></div></td></tr>)}</tbody></table></div>}
+    {loading ? <div className='text-sm text-slate-500'>Loading users…</div> : users.length === 0 ? <div className='rounded-xl border border-dashed border-slate-300 p-6 text-sm text-slate-500'>No users found.</div> : <div className='overflow-x-auto'><table className='w-full text-sm'><thead><tr className='text-left'><th>User</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>{users.map(u => <tr key={u.id} className='border-t align-top'><td className='py-2'>{u.username}<div className='text-xs text-slate-500'>{u.email || '—'}</div></td><td className='py-2'><span className='rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-xs font-semibold text-violet-700'>{formatRole(u.role)}</span></td><td className='py-2'><span className={`rounded-full px-2 py-1 text-xs font-semibold ${u.is_active ? 'border border-emerald-200 bg-emerald-50 text-emerald-700' : 'border border-slate-200 bg-slate-100 text-slate-700'}`}>{u.is_active ? 'Active' : 'Inactive'}</span></td><td className='py-2'><div className='flex items-center gap-2 whitespace-nowrap'><select className='rf-input w-32 min-w-32' value={u.role} onChange={e => onPatch(u, { role: e.target.value as UserRole })}>{ROLES.map(r => <option key={r} value={r}>{formatRole(r)}</option>)}</select><button className='rf-btn-secondary' onClick={() => onPatch(u, { is_active: !u.is_active })}>{u.is_active ? 'Deactivate' : 'Activate'}</button></div><p className='mt-1 text-xs text-slate-500'>Password resets via API/admin procedure only.</p></td></tr>)}</tbody></table></div>}
   </section>
 }

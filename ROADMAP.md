@@ -1,7 +1,7 @@
 # RouteForge Roadmap
 
 ## Current Status
-RouteForge is now **v1.0.0 stable**: a selfhosted, read-only routing preflight release for production-oriented validation workflows.
+RouteForge is now **v1.0.1 stable**: a selfhosted, read-only routing preflight release for production-oriented validation workflows.
 
 ## v1.0.0 Completed Scope
 The stable release includes:

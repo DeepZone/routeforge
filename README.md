@@ -2,7 +2,7 @@
   <img src="frontend/public/routeforge.png" alt="RouteForge Logo" width="420">
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v1.0.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v1.0.1-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-orange" alt="License">
   <img src="https://img.shields.io/badge/status-stable-brightgreen" alt="Status">
   <img src="https://img.shields.io/badge/selfhosted-ready-success" alt="Selfhosted">
@@ -61,7 +61,7 @@ Using read-only checks before execution helps teams validate assumptions without
 
 ## Current Release
 
-RouteForge is a **stable** self-hosted release for production-grade read-only validation workflows. Current release: **v1.0.0**.
+RouteForge is a **stable** self-hosted release for production-grade read-only validation workflows. Current release: **v1.0.1**.
 
 ## Quickstart with Docker Compose
 
