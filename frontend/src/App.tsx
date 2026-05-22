@@ -74,7 +74,7 @@ export default function App() {
   if (authMode === 'login') return <LoginView onSubmit={onLoginSubmit} error={authError} />
   if (authMode === 'error') return <div className='p-8 text-center text-rose-700'>{authError}</div>
 
-  const systemLine = system ? `${system.name} ${system.version} · mode=${system.demo_mode ? 'DEMO' : 'LIVE'} · read_only=${String(system.read_only)}` : 'RouteForge v1.0.0 · read-only preflight checks'
+  const systemLine = system ? `${system.name} · ${system.version}` : 'RouteForge · v1.0.0'
   const title = { dashboard: 'Dashboard', asn: 'ASN Check', prefix: 'Prefix Check', preflight: 'Preflight', 'roa-planner': 'ROA Planner', 'bgp-visibility': 'BGP Visibility', reports: 'Reports', 'watch-mode': 'Watch Mode', 'change-cases': 'Change Cases', system: 'System', users: 'Users', audit: 'Audit Log', about: 'About' }[active]
   const proxyStatus = systemStatusError ? 'ERROR' : 'OK'
   const migrationStatus = systemStatus?.database?.migration_status || 'unknown'
@@ -102,6 +102,6 @@ export default function App() {
     {active === 'system' && canAccess('system') && <section className='space-y-3'>{systemStatusError && <article className='rf-card p-4 text-rose-700'>{systemStatusError}</article>}{migrationsBlocked && <article className='rf-card border border-amber-300 bg-amber-50 p-4 text-amber-900'>Database migrations are required before using RouteForge. Run: <code>alembic current</code>, <code>alembic heads</code>, <code>alembic upgrade head</code>.</article>}{systemStatus && <article className='rf-card p-4 grid gap-2 md:grid-cols-2 text-sm'><div>Version: <b>{systemStatus.version}</b></div><div>Mode: <b>{systemStatus.mode}</b></div><div>API Proxy: <b>{proxyStatus}</b></div><div>Migration Status: <b>{migrationStatus}</b> <StatusBadge status={migrationStatus === 'up_to_date' ? 'OK' : migrationStatus === 'behind' ? 'WARNING' : migrationStatus === 'error' ? 'CRITICAL' : 'UNKNOWN'} /></div><div>DB Current Revision: <b>{systemStatus.database?.schema_version || 'unknown'}</b></div><div>DB Head Revision: <b>{systemStatus.database?.migration_head || 'unknown'}</b></div></article>}</section>}
     {active === 'users' && canAccess('users') && <UsersView />}
     {active === 'audit' && canAccess('audit') && <AuditLogView />}
-    {active === 'about' && <section className='rf-card p-5 space-y-2 text-sm text-slate-700'><p>RouteForge is a read-only routing operations console for validation workflows.</p><p><b>Read-only:</b> All checks are non-destructive.</p><p><b>Version:</b> {system?.version || 'v1.0.0'}</p></section>}
+    {active === 'about' && <section className='rf-card p-5 space-y-2 text-sm text-slate-700'><p>RouteForge is a read-only routing operations console for validation workflows.</p><p><b>Read-only:</b> All checks are non-destructive.</p><p><b>Version:</b> {system?.version || 'v1.0.0'}</p><p className='text-xs text-slate-500'>Maintained by Norman Sens.</p></section>}
   </Layout>
 }
