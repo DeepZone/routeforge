@@ -1,6 +1,6 @@
 # Security Baseline
 
-## Security QA checklist (v0.9.1-rc)
+## Security QA checklist (v1.0.0)
 
 - [ ] `SECRET_KEY` changed from any default/dev value
 - [ ] `COOKIE_SECURE=true` when running behind HTTPS

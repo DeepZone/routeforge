@@ -23,8 +23,8 @@ class RoaPlannerService:
         if effective_max_length < prefix_length:
             return {
                 "status": "CRITICAL",
-                "summary": "Max Length ist kleiner als die Prefixlänge und damit ungültig.",
-                "recommendations": ["Setzen Sie max_length mindestens auf die Prefixlänge.", "Prüfen Sie Prefix und Eingaben auf Tippfehler."],
+                "summary": "Max length is smaller than the prefix length and is therefore invalid.",
+                "recommendations": ["Set max_length to at least the prefix length.", "Check the prefix and inputs for typos."],
                 "details": {
                     "prefix": normalized_prefix,
                     "origin_as": normalized_origin,
@@ -74,23 +74,23 @@ class RoaPlannerService:
             planned_validation_state = "valid"
             status = "OK"
             summary = "Geplantes Announcement ist durch mindestens eine passende ROA abgedeckt."
-            recommendations.append("Bestehende ROA-Abdeckung ist vorhanden; Änderungen außerhalb von RouteForge nur bei Bedarf durchführen.")
+            recommendations.append("Existing ROA coverage is present; apply changes outside RouteForge only if needed.")
 
         if conflicting_roas and not matching_roas:
             planned_validation_state = "invalid"
             status = "CRITICAL"
             summary = "Konfliktierende ROAs deuten auf ein invalides geplantes Announcement hin."
-            recommendations.append("Origin-AS oder Prefixplanung prüfen; bestehende ROA-Konflikte außerhalb von RouteForge bereinigen.")
+            recommendations.append("Review origin AS or prefix planning; resolve existing ROA conflicts outside RouteForge.")
 
         if effective_max_length > prefix_length + 2:
             max_length_risk = "broad"
             if status == "OK":
                 status = "WARNING"
-            recommendations.append("Max Length ist relativ breit gewählt; reduzieren Sie die Breite, um Hijack-Risk zu senken.")
+            recommendations.append("Max length is relatively broad; reduce it to lower hijack risk.")
 
         suggested_roa = None if matching_roas else {"prefix": normalized_prefix, "origin_as": normalized_origin, "max_length": effective_max_length}
         if suggested_roa:
-            recommendations.append("ROA-Vorschlag extern durch LIR/Operator prüfen und außerhalb von RouteForge umsetzen.")
+            recommendations.append("Review the ROA proposal externally with LIR/operator and implement it outside RouteForge.")
 
         return {
             "status": status,
@@ -116,8 +116,8 @@ class RoaPlannerService:
     def _unknown(self, prefix: str, origin_as: str, max_length: int | None, effective_max_length: int, prefix_length: int, diagnostics: list[dict]) -> dict:
         return {
             "status": "UNKNOWN",
-            "summary": "RPKI-Datenquelle liefert aktuell keine belastbare Aussage.",
-            "recommendations": ["Später erneut prüfen.", "Externe ROA-Quelle manuell validieren."],
+            "summary": "RPKI data source currently does not provide a reliable result.",
+            "recommendations": ["Check again later.", "Manually validate against an external ROA source."],
             "details": {
                 "prefix": prefix,
                 "origin_as": origin_as,
@@ -129,7 +129,7 @@ class RoaPlannerService:
                 "conflicting_roas": [],
                 "suggested_roa": {"prefix": prefix, "origin_as": origin_as, "max_length": effective_max_length},
                 "max_length_risk": "unknown",
-                "recommendations": ["Später erneut prüfen.", "Externe ROA-Quelle manuell validieren."],
+                "recommendations": ["Check again later.", "Manually validate against an external ROA source."],
                 "source_diagnostics": diagnostics,
             },
             "input": {"prefix": prefix, "origin_as": origin_as, "max_length": max_length},

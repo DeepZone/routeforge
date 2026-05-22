@@ -20,33 +20,33 @@ def evaluate_prefix_overall(
 
     if CheckStatus.CRITICAL in statuses.values():
         if statuses["routing"] == CheckStatus.CRITICAL:
-            return _critical("RPKI und Registry wirken plausibel, aber die sichtbare Routing-Origin weicht ab.", "Das Prefix ist sichtbar, aber nicht mit dem erwarteten Origin-AS.")
+            return _critical("RPKI and registry look plausible, but visible routing origin differs.", "The prefix is visible, but not with the expected origin AS.")
         if statuses["rpki"] == CheckStatus.CRITICAL:
             return _critical("Das Prefix ist zwar sichtbar, aber RPKI meldet ein kritisches Problem.", "RPKI bewertet das Prefix-Origin-Paar kritisch, obwohl andere Checks ggf. positive Hinweise liefern.")
-        return _critical("Registry/IRR-Origin widerspricht dem angegebenen Origin-AS.", "Ein gefundenes route/route6-Origin weicht vom geprüften Origin-AS ab.")
+        return _critical("Registry/IRR origin conflicts with the provided origin AS.", "A discovered route/route6 origin differs from the checked origin AS.")
 
     if statuses["rpki"] == statuses["registry"] == statuses["routing"] == CheckStatus.UNKNOWN:
-        return _unknown("No reliable overall assessment possible.", "RPKI, Registry/IRR und Routing Visibility liefern keine verlässliche Aussage.")
+        return _unknown("No reliable overall assessment possible.", "RPKI, Registry/IRR, and routing visibility do not provide a reliable assessment.")
 
     if statuses["rpki"] == CheckStatus.OK and statuses["registry"] == CheckStatus.OK and statuses["routing"] == CheckStatus.OK:
         return {
             "status": CheckStatus.OK.value,
-            "summary": "Prefix-Origin-Paar wirkt autorisiert, dokumentiert und sichtbar.",
-            "explanation": "RPKI, Registry/IRR und Routing Visibility zeigen ein konsistentes Ergebnis.",
-            "risk": "Derzeit keine offensichtliche Inkonsistenz erkennbar.",
-            "recommendations": ["Routing-Sichtbarkeit und RPKI/Registry-Daten weiter überwachen."],
+            "summary": "Prefix-origin pair appears authorized, documented, and visible.",
+            "explanation": "RPKI, Registry/IRR, and routing visibility show a consistent result.",
+            "risk": "No obvious inconsistency is currently visible.",
+            "recommendations": ["Continue monitoring routing visibility and RPKI/registry data."],
         }
 
     if statuses["rpki"] == CheckStatus.OK and statuses["registry"] == CheckStatus.OK and statuses["routing"] == CheckStatus.UNKNOWN:
-        return _warning("Routing visibility could not be determined reliably.", "RPKI und Registry/IRR sind plausibel, aber die Routing-Sichtbarkeit bleibt unklar.")
+        return _warning("Routing visibility could not be determined reliably.", "RPKI and Registry/IRR are plausible, but routing visibility remains unclear.")
 
     if CheckStatus.WARNING in statuses.values():
-        return _warning("Kombinierte Prefix-Bewertung zeigt Warnhinweise.", "Mindestens eine Einzelprüfung meldet unvollständige oder unsichere Daten.")
+        return _warning("Combined prefix evaluation shows warnings.", "At least one individual check reports incomplete or uncertain data.")
 
     if CheckStatus.UNKNOWN in statuses.values():
-        return _warning("Teilweise bestätigte Datenlage mit Unsicherheit.", "Mindestens eine Quelle ist unklar; die Gesamtbewertung bleibt daher konservativ WARNING.")
+        return _warning("Partially confirmed data with uncertainty.", "At least one source is unclear; the overall assessment remains conservatively WARNING.")
 
-    return _unknown("Kombinierte Prefix-Bewertung nicht eindeutig bestimmbar.", "Die vorliegenden Einzelergebnisse konnten nicht konsistent kombiniert werden.")
+    return _unknown("Combined prefix evaluation is not clearly determinable.", "The available individual results could not be combined consistently.")
 
 
 def _warning(summary: str, explanation: str) -> dict:
@@ -54,8 +54,8 @@ def _warning(summary: str, explanation: str) -> dict:
         "status": CheckStatus.WARNING.value,
         "summary": summary,
         "explanation": explanation,
-        "risk": "Die Gesamtaussage bleibt eingeschränkt.",
-        "recommendations": ["Individual checks und Rohdaten gezielt nacharbeiten."],
+        "risk": "The overall conclusion remains limited.",
+        "recommendations": ["Review individual checks and raw data in detail."],
     }
 
 
@@ -64,8 +64,8 @@ def _critical(summary: str, explanation: str) -> dict:
         "status": CheckStatus.CRITICAL.value,
         "summary": summary,
         "explanation": explanation,
-        "risk": "Erhöhtes Risk für Fehlrouting, Erreichbarkeitsprobleme oder Sicherheitsvorfälle.",
-        "recommendations": ["Abweichung priorisiert prüfen und beheben."],
+        "risk": "Increased risk of misrouting, reachability issues, or security incidents.",
+        "recommendations": ["Prioritize checking and resolving the discrepancy."],
     }
 
 
@@ -74,8 +74,8 @@ def _unknown(summary: str, explanation: str) -> dict:
         "status": CheckStatus.UNKNOWN.value,
         "summary": summary,
         "explanation": explanation,
-        "risk": "Die Datenlage ist unzureichend für eine belastbare Routing-Sicherheitsbewertung.",
-        "recommendations": ["Prüfung später wiederholen und Rohdaten kontrollieren."],
+        "risk": "The data is insufficient for a reliable routing security assessment.",
+        "recommendations": ["Repeat the check later and verify raw data."],
     }
 
 

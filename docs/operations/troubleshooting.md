@@ -2,16 +2,16 @@
 
 ## sqlite3.OperationalError: attempt to write a readonly database
 
-### Ursache
+### Cause
 
-Bei SQLite-Deployments liegt die Datenbank häufig unter `/app/data/routeforge.db`.
-Wenn das Docker-Volume auf `/app/data` root-owned ist, kann der non-root Runtime-User `routeforge` nicht in die SQLite-Datei schreiben. Dadurch schlagen Check-Speicherungen mit `sqlite3.OperationalError: attempt to write a readonly database` fehl.
+In SQLite deployments, the database is commonly stored at `/app/data/routeforge.db`.
+If the Docker volume at `/app/data` is owned by root, the non-root runtime user `routeforge` cannot write to the SQLite file. Check persistence then fails with `sqlite3.OperationalError: attempt to write a readonly database`.
 
-### Fix ab v0.5.5-beta
+### Fix since v0.5.5-beta
 
-Ab `v0.5.5-beta` setzt der Backend-Entrypoint beim Containerstart die Ownership für `/app/data` auf `routeforge:routeforge` und startet danach den Prozess weiterhin als non-root User `routeforge`.
+Since `v0.5.5-beta`, the backend entrypoint sets ownership for `/app/data` to `routeforge:routeforge` at container startup and then keeps running as non-root user `routeforge`.
 
-### Workaround für ältere Versionen
+### Workaround for older versions
 
 ```bash
 docker compose down
@@ -22,39 +22,39 @@ docker compose up -d --build
 
 ## KeyError: 'formatters' (Alembic)
 
-### Ursache
+### Cause
 
-Ältere Versionen hatten eine minimale `backend/alembic.ini` ohne Logging-Sektionen, während `backend/alembic/env.py` `fileConfig(...)` aufgerufen hat.
+Older versions used a minimal `backend/alembic.ini` without logging sections while `backend/alembic/env.py` still called `fileConfig(...)`.
 
 ### Fix
 
-Update auf `v0.6.4-beta` oder neuer, dann:
+Upgrade to `v0.6.4-beta` or newer, then:
 
 ```bash
 docker compose exec backend alembic upgrade head
 ```
 
 
-## Ich sehe keine Check-Menüpunkte
+## I do not see check menu items
 
-Rolle prüfen: `viewer` sieht nur Dashboard/Reports/About.
+Check role permissions: `viewer` can only see Dashboard/Reports/About.
 
-## 403 bei Checks
+## 403 for checks
 
-User ist `viewer` oder inaktiv. Rolle und `is_active` im Admin User Management prüfen.
+The user is `viewer` or inactive. Verify role and `is_active` in Admin User Management.
 
-## Login geht nicht
+## Login does not work
 
-Prüfen: User aktiv? Passwort korrekt? Wurde `SECRET_KEY` geändert?
+Check: Is the user active? Is the password correct? Was `SECRET_KEY` changed?
 
-## Nach SECRET_KEY Änderung
+## After SECRET_KEY change
 
-Alle Sessions sind ungültig. Bitte neu einloggen.
+All sessions become invalid. Log in again.
 
 
 ## Migration required in UI/System Status
 
-Wenn `migration_status=behind` gemeldet wird, führe nacheinander aus:
+If `migration_status=behind` is reported, run in order:
 
 ```bash
 alembic current
@@ -62,4 +62,4 @@ alembic heads
 alembic upgrade head
 ```
 
-Nur wenn Schema bereits existiert und exakt zum Baseline-Stand passt: `alembic stamp 0001_initial_schema`.
+Use `alembic stamp 0001_initial_schema` only when the schema already exists and exactly matches the baseline state.

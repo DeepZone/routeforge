@@ -53,7 +53,7 @@ class BgpVisibilityService:
         return {
             "status": status,
             "summary": summary,
-            "explanation": "BGP Visibility basiert auf RIPEstat-Daten und ist read-only.",
+            "explanation": "BGP visibility is based on RIPEstat data and is read-only.",
             "risk": "External visibility data may be delayed or incomplete.",
             "recommendations": recommendations,
             "input": {"prefix": normalized_prefix, "expected_origin_as": normalized_expected},

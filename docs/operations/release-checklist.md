@@ -1,6 +1,6 @@
 # Release Checklist
 
-## v0.9.1-rc: Deployment QA & UX Validation
+## v1.0.0: Deployment QA & UX Validation
 
 ### 1) Pre-release validation
 
@@ -43,13 +43,13 @@ The script validates:
 
 ### 4) Tagging
 
-- `git tag -a v0.9.1-rc -m "RouteForge v0.9.1-rc"`
-- `git push origin v0.9.1-rc`
+- `git tag -a v1.0.0 -m "RouteForge v1.0.0"`
+- `git push origin v1.0.0`
 
 ### 5) GitHub Release
 
-- Release title aligned with `v0.9.1-rc`
-- Mark as prerelease
+- Release title aligned with `v1.0.0`
+- Mark as stable release
 - Include deployment, upgrade, and security QA notes
 
 ### 6) Post-release smoke test

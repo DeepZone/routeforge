@@ -49,9 +49,9 @@ class AsnChecker:
 
         errors = []
         if "error" in overview:
-            errors.append("as-overview nicht erreichbar")
+            errors.append("as-overview not reachable")
         if "error" in prefixes:
-            errors.append("announced-prefixes nicht erreichbar")
+            errors.append("announced-prefixes not reachable")
         status = CheckStatus.UNKNOWN.value if errors else CheckStatus.OK.value
         summary = f"ASN {resource} checked."
         return {

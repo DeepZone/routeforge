@@ -20,7 +20,7 @@ from app.database import Base, engine
 logging.basicConfig(level=getattr(logging, settings.log_level.upper(), logging.INFO))
 logger = logging.getLogger("routeforge")
 
-app = FastAPI(title="RouteForge", version="0.9.2")
+app = FastAPI(title="RouteForge", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

@@ -27,7 +27,7 @@ class RpkiChecker:
                 "recommendations": [
                     "Review the API raw data.",
                     "Repeat the check later.",
-                    "Vergleiche bei Bedarf mit einer zweiten Quelle oder einem lokalen RPKI-Validator.",
+                    "Compare with a secondary source or a local RPKI validator if needed.",
                 ],
             }
 

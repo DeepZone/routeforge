@@ -9,7 +9,7 @@ git pull
 docker compose -f docker-compose.prod.yml build
 ```
 
-## Upgrade QA matrix (v0.9.1-rc)
+## Upgrade QA matrix (v1.0.0)
 
 ### A) Fresh SQLite DB
 
