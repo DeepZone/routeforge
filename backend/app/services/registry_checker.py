@@ -7,11 +7,11 @@ class RegistryChecker:
         if not isinstance(whois_payload, dict) or whois_payload.get("error"):
             return {
                 "status": CheckStatus.UNKNOWN.value,
-                "summary": "Registry-/IRR-Daten konnten nicht bestimmt werden",
-                "explanation": "Die Whois-/Registry-Datenquelle war nicht erreichbar oder lieferte einen Fehler.",
+                "summary": "Registry/IRR data could not be determined",
+                "explanation": "The Whois/Registry data source was unreachable or returned an error.",
                 "risk": "The assessment is incomplete.",
                 "recommendations": [
-                    "Prüfe die Rohdaten der Registry-Quelle.",
+                    "Check raw data from the registry source.",
                     "Retry the query later.",
                     "Vergleiche das Ergebnis mit einer zweiten Registry-/IRR-Quelle.",
                 ],
@@ -25,10 +25,10 @@ class RegistryChecker:
             return {
                 "status": CheckStatus.UNKNOWN.value,
                 "summary": "Keine verwertbaren Registry-/IRR-Daten gefunden",
-                "explanation": "Die Quelle lieferte keine eindeutig parsebaren Daten zum Prefix.",
-                "risk": "Es kann keine belastbare Plausibilitätsaussage getroffen werden.",
+                "explanation": "The source did not provide clearly parseable prefix data.",
+                "risk": "No reliable plausibility assessment can be made.",
                 "recommendations": [
-                    "Prüfe das Prefix manuell in der zuständigen Registry.",
+                    "Manually check the prefix in the relevant registry.",
                     "Vergleiche die Daten mit einer alternativen Whois-/IRR-Quelle.",
                 ],
                 "raw": whois_payload,
@@ -37,12 +37,12 @@ class RegistryChecker:
         if not route_origins:
             return {
                 "status": CheckStatus.WARNING.value,
-                "summary": "Registry-Daten vorhanden, aber kein route/route6-Hinweis gefunden",
-                "explanation": "Es wurden allgemeine Whois-/Registry-Daten gefunden, jedoch kein klares route/route6-Objekt.",
-                "risk": "Ohne route/route6-Hinweis bleibt die Origin-Plausibilität eingeschränkt.",
+                "summary": "Registry data present, but no route/route6 indication found",
+                "explanation": "General Whois/Registry data was found, but no clear route/route6 object.",
+                "risk": "Without a route/route6 hint, origin plausibility remains limited.",
                 "recommendations": [
-                    "Prüfe, ob ein passendes route/route6-Objekt in der IRR gepflegt ist.",
-                    "Validiere die Origin-Zuordnung zusätzlich manuell.",
+                    "Check whether a matching route/route6 object is maintained in the IRR.",
+                    "Additionally validate the origin mapping manually.",
                 ],
                 "raw": whois_payload,
             }
@@ -51,10 +51,10 @@ class RegistryChecker:
             return {
                 "status": CheckStatus.OK.value,
                 "summary": "Route/route6-Hinweise gefunden",
-                "explanation": "Es wurden route/route6-Objekte bzw. Origin-Hinweise zum Prefix gefunden. Ohne angegebenes Origin-AS erfolgt keine AS-Konsistenzprüfung.",
-                "risk": "Grundsätzliche Registry-Plausibilität ist gegeben, AS-Abgleich ist offen.",
+                "explanation": "route/route6 objects or origin hints were found for the prefix. Without a provided origin AS, no AS consistency check is performed.",
+                "risk": "General registry plausibility is present, but AS matching is still open.",
                 "recommendations": [
-                    "Für eine strengere Prüfung optional ein Origin-AS mitgeben.",
+                    "Optionally provide an origin AS for stricter validation.",
                 ],
                 "raw": whois_payload,
             }
@@ -64,10 +64,10 @@ class RegistryChecker:
             return {
                 "status": CheckStatus.OK.value,
                 "summary": "Plausibles route/route6-Origin gefunden",
-                "explanation": f"Mindestens ein route/route6-Hinweis enthält das erwartete Origin {normalized_origin}.",
+                "explanation": f"At least one route/route6 hint contains the expected origin {normalized_origin}.",
                 "risk": "Keine offensichtliche Registry-Inkonsistenz erkannt.",
                 "recommendations": [
-                    "Registry-Daten regelmäßig aktuell halten.",
+                    "Keep registry data regularly updated.",
                 ],
                 "raw": whois_payload,
             }
@@ -76,10 +76,10 @@ class RegistryChecker:
             "status": CheckStatus.CRITICAL.value,
             "summary": "Route/route6-Origin widerspricht dem angegebenen Origin-AS",
             "explanation": f"Gefundene Origins: {', '.join(sorted(route_origins))}. Erwartet wurde {normalized_origin}.",
-            "risk": "Möglicher Konfigurations- oder Registry-Fehler mit Hijack-Risk.",
+            "risk": "Possible configuration or registry issue with hijack risk.",
             "recommendations": [
-                "Origin-AS und route/route6-Objekte in der zuständigen Registry abgleichen.",
-                "Fehlerhafte Registry-Einträge korrigieren.",
+                "Cross-check origin AS and route/route6 objects in the relevant registry.",
+                "Correct incorrect registry entries.",
             ],
             "raw": whois_payload,
         }

@@ -2,9 +2,9 @@
   <img src="frontend/public/routeforge.png" alt="RouteForge Logo" width="420">
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.9.2--rc-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v1.0.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-orange" alt="License">
-  <img src="https://img.shields.io/badge/status-beta-yellow" alt="Status">
+  <img src="https://img.shields.io/badge/status-stable-brightgreen" alt="Status">
   <img src="https://img.shields.io/badge/selfhosted-ready-success" alt="Selfhosted">
   <img src="https://img.shields.io/badge/read--only-routing%20safe-informational" alt="Read-only">
 </p>
@@ -41,9 +41,9 @@ It combines these checks into an explainable, read-only preflight workflow.
 
 Routing changes often require fast but traceable checks across multiple external data views. RouteForge provides a single UI/API workflow so teams can run consistent preflight checks, share results, and keep a documented decision trail.
 
-## Current Alpha Status
+## Current Release
 
-RouteForge is a **functional beta** release with production-like workflows for read-only validation and demo usage. Current release target: **v0.9.2-rc**.
+RouteForge is a **stable selfhosted** release for production-grade read-only validation workflows. Current release: **v1.0.0**.
 
 ## Quickstart with Docker Compose
 
@@ -174,7 +174,7 @@ RouteForge is read-only by design:
 
 ## Known Limitations
 
-- Alpha software, interfaces may evolve.
+- Stable release with ongoing minor UX/documentation improvements.
 - RIPEstat payloads can vary over time.
 - No local RPKI validator yet.
 - No full BGP monitoring replacement.

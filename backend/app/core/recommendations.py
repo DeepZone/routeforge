@@ -7,7 +7,7 @@ def default_recommendations(status: CheckStatus) -> list[str]:
     if status == CheckStatus.WARNING:
         return ["Review RPKI/registry data and improve coverage."]
     if status == CheckStatus.CRITICAL:
-        return ["Origin-AS und ROA sofort verifizieren, da Route verworfen werden kann."]
+        return ["Verify origin AS and ROA immediately, because the route may be rejected."]
     return ["Check again; external data source was unreliable or unavailable."]
 
 
@@ -38,20 +38,20 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
         return {
             "status": CheckStatus.CRITICAL.value,
             "summary": "RPKI validation failed",
-            "explanation": "Das Prefix wird mit einem Origin-AS geprüft, das nicht durch einen passenden ROA gedeckt ist.",
+            "explanation": "The prefix is checked with an origin AS that is not covered by a matching ROA.",
             "risk": "Validierende Netze können diese Route verwerfen. Dadurch kann Erreichbarkeit verloren gehen.",
             "recommendations": [
                 "Check whether the origin AS is correct.",
                 "Review existing ROAs for the prefix.",
-                "Erstelle oder korrigiere den ROA nur, wenn du zur Verwaltung dieser Ressourcen berechtigt bist.",
+                "Create or correct the ROA only if you are authorized to manage these resources.",
             ],
         }
     if normalized == "invalid_asn":
         return {
             "status": CheckStatus.CRITICAL.value,
             "summary": "RPKI invalid: unauthorized origin AS",
-            "explanation": "Für das Prefix existiert ein ROA, aber nicht für dieses Origin-AS.",
-            "risk": "Validierende Netze können diese Route verwerfen, weil das Origin-AS nicht autorisiert ist.",
+            "explanation": "A ROA exists for the prefix, but not for this origin AS.",
+            "risk": "Validating networks may reject this route because the origin AS is not authorized.",
             "recommendations": [
                 "Check the origin AS.",
                 "Review the ROA.",
@@ -62,8 +62,8 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
         return {
             "status": CheckStatus.CRITICAL.value,
             "summary": "RPKI invalid: announced prefix too specific",
-            "explanation": "Für das Prefix existiert ein ROA, aber die angekündigte Prefix-Länge ist länger als die erlaubte maxLength.",
-            "risk": "Validierende Netze können diese Route verwerfen, obwohl das AS grundsätzlich passen kann.",
+            "explanation": "A ROA exists for the prefix, but the announced prefix length is longer than the allowed maxLength.",
+            "risk": "Validating networks may reject this route, even though the AS may otherwise match.",
             "recommendations": [
                 "Check announced prefix length.",
                 "Check ROA maxLength.",
@@ -74,8 +74,8 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
         return {
             "status": CheckStatus.WARNING.value,
             "summary": "No matching ROA found",
-            "explanation": "Für dieses Prefix-Origin-Paar wurde kein passender ROA gefunden.",
-            "risk": "Das ist nicht automatisch ein Ausfall, schwächt aber die Routing-Sicherheit.",
+            "explanation": "No matching ROA was found for this prefix-origin pair.",
+            "risk": "This is not automatically an outage, but it weakens routing security.",
             "recommendations": [
                 "Check whether a ROA should be created.",
                 "Nur anlegen, wenn man zur Verwaltung berechtigt ist.",
@@ -90,6 +90,6 @@ def evaluate_rpki_status(rpki_status: str | None, prefix: str, origin_as: str | 
         "recommendations": [
             "Review the API raw data.",
             "Repeat the check later.",
-            "Vergleiche bei Bedarf mit einer zweiten Quelle oder einem lokalen RPKI-Validator.",
+            "Compare with a secondary source or a local RPKI validator if needed.",
         ],
     }

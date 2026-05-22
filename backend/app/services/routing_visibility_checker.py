@@ -26,10 +26,10 @@ class RoutingVisibilityChecker:
                 "status": CheckStatus.UNKNOWN.value,
                 "summary": "Routing visibility could not be determined",
                 "explanation": "RIPEstat routing-status returned data, but RouteForge could not extract visible Origin-AS information from the response.",
-                "risk": "Die Datenstruktur war nicht eindeutig auswertbar.",
+                "risk": "The data structure could not be evaluated unambiguously.",
                 "recommendations": [
-                    "Prüfe das Prefix zusätzlich über ein Looking Glass.",
-                    "Prüfe, ob das Prefix aktuell announced werden soll.",
+                    "Check the prefix with an additional looking glass.",
+                    "Verify whether the prefix should currently be announced.",
                 ],
                 "raw": {**raw, "structure_unknown": True},
             }
@@ -38,9 +38,9 @@ class RoutingVisibilityChecker:
             return {
                 "status": CheckStatus.OK.value,
                 "summary": "Visible routing origins found",
-                "explanation": "Für das Prefix wurden sichtbare Origin-ASNs gefunden. Ohne erwartetes Origin-AS erfolgt kein Konsistenzabgleich.",
-                "risk": "Die Sichtbarkeit ist grundsätzlich erkennbar, aber die erwartete Origin-Zuordnung wurde nicht geprüft.",
-                "recommendations": ["Gib ein erwartetes Origin-AS an, um die Sichtbarkeit vollständig zu bewerten."],
+                "explanation": "Visible origin ASNs were found for this prefix. Without an expected origin AS, no consistency comparison is performed.",
+                "risk": "Visibility is generally confirmed, but the expected origin mapping was not validated.",
+                "recommendations": ["Provide an expected origin AS to fully evaluate visibility."],
                 "raw": {**raw, "structure_unknown": True},
             }
 
@@ -50,19 +50,19 @@ class RoutingVisibilityChecker:
                 "summary": "Prefix is visible with expected Origin-AS",
                 "explanation": "Das Prefix wird mit dem erwarteten Origin-AS im Routing sichtbar.",
                 "risk": "Keine offensichtliche Routing-Visibility-Inkonsistenz erkannt.",
-                "recommendations": ["Routing-Sichtbarkeit weiter überwachen."],
+                "recommendations": ["Continue monitoring routing visibility."],
                 "raw": {**raw, "structure_unknown": True},
             }
 
         return {
             "status": CheckStatus.CRITICAL.value,
             "summary": "Visible Origin-AS differs from expected Origin-AS",
-            "explanation": "Das Prefix ist sichtbar, aber nicht mit dem erwarteten Origin-AS.",
-            "risk": "Möglicher Routing-Fehler, falsches Announcement oder Hijack-Risk.",
+            "explanation": "The prefix is visible, but not with the expected origin AS.",
+            "risk": "Possible routing error, incorrect announcement, or hijack risk.",
             "recommendations": [
                 "Sichtbares Check the origin AS.",
-                "BGP Announcement und Upstream-Konfiguration prüfen.",
-                "RPKI und Registry/IRR-Daten gegenprüfen.",
+                "Check BGP announcement and upstream configuration.",
+                "Cross-check RPKI and Registry/IRR data.",
             ],
             "raw": raw,
         }
@@ -74,9 +74,9 @@ class RoutingVisibilityChecker:
             "explanation": "RIPEstat routing-status did not respond before the configured timeout or returned no usable payload.",
             "risk": "The assessment is incomplete.",
             "recommendations": [
-                "Prüfe die Rohdaten.",
+                "Check the raw data.",
                 "Retry the query later.",
-                "Vergleiche bei Bedarf mit einer zweiten Routing-Quelle oder einem Looking Glass.",
+                "Compare with a secondary routing source or a looking glass if needed.",
             ],
             "raw": {"routing_payload": payload or {}},
         }

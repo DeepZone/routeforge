@@ -1,3 +1,24 @@
+## v1.0.0 (2026-05-22)
+
+### Summary
+- Stable selfhosted RouteForge release.
+- Read-only routing safety model kept as a strict product baseline.
+- User management and role-based access control.
+- Audit Log.
+- Change Cases.
+- ASN Check, Prefix Check, and Preflight checks.
+- BGP Visibility.
+- ROA Planner / ROA Preflight.
+- Watch Mode and scheduled rechecks.
+- Reports and exports.
+- System status, security warnings, and upgrade documentation.
+- English-only UI and output polish.
+
+### Upgrade Notes
+- Upgrade backend/frontend to `1.0.0` and API-visible version to `v1.0.0`.
+- Keep Alembic migration discipline (`alembic current`, `alembic heads`, `alembic upgrade head`) before production use.
+- No new database migration was introduced specifically for this stable cut.
+
 ## v0.9.2-rc (2026-05-21)
 
 - UI Cleanup & English-only polish
@@ -90,8 +111,6 @@ BGP visibility checks remain read-only and do not modify RIPE DB, RPKI objects, 
 - Checks and reports can be attached to Change Cases for local RouteForge workflow traceability.
 - Added audit events for Change Case and attachment operations.
 - Security: Change Cases are local workflow metadata only; no writes to RIPE DB, RPKI, or routers are performed.
-
-# Release Notes
 
 ## v0.8.1-beta
 

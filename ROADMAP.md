@@ -1,26 +1,29 @@
 # RouteForge Roadmap
 
 ## Current Status
-v0.9.2-rc, BGP Visibility Details completed, read-only
+RouteForge is now **v1.0.0 stable**: a selfhosted, read-only routing preflight release for production-oriented validation workflows.
 
-## v0.9.2-rc
-- projects/change cases
-- grouped preflight reports
+## v1.0.0 Completed Scope
+The stable release includes:
+- User Management
+- Role-based access control
+- Session authentication
+- Audit Log
+- Change Cases
+- ASN Check
+- Prefix Check
+- Preflight
+- BGP Visibility
+- ROA Planner / ROA Preflight
+- Watch Mode / Scheduled Rechecks
+- Reports and exports
+- System Status
+- Security and upgrade documentation
+- English-only UI and output cleanup
+- Read-only safety model
 
-## v0.9.2-rc
-- bgp visibility details
+## Historical Release Context
+Recent release-candidate work (v0.9.x-rc) focused on stabilizing BGP visibility details, ROA preflight workflows, watch scheduling/rechecks, deployment QA, and upgrade discipline that culminated in v1.0.0.
 
-## v0.9.2-rc
-- roa planner / roa preflight
-
-## v0.9.2-rc
-- watch mode / scheduled rechecks
-
-## v0.9.2-rc
-- security review
-- UX review
-- API stability
-- upgrade tests
-
-## v1.0.0
-- stable selfhosted RouteForge release
+## Future Roadmap
+Post-v1.0.0 work will focus on operational maturity, documentation quality, and maintainability without changing the core read-only safety model.
