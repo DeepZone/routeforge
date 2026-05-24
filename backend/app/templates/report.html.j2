@@ -1,11 +1,11 @@
 <!doctype html><html><body>
 <h1>RouteForge Report</h1>
-<p><strong>Zeitpunkt:</strong> {{ report.generated_at }}</p>
+<p><strong>Generated At:</strong> {{ report.generated_at }}</p>
 <p><strong>Check-ID:</strong> {{ report.check_id }}</p>
 
-<h2>Eingabe</h2>
+<h2>Input</h2>
 <ul>
-  <li><strong>Check-Typ:</strong> {{ report.input_check_type or '-' }}</li>
+  <li><strong>Check Type:</strong> {{ report.input_check_type or '-' }}</li>
   <li><strong>Prefix:</strong> {{ report.input.prefix if report.input else '-' }}</li>
   <li><strong>Origin-AS:</strong> {{ report.input.origin_as if report.input and report.input.origin_as else '-' }}</li>
   <li><strong>Planned Origin-AS:</strong> {{ report.input.planned_origin_as if report.input and report.input.planned_origin_as else '-' }}</li>
@@ -13,10 +13,10 @@
   <li><strong>Holder:</strong> {{ report.details.resource_holder.holder if report.details and report.details.resource_holder else 'Unknown' }}</li>
 </ul>
 
-<h2>Gesamtbewertung</h2>
+<h2>Overall Assessment</h2>
 <ul>
   <li><strong>Status:</strong> {{ report.status }}</li>
-  <li><strong>Kurzfassung:</strong> {{ report.summary }}</li>
+  <li><strong>Summary:</strong> {{ report.summary }}</li>
   <li><strong>Preflight Decision:</strong> {{ report.details.preflight_decision if report.details and report.details.preflight_decision else '-' }}</li>
   <li><strong>Explanation:</strong> {{ report.explanation or '-' }}</li>
   <li><strong>Risk:</strong> {{ report.risk or '-' }}</li>
@@ -65,20 +65,20 @@
 </ul>
 
 <h2>Data Source Diagnostics</h2>
-{% if report.details and report.details.source_diagnostics %}<table border="1" cellpadding="6" cellspacing="0"><tr><th>Quelle</th><th>Endpoint</th><th>Status</th><th>Freshness</th><th>Attempts</th><th>Retries</th><th>Fallback</th><th>Stale Cache</th><th>Dauer</th><th>Cache</th><th>Cache Age</th><th>TTL</th><th>Message</th></tr>{% for d in report.details.source_diagnostics %}<tr><td>{{ d.name or '-' }}</td><td>{{ d.endpoint or '-' }}</td><td>{{ d.status or '-' }}</td><td>{{ d.freshness or 'UNKNOWN' }}</td><td>{{ d.attempts if d.attempts is not none else '-' }}</td><td>{{ d.retry_count if d.retry_count is not none else '-' }}</td><td>{{ 'yes' if d.fallback_used is sameas true else ('no' if d.fallback_used is sameas false else '-') }}</td><td>{{ 'yes' if d.stale_cache_used is sameas true else ('no' if d.stale_cache_used is sameas false else '-') }}</td><td>{{ d.duration_ms if d.duration_ms is not none else '-' }}</td><td>{{ 'HIT' if d.cached is sameas true else ('MISS' if d.cached is sameas false else '-') }}</td><td>{{ d.cache_age_seconds if d.cache_age_seconds is not none else 'Unknown' }}</td><td>{{ d.cache_ttl_seconds if d.cache_ttl_seconds is not none else 'Unknown' }}</td><td>{{ d.message or '-' }}{% if d.fallback_used is sameas true %}<div><em>Live request failed. Cached data was used.</em></div>{% endif %}{% if d.details %}<details><summary>Details</summary><pre>{{ d.details | tojson(indent=2) }}</pre></details>{% endif %}</td></tr>{% endfor %}</table>{% else %}<p>No source diagnostics available.</p>{% endif %}
+{% if report.details and report.details.source_diagnostics %}<table border="1" cellpadding="6" cellspacing="0"><tr><th>Source</th><th>Endpoint</th><th>Status</th><th>Freshness</th><th>Attempts</th><th>Retries</th><th>Fallback</th><th>Stale Cache</th><th>Duration</th><th>Cache</th><th>Cache Age</th><th>TTL</th><th>Message</th></tr>{% for d in report.details.source_diagnostics %}<tr><td>{{ d.name or '-' }}</td><td>{{ d.endpoint or '-' }}</td><td>{{ d.status or '-' }}</td><td>{{ d.freshness or 'UNKNOWN' }}</td><td>{{ d.attempts if d.attempts is not none else '-' }}</td><td>{{ d.retry_count if d.retry_count is not none else '-' }}</td><td>{{ 'yes' if d.fallback_used is sameas true else ('no' if d.fallback_used is sameas false else '-') }}</td><td>{{ 'yes' if d.stale_cache_used is sameas true else ('no' if d.stale_cache_used is sameas false else '-') }}</td><td>{{ d.duration_ms if d.duration_ms is not none else '-' }}</td><td>{{ 'HIT' if d.cached is sameas true else ('MISS' if d.cached is sameas false else '-') }}</td><td>{{ d.cache_age_seconds if d.cache_age_seconds is not none else 'Unknown' }}</td><td>{{ d.cache_ttl_seconds if d.cache_ttl_seconds is not none else 'Unknown' }}</td><td>{{ d.message or '-' }}{% if d.fallback_used is sameas true %}<div><em>Live request failed. Cached data was used.</em></div>{% endif %}{% if d.details %}<details><summary>Details</summary><pre>{{ d.details | tojson(indent=2) }}</pre></details>{% endif %}</td></tr>{% endfor %}</table>{% else %}<p>No source diagnostics available.</p>{% endif %}
 
-<h2>Rohdaten</h2>
-<h3>RPKI Rohdaten</h3>
+<h2>Raw Data</h2>
+<h3>RPKI Raw Data</h3>
 <pre>{{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }}</pre>
-<h3>Registry/IRR Rohdaten</h3>
+<h3>Registry/IRR Raw Data</h3>
 <pre>{{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}</pre>
-<h3>Routing Visibility Rohdaten</h3>
-<details><summary>Ein-/ausklappen</summary><pre>{{ (report.checks.routing_visibility.raw if report.checks and report.checks.routing_visibility else {}) | tojson(indent=2) }}</pre></details>
+<h3>Routing Visibility Raw Data</h3>
+<details><summary>Expand/collapse</summary><pre>{{ (report.checks.routing_visibility.raw if report.checks and report.checks.routing_visibility else {}) | tojson(indent=2) }}</pre></details>
 
-<h2>Technische Details</h2><pre>{{ report.details | tojson(indent=2) }}</pre>
+<h2>Technical Details</h2><pre>{{ report.details | tojson(indent=2) }}</pre>
 
 {% if report.details and report.details.rpki_summary %}<h2>RPKI Batch Summary</h2><pre>{{ report.details.rpki_summary | tojson(indent=2) }}</pre>{% endif %}
-{% if report.details and report.details.results %}<h2>RPKI Batch Ergebnisse</h2><pre>{{ report.details.results | tojson(indent=2) }}</pre>{% endif %}
+{% if report.details and report.details.results %}<h2>RPKI Batch Results</h2><pre>{{ report.details.results | tojson(indent=2) }}</pre>{% endif %}
 </body></html>
 
 {% if report.details and report.details.preflight_mode %}<h2>Preflight Assessment</h2><ul><li><strong>Planned Prefix:</strong> {{ report.input.prefix if report.input else '-' }}</li><li><strong>Planned Origin-AS:</strong> {{ report.input.planned_origin_as if report.input and report.input.planned_origin_as else '-' }}</li><li><strong>Overall Status:</strong> {{ report.status }}</li><li><strong>Summary:</strong> {{ report.summary }}</li><li><strong>Explanation:</strong> {{ report.explanation or '-' }}</li><li><strong>Risk:</strong> {{ report.risk or '-' }}</li></ul>{% endif %}
