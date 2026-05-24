@@ -84,6 +84,8 @@ export const runAsnCheck = (asn: string, change_case_id?: number) => requestJson
 export const deleteChangeCase = (id: number) => requestJson<{ ok: boolean; detached_checks: number }>(apiUrl(`/api/change-cases/${id}`), { method: 'DELETE' })
 export const runPrefixCheck = (prefix: string, origin_as?: string, change_case_id?: number) => checkPrefix(prefix, origin_as, change_case_id)
 export const runPreflightCheck = (prefix: string, planned_origin_as: string, change_case_id?: number) => checkPreflight(prefix, planned_origin_as, change_case_id)
+export const runChangeCasePreflight = (id: number) => requestJson<{ change_case_id:number; decision:string; required_actions:string[]; risk_summary:string }>(apiUrl(`/api/change-cases/${id}/run-preflight`), { method: 'POST' })
+export const runChangeCasePostChangeVerification = (id: number) => requestJson<{ change_case_id:number; post_change_status:string; verification_summary:string; detected_issues:string[] }>(apiUrl(`/api/change-cases/${id}/run-post-change-verification`), { method: 'POST' })
 
 export const runBgpVisibilityCheck = (prefix: string, expected_origin_as?: string, change_case_id?: number) => requestJson<CheckResponse>(apiUrl('/api/check/bgp-visibility'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, expected_origin_as: expected_origin_as || null, change_case_id: change_case_id ?? null }) })
 

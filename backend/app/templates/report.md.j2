@@ -41,6 +41,20 @@
 - Explanation: {{ report.checks.routing_visibility.explanation if report.checks and report.checks.routing_visibility else '-' }}
 - Risk: {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}
 
+## Extended Routing/Validation Details
+- RPKI Provider: {{ report.details.provider if report.details and report.details.provider else '-' }}
+- RPKI Validation Status: {{ report.details.raw_status if report.details and report.details.raw_status is not none else '-' }}
+- RPKI Fallback Used: {{ report.details.fallback_used if report.details else '-' }}
+- RPKI Fallback Reason: {{ report.details.fallback_reason if report.details and report.details.fallback_reason else '-' }}
+- RPKI Provider Disagreement: {{ report.details.provider_disagreement if report.details else '-' }}
+- Matched ROAs: {{ (report.details.matched_roas | length) if report.details and report.details.matched_roas else 0 }}
+- BGP Source Agreement: {{ report.details.source_agreement if report.details and report.details.source_agreement is not none else '-' }}
+- BGP Confidence Score: {{ report.details.confidence_score if report.details and report.details.confidence_score is not none else '-' }}
+- Visible Origins by Source: {{ report.details.visible_origins_by_source | tojson if report.details and report.details.visible_origins_by_source else '-' }}
+- Conflicting Origins: {{ report.details.conflicting_origins | tojson if report.details and report.details.conflicting_origins else '[]' }}
+- Required Actions: {{ report.details.required_actions | tojson if report.details and report.details.required_actions else '[]' }}
+- Post-Change Verification Status: {{ report.details.post_change_status if report.details and report.details.post_change_status else '-' }}
+
 ## Data Source Diagnostics
 {% if report.details and report.details.source_diagnostics %}
 | Quelle | Endpoint | Status | Freshness | Attempts | Retries | Fallback | Stale Cache | Dauer | Cache | Cache Age | TTL | Message |

@@ -161,7 +161,13 @@ def build_system_status(engine: Engine | None) -> dict:
         "api_proxy": {"status": "ok", "mode": "same-origin", "frontend_proxy_expected": True},
         "rpki": {"provider": settings.rpki_provider, "fallback_to_ripestat": settings.rpki_fallback_to_ripestat, "routinator_url": settings.rpki_routinator_url, "local_json_path": settings.rpki_local_json_path, "timeout_seconds": settings.rpki_provider_timeout_seconds},
         "bgp_visibility": {"providers": [x.strip() for x in settings.bgp_visibility_providers.split(",") if x.strip()], "require_source_agreement": settings.bgp_visibility_require_source_agreement, "min_confidence": settings.bgp_visibility_min_confidence},
-        "alerts": {"webhook_enabled": settings.alert_webhook_enabled, "webhook_url_configured": bool(settings.alert_webhook_url), "on_status_change_only": settings.alert_on_status_change_only},
+        "alerts": {
+            "webhook_enabled": settings.alert_webhook_enabled,
+            "webhook_url_configured": bool(settings.alert_webhook_url),
+            "on_status_change_only": settings.alert_on_status_change_only,
+            "max_retries": settings.alert_webhook_max_retries,
+            "timeout_seconds": settings.alert_webhook_timeout_seconds,
+        },
         "ripestat": {
             "cache_ttl_seconds": settings.cache_ttl_seconds,
             "timeout_seconds": settings.ripestat_timeout_seconds,

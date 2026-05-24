@@ -134,8 +134,8 @@ export type AuditLogEntry = {
 }
 
 export type ChangeCaseStatus = 'draft' | 'in_review' | 'approved' | 'closed'
-export type ChangeCaseItem = { id:number; title:string; description?:string|null; status:ChangeCaseStatus; created_by_user_id?:number|null; created_at:string; updated_at:string }
+export type ChangeCaseItem = { id:number; title:string; description?:string|null; status:ChangeCaseStatus; created_by_user_id?:number|null; created_at:string; updated_at:string; affected_prefixes?:string[]|null; planned_origin_asns?:string[]|null; risk_summary?:string|null; decision?:string|null; required_actions?:string[]|null; post_change_status?:string|null; last_preflight_at?:string|null; last_verification_at?:string|null }
 
 
 export type WatchTarget = { id:number; name:string; watch_type:string; prefix?:string|null; asn?:string|null; origin_as?:string|null; expected_origin_as?:string|null; max_length?:number|null; interval_minutes:number; is_active:boolean; change_case_id?:number|null; created_by_user_id?:number|null; last_run_at?:string|null; next_run_at?:string|null; last_status?:string|null; created_at:string; updated_at:string }
-export type WatchRun = { id:number; watch_target_id:number; report_id?:number|null; previous_status?:string|null; status:string; changed:boolean; summary:string; created_at:string }
+export type WatchRun = { id:number; watch_target_id:number; report_id?:number|null; previous_status?:string|null; status:string; changed:boolean; summary:string; alert_delivery_status?:string|null; alert_delivered_at?:string|null; alert_error_message?:string|null; created_at:string }
