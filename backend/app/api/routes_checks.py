@@ -115,5 +115,6 @@ def _store_and_respond(db: Session, ctype: str, resource: str, origin_as: str | 
     except OperationalError as exc:
         db.rollback()
         if "no column named created_by_user_id" in str(exc).lower():
-            raise HTTPException(status_code=503, detail="Database schema is not up to date. Please run migrations: docker compose exec backend alembic upgrade head") from exc
+            from app.core.system_status import MIGRATION_OPERATOR_GUIDANCE
+            raise HTTPException(status_code=503, detail=MIGRATION_OPERATOR_GUIDANCE) from exc
         raise

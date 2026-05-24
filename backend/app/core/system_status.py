@@ -117,6 +117,24 @@ def get_database_status(engine: Engine | None) -> dict:
     return payload
 
 
+MIGRATION_OPERATOR_GUIDANCE = """Database schema is not up to date.
+
+RouteForge detected that required database migrations have not been applied yet.
+
+Please run:
+
+docker compose exec backend alembic current
+docker compose exec backend alembic heads
+docker compose exec backend alembic upgrade head
+
+If you are using the production compose file, run:
+
+docker compose -f docker-compose.prod.yml exec backend alembic current
+docker compose -f docker-compose.prod.yml exec backend alembic heads
+docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+
+Then restart RouteForge if needed."""
+
 def _security_warnings() -> list[str]:
     warnings: list[str] = []
     if settings.secret_key == "change-me":
@@ -139,17 +157,8 @@ def build_system_status(engine: Engine | None) -> dict:
     operational_warnings: list[str] = []
     if database.get("migration_status") != "up_to_date":
         operational_warnings.append(
-            "Database schema is behind the application version. Run database migrations before using checks."
+            MIGRATION_OPERATOR_GUIDANCE
         )
-    if database.get("migration_status") == "behind":
-        operational_warnings.extend(
-            [
-                "Run: alembic current",
-                "Run: alembic heads",
-                "Run: alembic upgrade head",
-            ]
-        )
-
     return {
         "status": "ok",
         "name": settings.app_name,
