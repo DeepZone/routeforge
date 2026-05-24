@@ -304,3 +304,11 @@ In the standard Docker setup, API calls are same-origin via frontend nginx (`/ap
 ## BGP Visibility Details
 - Read-only BGP visibility validation for prefix and optional expected origin AS.
 - Uses external RIPEstat visibility data; results are momentary snapshots and do not replace continuous monitoring.
+
+
+## Operational docs for provider/workflow extensions
+- docs/operations/rpki-provider.md
+- docs/operations/bgp-visibility-providers.md
+- docs/operations/change-case-workflow.md
+- docs/operations/watch-alerts.md
+- docs/architecture/providers.md

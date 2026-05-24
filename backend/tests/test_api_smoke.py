@@ -563,3 +563,28 @@ def test_roa_preflight_suggested_roa_and_invalid_max_length() -> None:
     critical = client.post('/api/check/roa-preflight', json={'prefix':'203.0.113.0/24','origin_as':'AS3320','max_length':23})
     assert critical.status_code == 200
     assert critical.json()['status'] == 'CRITICAL'
+
+def test_change_case_workflow_endpoints_and_watch_alert_fields() -> None:
+    client = _client()
+    _setup_and_login(client)
+    created = client.post('/api/change-cases', json={'title': 'Workflow', 'description': 'x'})
+    cid = created.json()['id']
+    client.patch(f'/api/change-cases/{cid}', json={'description': 'with preflight data'})
+
+    # missing validation data
+    bad = client.post(f'/api/change-cases/{cid}/run-preflight')
+    assert bad.status_code == 400
+
+
+def test_system_status_alerts_no_secret_fields() -> None:
+    client = _client()
+    _setup_and_login(client)
+    resp = client.get('/api/system/status')
+    assert resp.status_code == 200
+    payload = resp.json()
+    alerts = payload.get('alerts', {})
+    assert 'webhook_enabled' in alerts
+    assert 'on_status_change_only' in alerts
+    assert 'max_retries' in alerts
+    assert 'timeout_seconds' in alerts
+    assert 'secret' not in ''.join(alerts.keys()).lower()

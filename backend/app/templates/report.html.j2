@@ -48,6 +48,21 @@
   <li><strong>Explanation:</strong> {{ report.checks.routing_visibility.explanation if report.checks and report.checks.routing_visibility else '-' }}</li>
   <li><strong>Risk:</strong> {{ report.checks.routing_visibility.risk if report.checks and report.checks.routing_visibility else '-' }}</li>
 </ul>
+<h2>Extended Routing/Validation Details</h2>
+<ul>
+  <li><strong>RPKI Provider:</strong> {{ report.details.provider if report.details and report.details.provider else '-' }}</li>
+  <li><strong>RPKI Validation Status:</strong> {{ report.details.raw_status if report.details and report.details.raw_status is not none else '-' }}</li>
+  <li><strong>RPKI Fallback Used:</strong> {{ report.details.fallback_used if report.details else '-' }}</li>
+  <li><strong>RPKI Fallback Reason:</strong> {{ report.details.fallback_reason if report.details and report.details.fallback_reason else '-' }}</li>
+  <li><strong>RPKI Provider Disagreement:</strong> {{ report.details.provider_disagreement if report.details else '-' }}</li>
+  <li><strong>Matched ROAs:</strong> {{ (report.details.matched_roas | length) if report.details and report.details.matched_roas else 0 }}</li>
+  <li><strong>BGP Source Agreement:</strong> {{ report.details.source_agreement if report.details and report.details.source_agreement is not none else '-' }}</li>
+  <li><strong>BGP Confidence Score:</strong> {{ report.details.confidence_score if report.details and report.details.confidence_score is not none else '-' }}</li>
+  <li><strong>Visible Origins by Source:</strong> <pre>{{ report.details.visible_origins_by_source | tojson(indent=2) if report.details and report.details.visible_origins_by_source else '-' }}</pre></li>
+  <li><strong>Conflicting Origins:</strong> {{ report.details.conflicting_origins | tojson if report.details and report.details.conflicting_origins else '[]' }}</li>
+  <li><strong>Required Actions:</strong> {{ report.details.required_actions | tojson if report.details and report.details.required_actions else '[]' }}</li>
+  <li><strong>Post-Change Verification Status:</strong> {{ report.details.post_change_status if report.details and report.details.post_change_status else '-' }}</li>
+</ul>
 
 <h2>Data Source Diagnostics</h2>
 {% if report.details and report.details.source_diagnostics %}<table border="1" cellpadding="6" cellspacing="0"><tr><th>Quelle</th><th>Endpoint</th><th>Status</th><th>Freshness</th><th>Attempts</th><th>Retries</th><th>Fallback</th><th>Stale Cache</th><th>Dauer</th><th>Cache</th><th>Cache Age</th><th>TTL</th><th>Message</th></tr>{% for d in report.details.source_diagnostics %}<tr><td>{{ d.name or '-' }}</td><td>{{ d.endpoint or '-' }}</td><td>{{ d.status or '-' }}</td><td>{{ d.freshness or 'UNKNOWN' }}</td><td>{{ d.attempts if d.attempts is not none else '-' }}</td><td>{{ d.retry_count if d.retry_count is not none else '-' }}</td><td>{{ 'yes' if d.fallback_used is sameas true else ('no' if d.fallback_used is sameas false else '-') }}</td><td>{{ 'yes' if d.stale_cache_used is sameas true else ('no' if d.stale_cache_used is sameas false else '-') }}</td><td>{{ d.duration_ms if d.duration_ms is not none else '-' }}</td><td>{{ 'HIT' if d.cached is sameas true else ('MISS' if d.cached is sameas false else '-') }}</td><td>{{ d.cache_age_seconds if d.cache_age_seconds is not none else 'Unknown' }}</td><td>{{ d.cache_ttl_seconds if d.cache_ttl_seconds is not none else 'Unknown' }}</td><td>{{ d.message or '-' }}{% if d.fallback_used is sameas true %}<div><em>Live request failed. Cached data was used.</em></div>{% endif %}{% if d.details %}<details><summary>Details</summary><pre>{{ d.details | tojson(indent=2) }}</pre></details>{% endif %}</td></tr>{% endfor %}</table>{% else %}<p>No source diagnostics available.</p>{% endif %}

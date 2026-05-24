@@ -60,8 +60,8 @@ from app.services.ripe_stat_client import RipeStatClient
 def run_change_case_preflight(change_case_id: int, db: Session = Depends(get_db), user=Depends(require_role('operator','admin'))):
     cc = db.query(ChangeCase).filter(ChangeCase.id == change_case_id).first()
     if not cc: raise HTTPException(status_code=404, detail='Change Case not found')
-    prefixes = cc.affected_prefixes or []
-    origins = cc.planned_origin_asns or []
+    prefixes = [str(p).strip() for p in (cc.affected_prefixes or []) if str(p).strip()]
+    origins = [str(o).strip() for o in (cc.planned_origin_asns or []) if str(o).strip()]
     if not prefixes or not origins: raise HTTPException(status_code=400, detail='Change case requires affected_prefixes and planned_origin_asns')
     decisions=[]; actions=[]
     for pfx in prefixes:
@@ -72,6 +72,8 @@ def run_change_case_preflight(change_case_id: int, db: Session = Depends(get_db)
                 actions.append(f'Review preflight findings for {pfx} {origin}')
     cc.last_preflight_at=datetime.utcnow(); cc.required_actions=sorted(set(actions))
     cc.decision='NO-GO' if 'CRITICAL' in decisions else 'CAUTION' if 'WARNING' in decisions else 'UNKNOWN' if all(d=='UNKNOWN' for d in decisions) else 'GO'
+    if cc.decision not in ALLOWED_DECISIONS:
+        cc.decision = "UNKNOWN"
     cc.risk_summary=f'Automated preflight decision: {cc.decision}'
     db.commit(); db.refresh(cc)
     write_audit_log(db, user_id=user.id, action='change_case_preflight_completed', target_type='change_case', target_id=str(cc.id), details_json={'decision': cc.decision})
@@ -82,6 +84,8 @@ def run_post_change_verification(change_case_id: int, db: Session = Depends(get_
     cc = db.query(ChangeCase).filter(ChangeCase.id == change_case_id).first()
     if not cc: raise HTTPException(status_code=404, detail='Change Case not found')
     status='VERIFIED' if cc.decision=='GO' else 'PARTIAL' if cc.decision=='CAUTION' else 'FAILED' if cc.decision=='NO-GO' else 'UNKNOWN'
+    if status not in ALLOWED_POST_CHANGE_STATUSES:
+        status = "UNKNOWN"
     cc.post_change_status=status; cc.last_verification_at=datetime.utcnow()
     db.commit(); db.refresh(cc)
     write_audit_log(db, user_id=user.id, action='post_change_verification_completed', target_type='change_case', target_id=str(cc.id), details_json={'post_change_status': status})
@@ -112,3 +116,5 @@ def list_change_case_reports(change_case_id: int, db: Session = Depends(get_db),
         .all()
     )
     return [{'report_id': r.id, 'check_id': c.id, 'check_type': c.check_type, 'summary': c.summary, 'status': c.status, 'created_at': r.created_at.isoformat()} for r, c in rows]
+ALLOWED_DECISIONS = {"GO", "CAUTION", "NO-GO", "UNKNOWN"}
+ALLOWED_POST_CHANGE_STATUSES = {"VERIFIED", "PARTIAL", "FAILED", "UNKNOWN"}

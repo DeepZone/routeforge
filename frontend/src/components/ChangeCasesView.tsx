@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ApiError, createChangeCase, deleteChangeCase, getChangeCaseReports, getReportHtml, getReportMarkdown, getReportSummary, listChangeCases, runAsnCheck, runBgpVisibilityCheck, runPrefixCheck, runPreflightCheck, runRoaPreflightCheck, updateChangeCase } from '../api'
+import { ApiError, createChangeCase, deleteChangeCase, getChangeCaseReports, getReportHtml, getReportMarkdown, getReportSummary, listChangeCases, runAsnCheck, runBgpVisibilityCheck, runChangeCasePostChangeVerification, runChangeCasePreflight, runPrefixCheck, runPreflightCheck, runRoaPreflightCheck, updateChangeCase } from '../api'
 import type { ChangeCaseItem, UserRole } from '../types'
 import { StatusBadge } from './StatusBadge'
 
@@ -74,6 +74,12 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
         {canEdit && <button className='rf-btn-secondary' onClick={()=>setEditing(v=>!v)}>{editing ? 'Cancel' : 'Edit'}</button>}
       </div>
       <p>{selected.description || '—'}</p>
+      <div className='rounded border bg-slate-50 p-3 text-sm space-y-1'>
+        <div><b>Preflight Decision:</b> {selected.decision || 'UNKNOWN'}</div>
+        <div><b>Risk Summary:</b> {selected.risk_summary || 'Not available yet.'}</div>
+        <div><b>Post-Change Verification:</b> {selected.post_change_status || 'Not run yet.'}</div>
+        <div><b>Required Actions:</b> {(selected.required_actions && selected.required_actions.length > 0) ? selected.required_actions.join(' · ') : 'None recorded.'}</div>
+      </div>
 
       {canEdit && editing && <div className='space-y-2'>
         <input className='rf-input' value={editTitle} onChange={e=>setEditTitle(e.target.value)} />
@@ -83,6 +89,8 @@ export function ChangeCasesView({ role }: { role: UserRole }) {
       </div>}
 
       {canEdit && <div className='flex flex-wrap gap-2'>
+        <button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runChangeCasePreflight(selected.id); await load();}, 'Change case preflight completed.')}>Run Case Preflight</button>
+        <button className='rf-btn-primary' onClick={()=>runAction(async()=>{await runChangeCasePostChangeVerification(selected.id); await load();}, 'Post-change verification completed.')}>Run Post-Change Verification</button>
         {(statusActions[selected.status] || []).map((action)=><button key={action.to} className='rf-btn-secondary' onClick={()=>runAction(async()=>{await updateChangeCase(selected.id,{status:action.to}); await load();}, `Status changed to ${action.to}.`)}>{action.label}</button>)}
         {selected.status === 'closed' && <p className='text-sm text-slate-500'>Case is closed (read-only workflow state).</p>}
       </div>}

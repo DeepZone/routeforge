@@ -25,6 +25,17 @@ class ChangeCaseRead(BaseModel):
     created_by_user_id: int | None
     created_at: datetime
     updated_at: datetime
+    affected_prefixes: list[str] | None = None
+    planned_origin_asns: list[str] | None = None
+    risk_summary: str | None = None
+    decision: str | None = None
+    required_actions: list[str] | None = None
+    post_change_status: str | None = None
+    last_preflight_at: datetime | None = None
+    last_verification_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
 
 
 class AsnCheckRequest(BaseModel):
@@ -207,6 +218,9 @@ class WatchRunRead(BaseModel):
     status: str
     changed: bool
     summary: str
+    alert_delivery_status: str | None = None
+    alert_delivered_at: datetime | None = None
+    alert_error_message: str | None = None
     created_at: datetime
     class Config:
         from_attributes = True

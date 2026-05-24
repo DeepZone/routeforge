@@ -35,6 +35,7 @@ export function ReportView({ report }: { report: CheckResponse }) {
   const hasReportId = Number.isFinite(reportId) && reportId > 0
   const rpkiBatch = details.rpki_batch as { message?: string } | undefined
   const sourceDiagnostics = (Array.isArray(details.source_diagnostics) ? details.source_diagnostics : []) as SourceDiagnostic[]
+  const visibilityProviders = (Array.isArray((details as Record<string, unknown>).sources) ? (details as Record<string, unknown>).sources : []) as string[]
 
   const notify = (message: string) => {
     setCopyMessage(message)
@@ -86,6 +87,17 @@ export function ReportView({ report }: { report: CheckResponse }) {
 
     <section className='grid gap-4 md:grid-cols-2'>
       {[['RPKI', rpki], ['Registry/IRR', registry], ['Routing Visibility', routingVisibility] as const].map(([title, item]) => item && <article key={title} className='rf-card p-4'><div className='mb-2 flex items-center gap-2'><h4 className='font-semibold'>{title}</h4><StatusBadge status={item.status || 'UNKNOWN'} /></div><p className='text-sm'>{item.summary || '-'}</p></article>)}
+    </section>
+    <section className='rf-card p-4 space-y-2 text-sm'>
+      <h4 className='font-semibold'>Provider & Decision Details</h4>
+      <div><b>RPKI Provider:</b> {String((rpki?.raw as Record<string, unknown> | undefined)?.provider ?? (details as Record<string, unknown>).provider ?? '-')}</div>
+      <div><b>RPKI Fallback used:</b> {String((rpki?.raw as Record<string, unknown> | undefined)?.fallback_used ?? (details as Record<string, unknown>).fallback_used ?? false)}</div>
+      <div><b>RPKI Provider disagreement:</b> {String((rpki?.raw as Record<string, unknown> | undefined)?.provider_disagreement ?? (details as Record<string, unknown>).provider_disagreement ?? false)}</div>
+      <div><b>BGP Providers:</b> {visibilityProviders.length ? visibilityProviders.join(', ') : '-'}</div>
+      <div><b>Source agreement:</b> {String((details as Record<string, unknown>).source_agreement ?? '-')}</div>
+      <div><b>Confidence score:</b> {String((details as Record<string, unknown>).confidence_score ?? '-')}</div>
+      <div><b>Failed provider count:</b> {String((details as Record<string, unknown>).failed_provider_count ?? '-')}</div>
+      <div><b>Required actions:</b> {Array.isArray((details as Record<string, unknown>).required_actions) ? ((details as Record<string, unknown>).required_actions as string[]).join(' · ') : '-'}</div>
     </section>
 
 
