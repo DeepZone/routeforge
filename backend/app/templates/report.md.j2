@@ -1,19 +1,19 @@
 # RouteForge Report
 
-- Zeitpunkt: {{ report.generated_at }}
+- Generated At: {{ report.generated_at }}
 - Check-ID: {{ report.check_id }}
 
-## Eingabe
-- Check-Typ: {{ report.input_check_type or '-' }}
+## Input
+- Check Type: {{ report.input_check_type or '-' }}
 - Prefix: {{ report.input.prefix if report.input else '-' }}
 - Origin-AS: {{ report.input.origin_as if report.input and report.input.origin_as else '-' }}
 - Planned Origin-AS: {{ report.input.planned_origin_as if report.input and report.input.planned_origin_as else '-' }}
 - ASN: {{ report.input.asn if report.input and report.input.asn else '-' }}
 - Holder: {{ report.details.resource_holder.holder if report.details and report.details.resource_holder else 'Unknown' }}
 
-## Gesamtbewertung
+## Overall Assessment
 - Status: **{{ report.status }}**
-- Kurzfassung: {{ report.summary }}
+- Summary: {{ report.summary }}
 - Preflight Decision: {{ report.details.preflight_decision if report.details and report.details.preflight_decision else '-' }}
 - Explanation: {{ report.explanation or '-' }}
 - Risk: {{ report.risk or '-' }}
@@ -57,30 +57,30 @@
 
 ## Data Source Diagnostics
 {% if report.details and report.details.source_diagnostics %}
-| Quelle | Endpoint | Status | Freshness | Attempts | Retries | Fallback | Stale Cache | Dauer | Cache | Cache Age | TTL | Message |
+| Source | Endpoint | Status | Freshness | Attempts | Retries | Fallback | Stale Cache | Duration | Cache | Cache Age | TTL | Message |
 |---|---|---|---:|---|---|
 {% for d in report.details.source_diagnostics %}| {{ d.name or '-' }} | {{ d.endpoint or '-' }} | {{ d.status or '-' }} | {{ d.freshness or 'UNKNOWN' }} | {{ d.attempts if d.attempts is not none else '-' }} | {{ d.retry_count if d.retry_count is not none else '-' }} | {{ 'yes' if d.fallback_used is sameas true else ('no' if d.fallback_used is sameas false else '-') }} | {{ 'yes' if d.stale_cache_used is sameas true else ('no' if d.stale_cache_used is sameas false else '-') }} | {{ d.duration_ms if d.duration_ms is not none else '-' }} | {{ 'HIT' if d.cached is sameas true else ('MISS' if d.cached is sameas false else '-') }} | {{ d.cache_age_seconds if d.cache_age_seconds is not none else 'Unknown' }} | {{ d.cache_ttl_seconds if d.cache_ttl_seconds is not none else 'Unknown' }} | {{ d.message or '-' }}{% if d.fallback_used is sameas true %} (Live request failed. Cached data was used.){% endif %} |
 {% endfor %}
 {% else %}No source diagnostics available.
 {% endif %}
 
-## Rohdaten
-### RPKI Rohdaten
+## Raw Data
+### RPKI Raw Data
 ```json
 {{ (report.checks.rpki.raw if report.checks and report.checks.rpki else {}) | tojson(indent=2) }}
 ```
 
-### Registry/IRR Rohdaten
+### Registry/IRR Raw Data
 ```json
 {{ (report.checks.registry.raw if report.checks and report.checks.registry else {}) | tojson(indent=2) }}
 ```
 
-### Routing Visibility Rohdaten
+### Routing Visibility Raw Data
 ```json
 {{ (report.checks.routing_visibility.raw if report.checks and report.checks.routing_visibility else {}) | tojson(indent=2) }}
 ```
 
-## Technische Details
+## Technical Details
 ```json
 {{ report.details | tojson(indent=2) }}
 ```
@@ -93,7 +93,7 @@
 {% endif %}
 
 {% if report.details and report.details.results %}
-## RPKI Batch Ergebnisse
+## RPKI Batch Results
 ```json
 {{ report.details.results | tojson(indent=2) }}
 ```
